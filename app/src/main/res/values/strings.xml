@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">CameraTraining2</string>
+    <string name="title_home">ホーム</string>
+    <string name="title_dashboard">ダッシュボート</string>
+    <string name="title_notifications">通知</string>
+
+    <string name="btn_back">戻る</string>
+</resources>
