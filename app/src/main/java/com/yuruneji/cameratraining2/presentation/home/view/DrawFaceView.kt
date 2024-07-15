@@ -75,11 +75,7 @@ class DrawFaceView(
         imageHeight: Int,
         faceDetectList: List<FaceDetectDetail>
     ) {
-        this.cameraMatrix = cameraMatrix
-        this.cameraWidth = cameraWidth
-        this.cameraHeight = cameraHeight
-
-        // Timber.i("cameraWidth: $cameraWidth, cameraHeight: $cameraHeight, imageWidth: $imageWidth, imageHeight: $imageHeight")
+        setSetting(cameraMatrix, cameraWidth, cameraHeight, imageWidth, imageHeight)
 
         if (faceDetectList.isEmpty()) {
             clearCanvas(mSurfaceView.holder)
@@ -88,23 +84,6 @@ class DrawFaceView(
             canvas.drawColor(0, PorterDuff.Mode.CLEAR)
             canvas.setMatrix(cameraMatrix)
             canvas.save()
-
-
-            val viewAspectRatio = cameraWidth.toFloat() / cameraHeight
-            val imageAspectRatio: Float = imageWidth.toFloat() / imageHeight
-            postScaleWidthOffset = 0f
-            postScaleHeightOffset = 0f
-            if (viewAspectRatio > imageAspectRatio) {
-                // The image needs to be vertically cropped to be displayed in this view.
-                scaleFactor = cameraWidth.toFloat() / imageWidth
-                postScaleHeightOffset =
-                    ((cameraWidth.toFloat() / imageAspectRatio - cameraHeight) / 2)
-            } else {
-                // The image needs to be horizontally cropped to be displayed in this view.
-                scaleFactor = cameraHeight.toFloat() / imageHeight
-                postScaleWidthOffset =
-                    ((cameraHeight.toFloat() * imageAspectRatio - cameraWidth) / 2)
-            }
 
             faceDetectList.forEach { detail ->
                 // Draws a circle at the position of the detected face, with the face's track id below.
@@ -178,6 +157,36 @@ class DrawFaceView(
             realFaceRect.bottom
         )
     }
+
+
+    private fun setSetting(
+        cameraMatrix: Matrix,
+        cameraWidth: Int,
+        cameraHeight: Int,
+        imageWidth: Int, imageHeight: Int
+    ) {
+        this.cameraMatrix = cameraMatrix
+        this.cameraWidth = cameraWidth
+        this.cameraHeight = cameraHeight
+
+
+        val viewAspectRatio = cameraWidth.toFloat() / cameraHeight
+        val imageAspectRatio: Float = imageWidth.toFloat() / imageHeight
+        postScaleWidthOffset = 0f
+        postScaleHeightOffset = 0f
+        if (viewAspectRatio > imageAspectRatio) {
+            // The image needs to be vertically cropped to be displayed in this view.
+            scaleFactor = cameraWidth.toFloat() / imageWidth
+            postScaleHeightOffset =
+                ((cameraWidth.toFloat() / imageAspectRatio - cameraHeight) / 2)
+        } else {
+            // The image needs to be horizontally cropped to be displayed in this view.
+            scaleFactor = cameraHeight.toFloat() / imageHeight
+            postScaleWidthOffset =
+                ((cameraHeight.toFloat() * imageAspectRatio - cameraWidth) / 2)
+        }
+    }
+
 
     /**
      * Adjusts the x coordinate from the image's coordinate system to the view coordinate system.

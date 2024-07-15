@@ -25,6 +25,7 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.translationMatrix
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.LifecycleOwner
@@ -67,8 +68,8 @@ class HomeFragment : Fragment() {
     /** 顔枠表示 */
     private var drawFaceView: DrawFaceView? = null
 
-    /** カメラExecutor */
-    private var cameraExecutor = Executors.newSingleThreadExecutor()
+    // /** カメラExecutor */
+    // private var cameraExecutor = Executors.newSingleThreadExecutor()
 
     private var camera: Camera? = null
     private lateinit var faceAnalyzer: FaceAnalyzer
@@ -131,6 +132,10 @@ class HomeFragment : Fragment() {
         surfaceView.setZOrderOnTop(true)
 
         ContextCompat.getDrawable(requireContext(), R.drawable.face_rect)?.let { drawable ->
+
+
+            Timber.i("${previewView.width}, ${previewView.height}")
+
             // 顔枠表示
             drawFaceView = DrawFaceView(
                 // previewView = previewView,
@@ -267,7 +272,7 @@ class HomeFragment : Fragment() {
 
             // PreviewのUseCase
             val preview = Preview.Builder().build().also {
-               it.surfaceProvider = previewView.surfaceProvider
+                it.surfaceProvider = previewView.surfaceProvider
             }
             cameraProvider.unbind(preview)
 
@@ -324,8 +329,8 @@ class HomeFragment : Fragment() {
             // }
 
 
-            cameraExecutor = Executors.newSingleThreadExecutor()
-            imageAnalysis.setAnalyzer(cameraExecutor, faceAnalyzer)
+            // cameraExecutor = Executors.newSingleThreadExecutor()
+            imageAnalysis.setAnalyzer(Executors.newSingleThreadExecutor(), faceAnalyzer)
 
             try {
                 // バインドされているカメラを解除
@@ -346,7 +351,7 @@ class HomeFragment : Fragment() {
     private fun stopCamera() {
         Timber.d("stopCamera()")
         // try {
-        cameraExecutor.shutdown()
+        // cameraExecutor.shutdown()
         // Thread.sleep(5000)
         faceAnalyzer.close()
         // } catch (e: InterruptedException) {
