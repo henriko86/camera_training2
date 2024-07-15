@@ -5,4 +5,8 @@
     <string name="title_notifications">通知</string>
 
     <string name="btn_back">戻る</string>
+
+    <string name="back_camera">後ろカメラ</string>
+    <string name="front_camera">前カメラ</string>
+
 </resources>
