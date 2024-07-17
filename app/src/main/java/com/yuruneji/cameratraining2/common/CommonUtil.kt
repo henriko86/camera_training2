@@ -5,8 +5,13 @@ import android.graphics.BitmapFactory
 import android.graphics.BitmapRegionDecoder
 import android.graphics.Matrix
 import android.graphics.Rect
+import androidx.compose.ui.text.toUpperCase
+import org.apache.commons.codec.binary.Hex
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
+import java.io.UnsupportedEncodingException
+import java.util.Locale
+import kotlin.experimental.inv
 
 /**
  * @author toru
@@ -64,4 +69,69 @@ object CommonUtil {
         return null
     }
 
+    fun getDataChecksum(seqNo: Byte, cmd: Byte, dataList: List<Byte>): String {
+        val list = ArrayList<Byte>()
+        list.add(seqNo)
+        list.add(cmd)
+
+        val dataSizeHex = dataList.size.toString(16)
+        val dataSizeAscii = dataSizeHex.toByteArray(Charsets.US_ASCII);
+        list.addAll(dataSizeAscii.toList())
+        list.addAll(dataList)
+
+        return getDataChecksum(list)
+    }
+
+    fun getDataChecksum(list: List<Byte>): String {
+        val sum = byteHexIntSum(list)
+
+        val hexSum1 = ("0000" + sum.toString(16))
+        val hexSum2 = hexSum1.substring(hexSum1.length - 4)
+
+        val sec2byte = Hex.decodeHex(hexSum2.toCharArray())
+        val b = sec2byte[sec2byte.size - 1]
+
+        return String.format("%02x", (b.inv()) + 1).uppercase(Locale.ROOT)
+    }
+
+    fun getChecksum(list: List<Byte>, def: String = ""): String {
+        try {
+            return ascii2String(list, def)
+        } catch (e: Exception) {
+            return def
+        }
+    }
+
+    fun byteHexIntSum(list: List<Byte>): Int {
+        var sum = 0
+        for (b in list) {
+            sum += byteHexIntValue(b)
+        }
+        return sum
+    }
+
+    fun byteHexIntValue(b: Byte): Int {
+        val hex = String.format("%02x", b)
+        val intValue = hex.toInt(16)
+        return intValue
+    }
+
+    fun ascii2String(list: List<Byte>, def: String = ""): String {
+        val data = ByteArray(list.size)
+        if (list.isNotEmpty()) {
+            for (i in list.indices) {
+                data[i] = list[i]
+            }
+        }
+        return ascii2String(data, def)
+    }
+
+    fun ascii2String(data: ByteArray, def: String = ""): String {
+        try {
+            return String(data, charset("US-ASCII"))
+        } catch (e: UnsupportedEncodingException) {
+            e.printStackTrace()
+            return def
+        }
+    }
 }

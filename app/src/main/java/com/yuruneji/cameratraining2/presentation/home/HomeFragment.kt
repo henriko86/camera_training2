@@ -50,9 +50,9 @@ class HomeFragment : Fragment() {
         // private const val REQUEST_CODE_PERMISSIONS = 10
         private val REQUIRED_PERMISSIONS = mutableListOf(
             Manifest.permission.CAMERA,
-            Manifest.permission.ACCESS_COARSE_LOCATION,
-            Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_FINE_LOCATION,
+            // Manifest.permission.ACCESS_COARSE_LOCATION,
+            // Manifest.permission.ACCESS_FINE_LOCATION,
+            // Manifest.permission.ACCESS_FINE_LOCATION,
             // Manifest.permission.WRITE_EXTERNAL_STORAGE,
             // Manifest.permission.READ_EXTERNAL_STORAGE
         ).toTypedArray()
@@ -62,58 +62,58 @@ class HomeFragment : Fragment() {
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var previewView: PreviewView
-    private lateinit var surfaceView: SurfaceView
+    // private lateinit var previewView: PreviewView
+    // private lateinit var surfaceView: SurfaceView
 
-    /** 顔枠表示 */
-    private var drawFaceView: DrawFaceView? = null
+    // /** 顔枠表示 */
+    // private var drawFaceView: DrawFaceView? = null
 
     // /** カメラExecutor */
     // private var cameraExecutor = Executors.newSingleThreadExecutor()
 
-    private var camera: Camera? = null
-    private lateinit var faceAnalyzer: FaceAnalyzer
+    // private var camera: Camera? = null
+    // private lateinit var faceAnalyzer: FaceAnalyzer
 
-    private val cameraManager: CameraManager by lazy {
-        requireContext().getSystemService(Context.CAMERA_SERVICE) as CameraManager
-    }
-    private val displayManager: DisplayManager by lazy {
-        requireContext().getSystemService(DISPLAY_SERVICE) as DisplayManager
-    }
-    private val windowManager: WindowManager by lazy {
-        requireContext().getSystemService(WINDOW_SERVICE) as WindowManager
-    }
-
-    /** 権限リクエスト */
-    private val permissionRequest =
-        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
-            if (allPermissionsGranted()) {
-                startCamera()
-            } else {
-                Toast.makeText(
-                    activity, "Permissions not granted by the user.", Toast.LENGTH_SHORT
-                ).show()
-            }
-        }
-
-    private val surfaceHolderCallback = object : SurfaceHolder.Callback {
-        override fun surfaceCreated(holder: SurfaceHolder) {
-            Timber.i("surfaceCreated()")
-        }
-
-        override fun surfaceChanged(
-            holder: SurfaceHolder,
-            format: Int,
-            width: Int,
-            height: Int
-        ) {
-            Timber.i("surfaceChanged()")
-        }
-
-        override fun surfaceDestroyed(holder: SurfaceHolder) {
-            Timber.i("surfaceDestroyed()")
-        }
-    }
+    // private val cameraManager: CameraManager by lazy {
+    //     requireContext().getSystemService(Context.CAMERA_SERVICE) as CameraManager
+    // }
+    // private val displayManager: DisplayManager by lazy {
+    //     requireContext().getSystemService(DISPLAY_SERVICE) as DisplayManager
+    // }
+    // private val windowManager: WindowManager by lazy {
+    //     requireContext().getSystemService(WINDOW_SERVICE) as WindowManager
+    // }
+    //
+    // /** 権限リクエスト */
+    // private val permissionRequest =
+    //     registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
+    //         if (allPermissionsGranted()) {
+    //             startCamera()
+    //         } else {
+    //             Toast.makeText(
+    //                 activity, "Permissions not granted by the user.", Toast.LENGTH_SHORT
+    //             ).show()
+    //         }
+    //     }
+    //
+    // private val surfaceHolderCallback = object : SurfaceHolder.Callback {
+    //     override fun surfaceCreated(holder: SurfaceHolder) {
+    //         Timber.i("surfaceCreated()")
+    //     }
+    //
+    //     override fun surfaceChanged(
+    //         holder: SurfaceHolder,
+    //         format: Int,
+    //         width: Int,
+    //         height: Int
+    //     ) {
+    //         Timber.i("surfaceChanged()")
+    //     }
+    //
+    //     override fun surfaceDestroyed(holder: SurfaceHolder) {
+    //         Timber.i("surfaceDestroyed()")
+    //     }
+    // }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -124,28 +124,28 @@ class HomeFragment : Fragment() {
 
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
 
-        previewView = binding.previewView
-        surfaceView = binding.surfaceView
+        // previewView = binding.previewView
+        // surfaceView = binding.surfaceView
+        //
+        // surfaceView.holder.addCallback(surfaceHolderCallback)
+        // surfaceView.holder.setFormat(PixelFormat.TRANSLUCENT)
+        // surfaceView.setZOrderOnTop(true)
+        //
+        // ContextCompat.getDrawable(requireContext(), R.drawable.face_rect)?.let { drawable ->
+        //
+        //
+        //     Timber.i("${previewView.width}, ${previewView.height}")
+        //
+        //     // 顔枠表示
+        //     drawFaceView = DrawFaceView(
+        //         // previewView = previewView,
+        //         surfaceView = surfaceView,
+        //         drawable = drawable
+        //     )
+        // }
 
-        surfaceView.holder.addCallback(surfaceHolderCallback)
-        surfaceView.holder.setFormat(PixelFormat.TRANSLUCENT)
-        surfaceView.setZOrderOnTop(true)
-
-        ContextCompat.getDrawable(requireContext(), R.drawable.face_rect)?.let { drawable ->
-
-
-            Timber.i("${previewView.width}, ${previewView.height}")
-
-            // 顔枠表示
-            drawFaceView = DrawFaceView(
-                // previewView = previewView,
-                surfaceView = surfaceView,
-                drawable = drawable
-            )
-        }
-
-        val disp = windowManager.defaultDisplay
-        Timber.i("width:${disp.width}, height:${disp.height}")
+        // val disp = windowManager.defaultDisplay
+        // Timber.i("width:${disp.width}, height:${disp.height}")
 
 
         val textView: TextView = binding.textHome
@@ -153,11 +153,18 @@ class HomeFragment : Fragment() {
             textView.text = it
         }
 
-        binding.previewView.setOnLongClickListener {
-            // val navController = fragmentManager.findFragmentById(R.id.navigation_home)
-
-            findNavController().navigate(R.id.action_home_to_dashboard)
-            true
+        // binding.previewView.setOnLongClickListener {
+        //     findNavController().navigate(R.id.action_home_to_dashboard)
+        //     true
+        // }
+        binding.btnCamerax.setOnClickListener {
+            findNavController().navigate(R.id.action_home_to_camera)
+        }
+        binding.btnCamera2.setOnClickListener {
+            findNavController().navigate(R.id.action_home_to_camera2)
+        }
+        binding.btnSetting.setOnClickListener {
+            findNavController().navigate(R.id.action_home_to_setting)
         }
 
         return binding.root
@@ -214,18 +221,18 @@ class HomeFragment : Fragment() {
         super.onResume()
         Timber.d("onResume()")
 
-        if (allPermissionsGranted()) {
-            startCamera()
-        } else {
-            permissionRequest.launch(REQUIRED_PERMISSIONS)
-        }
+        // if (allPermissionsGranted()) {
+        //     startCamera()
+        // } else {
+        //     permissionRequest.launch(REQUIRED_PERMISSIONS)
+        // }
     }
 
     override fun onPause() {
         super.onPause()
         Timber.d("onPause()")
 
-        stopCamera()
+        // stopCamera()
     }
 
     // override fun onStop() {
@@ -239,129 +246,4 @@ class HomeFragment : Fragment() {
         _binding = null
     }
 
-    private fun startCamera() {
-        Timber.d("startCamera()")
-
-        // cameraManager.cameraIdList.forEach { id ->
-        //     Timber.i("カメラID:${id}")
-        // }
-
-        // surfaceView.holder.setFormat(PixelFormat.TRANSLUCENT)
-        // // surfaceView.holder.addCallback(surfaceHolderCallback)
-        // surfaceView.setZOrderOnTop(true)
-
-
-        // val windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager?
-        // val rotation = windowManager!!.defaultDisplay.rotation
-        // when (rotation) {
-        //     Surface.ROTATION_0 -> {}
-        //     Surface.ROTATION_90 -> {}
-        //     Surface.ROTATION_180 -> {}
-        //     Surface.ROTATION_270 -> {}
-        //     else -> {}
-        // }
-        // cameraManager.getCameraCharacteristics()
-
-
-        val cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext())
-        cameraProviderFuture.addListener({
-            // ライフサイクルにバインドするために利用する
-            val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
-            cameraProvider.unbindAll()
-
-
-            // PreviewのUseCase
-            val preview = Preview.Builder().build().also {
-                it.surfaceProvider = previewView.surfaceProvider
-            }
-            cameraProvider.unbind(preview)
-
-            // カメラを設定
-            val cameraSelector = CameraSelector.Builder()
-                .requireLensFacing(CameraSelector.LENS_FACING_FRONT)
-                .build()
-
-            val builder = ImageAnalysis.Builder()
-            val imageAnalysis = builder
-                .setOutputImageRotationEnabled(true)
-                // .setTargetRotation(rotation)
-                .build()
-
-            // TODO:
-            // faceAnalyzer = FaceAnalyzer()
-            faceAnalyzer = FaceAnalyzer { faceDetect ->
-                drawFaceView?.drawFace(
-                    previewView.matrix,
-                    previewView.width,
-                    previewView.height,
-                    faceDetect.width,
-                    faceDetect.height,
-                    faceDetect.faceList
-                )
-
-                faceDetect.faceList.forEach { faceDetectDetail ->
-                    lifecycleScope.launch {
-                        withContext(Dispatchers.IO) {
-                            viewModel.faceAuth(faceDetectDetail)
-                        }
-                    }
-                }
-            }
-            // lifecycleScope.launch {
-            //     faceAnalyzer.faceDetect.collect { faceDetect ->
-            //         drawFaceView?.drawFace(
-            //             previewView.matrix,
-            //             previewView.width,
-            //             previewView.height,
-            //             faceDetect.width,
-            //             faceDetect.height,
-            //             faceDetect.faceList
-            //         )
-            //
-            //         faceDetect.faceList.forEach { faceDetectDetail ->
-            //             lifecycleScope.launch {
-            //                 withContext(Dispatchers.IO) {
-            //                     viewModel.faceAuth(faceDetectDetail)
-            //                 }
-            //             }
-            //         }
-            //     }
-            // }
-
-
-            // cameraExecutor = Executors.newSingleThreadExecutor()
-            imageAnalysis.setAnalyzer(Executors.newSingleThreadExecutor(), faceAnalyzer)
-
-            try {
-                // バインドされているカメラを解除
-                cameraProvider.unbindAll()
-                // カメラをライフサイクルにバインド
-                camera = cameraProvider.bindToLifecycle(
-                    this as LifecycleOwner,
-                    cameraSelector,
-                    preview,
-                    imageAnalysis
-                )
-            } catch (exc: Exception) {
-                Timber.e(exc, "Use case binding failed")
-            }
-        }, ContextCompat.getMainExecutor(requireContext()))
-    }
-
-    private fun stopCamera() {
-        Timber.d("stopCamera()")
-        // try {
-        // cameraExecutor.shutdown()
-        // Thread.sleep(5000)
-        faceAnalyzer.close()
-        // } catch (e: InterruptedException) {
-        //     Timber.e(e)
-        // }
-    }
-
-    private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
-        ContextCompat.checkSelfPermission(
-            requireContext(), it
-        ) == PackageManager.PERMISSION_GRANTED
-    }
 }

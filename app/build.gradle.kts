@@ -51,6 +51,7 @@ dependencies {
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
     implementation(libs.androidx.fragment.ktx)
+    implementation(libs.androidx.legacy.support.v4)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -105,6 +106,8 @@ dependencies {
 
     // Apache Commons Lang 3.12.0
     implementation("org.apache.commons:commons-lang3:3.12.0")
+    // https://mvnrepository.com/artifact/commons-codec/commons-codec
+    implementation("commons-codec:commons-codec:1.15")
 
     // LeakCanary
     debugImplementation("com.squareup.leakcanary:leakcanary-android:2.12")
