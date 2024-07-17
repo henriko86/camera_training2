@@ -13,13 +13,22 @@
         <action
             android:id="@+id/action_home_to_dashboard"
             app:destination="@+id/navigation_dashboard" />
+        <action
+            android:id="@+id/action_home_to_camera"
+            app:destination="@+id/navigation_camera" />
+        <action
+            android:id="@+id/action_home_to_camera2"
+            app:destination="@+id/navigation_camera2" />
+        <action
+            android:id="@+id/action_home_to_setting"
+            app:destination="@+id/navigation_setting" />
     </fragment>
 
     <fragment
         android:id="@+id/navigation_dashboard"
         android:name="com.yuruneji.cameratraining2.presentation.dashboard.DashboardFragment"
         android:label="@string/title_dashboard"
-        tools:layout="@layout/fragment_dashboard" >
+        tools:layout="@layout/fragment_dashboard">
         <action
             android:id="@+id/action_dashboard_to_home"
             app:destination="@+id/navigation_home" />
@@ -30,4 +39,35 @@
         android:name="com.yuruneji.cameratraining2.presentation.notifications.NotificationsFragment"
         android:label="@string/title_notifications"
         tools:layout="@layout/fragment_notifications" />
+
+    <fragment
+        android:id="@+id/navigation_camera"
+        android:name="com.yuruneji.cameratraining2.presentation.camera.CameraFragment"
+        android:label="@string/title_camera"
+        tools:layout="@layout/fragment_camera">
+        <action
+            android:id="@+id/action_camera_to_home"
+            app:destination="@+id/navigation_home" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigation_camera2"
+        android:name="com.yuruneji.cameratraining2.presentation.camera2.Camera2Fragment"
+        android:label="@string/title_camera2"
+        tools:layout="@layout/fragment_camera2">
+        <action
+            android:id="@+id/action_camera2_to_home"
+            app:destination="@+id/navigation_home" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigation_setting"
+        android:name="com.yuruneji.cameratraining2.presentation.setting.SettingFragment"
+        android:label="@string/title_setting"
+        tools:layout="@layout/fragment_setting">
+        <action
+            android:id="@+id/action_setting_to_home"
+            app:destination="@+id/navigation_home" />
+    </fragment>
+
 </navigation>

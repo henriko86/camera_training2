@@ -1,15 +1,20 @@
 package com.yuruneji.cameratraining2.presentation.home.view
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Bitmap.Config
 import android.graphics.Canvas
 import android.graphics.Matrix
+import android.graphics.PixelFormat
 import android.graphics.PorterDuff
 import android.graphics.Rect
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.view.SurfaceHolder
 import android.view.SurfaceView
+import androidx.core.content.ContentProviderCompat.requireContext
+import androidx.core.content.ContextCompat
+import com.yuruneji.cameratraining2.R
 import com.yuruneji.cameratraining2.domain.model.FaceDetectDetail
 import timber.log.Timber
 
@@ -17,18 +22,13 @@ import timber.log.Timber
  * @author toru
  * @version 1.0
  */
-class DrawFaceView(
-    surfaceView: SurfaceView,
-    drawable: Drawable
-) {
-    /** SurfaceView */
-    private var mSurfaceView: SurfaceView = surfaceView
+class DrawFaceView2(context: Context) : SurfaceView(context), SurfaceHolder.Callback {
 
     /** 顔枠ビットマップ */
-    private var mFaceRect: Bitmap
+    private var mFaceRect: Bitmap? = null
 
     /** 顔枠サイズ */
-    private var mFaceRectRect: Rect
+    private var mFaceRectRect: Rect? = null
 
     private var cameraMatrix: Matrix = Matrix()
     private var cameraWidth: Int = 0
@@ -44,23 +44,27 @@ class DrawFaceView(
     // var imageHeight: Int = 0
 
     init {
-        mFaceRect = drawableToBitmap(drawable)
-        mFaceRectRect = Rect(0, 0, mFaceRect.width, mFaceRect.height)
+        val drawable = ContextCompat.getDrawable(context, R.drawable.face_rect)
 
-        Timber.i("faceRectWidth: ${mFaceRect.width}, faceRectHeight: ${mFaceRect.height}")
+        mFaceRect = drawableToBitmap(drawable)
+        mFaceRect?.let { faceRect ->
+            mFaceRectRect = Rect(0, 0, faceRect.width, faceRect.height)
+            Timber.i("faceRectWidth: ${faceRect.width}, faceRectHeight: ${faceRect.height}")
+        }
     }
 
-    // override fun surfaceCreated(holder: SurfaceHolder) {
-    //     Timber.d("surfaceCreated")
-    // }
-    //
-    // override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
-    //     Timber.d("surfaceChanged")
-    // }
-    //
-    // override fun surfaceDestroyed(holder: SurfaceHolder) {
-    //     Timber.d("surfaceDestroyed")
-    // }
+    override fun surfaceCreated(holder: SurfaceHolder) {
+        Timber.d("surfaceCreated")
+        holder.setFormat(PixelFormat.TRANSLUCENT)
+    }
+
+    override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
+        Timber.d("surfaceChanged")
+    }
+
+    override fun surfaceDestroyed(holder: SurfaceHolder) {
+        Timber.d("surfaceDestroyed")
+    }
 
     /**
      * 顔枠表示
@@ -77,9 +81,9 @@ class DrawFaceView(
         setSetting(cameraMatrix, cameraWidth, cameraHeight, imageWidth, imageHeight)
 
         if (faceDetectList.isEmpty()) {
-            clearCanvas(mSurfaceView.holder)
+            clearCanvas(holder)
         } else {
-            val canvas: Canvas = mSurfaceView.holder.lockCanvas() ?: return
+            val canvas: Canvas = holder.lockCanvas() ?: return
             canvas.drawColor(0, PorterDuff.Mode.CLEAR)
             canvas.setMatrix(cameraMatrix)
             canvas.save()
@@ -108,14 +112,16 @@ class DrawFaceView(
             }
 
             canvas.restore()
-            mSurfaceView.holder.unlockCanvasAndPost(canvas)
+            holder.unlockCanvasAndPost(canvas)
         }
     }
 
     private fun drawSingleFace(canvas: Canvas, faceRect: Rect) {
         val drawRect: Rect = getDrawRect(faceRect)
 
-        canvas.drawBitmap(mFaceRect, mFaceRectRect, drawRect, null)
+        mFaceRect?.let { fr ->
+            canvas.drawBitmap(fr, mFaceRectRect, drawRect, null)
+        }
     }
 
     private fun clearCanvas(surfaceHolder: SurfaceHolder) {
@@ -126,18 +132,24 @@ class DrawFaceView(
         }
     }
 
-    private fun drawableToBitmap(drawable: Drawable): Bitmap {
+    private fun drawableToBitmap(drawable: Drawable?): Bitmap? {
         if (drawable is BitmapDrawable) {
             return drawable.bitmap
         }
 
-        val bitmap =
-            Bitmap.createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight, Config.ARGB_8888)
-        val canvas = Canvas(bitmap)
-        drawable.setBounds(0, 0, canvas.width, canvas.height)
-        drawable.draw(canvas)
+        drawable?.let {
+            val bitmap = Bitmap.createBitmap(
+                drawable.intrinsicWidth,
+                drawable.intrinsicHeight,
+                Config.ARGB_8888
+            )
+            val canvas = Canvas(bitmap)
+            drawable.setBounds(0, 0, canvas.width, canvas.height)
+            drawable.draw(canvas)
 
-        return bitmap
+            return bitmap
+        }
+        return null
     }
 
     private fun getDrawRect(faceRect: Rect): Rect {
@@ -209,4 +221,5 @@ class DrawFaceView(
     private fun scale2(imagePixel: Float): Float {
         return imagePixel * scaleFactor
     }
+
 }
