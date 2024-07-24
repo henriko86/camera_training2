@@ -1,4 +1,4 @@
-package com.yuruneji.cameratraining2.presentation.dashboard.view
+package com.yuruneji.cameratraining2.presentation.setting.view
 
 import android.app.Dialog
 import android.app.TimePickerDialog

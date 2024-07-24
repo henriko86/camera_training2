@@ -8,6 +8,8 @@ import com.yuruneji.cameratraining2.common.NetworkResponse
 import com.yuruneji.cameratraining2.data.remote.AppRequest
 import com.yuruneji.cameratraining2.domain.model.FaceDetectDetail
 import com.yuruneji.cameratraining2.domain.usecase.FaceAuthUseCase
+import com.yuruneji.cameratraining2.domain.usecase.Hoge
+import com.yuruneji.cameratraining2.domain.usecase.HogeController
 import com.yuruneji.cameratraining2.presentation.home.state.AuthState
 import com.yuruneji.cameratraining2.presentation.home.state.FaceAuthState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -43,6 +45,19 @@ class HomeViewModel @Inject constructor(
     private var faceAuthJob: Job? = null
     private var cardAuthJob: Job? = null
     private var postProcessJob: Job? = null
+
+    private val hogeController: HogeController
+
+    init {
+        hogeController = HogeController()
+
+        viewModelScope.launch {
+            Timber.i("HomeViewModel.init() ${getThreadName()}")
+
+            delay(1000 * 15)
+            hogeController.stop()
+        }
+    }
 
     suspend fun faceAuth(faceDetectDetail: FaceDetectDetail) {
         val img = "faceDetectDetail.faceBitmap"
@@ -139,8 +154,5 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun getThreadName(): String = Thread.currentThread().name
-
-
-
 
 }

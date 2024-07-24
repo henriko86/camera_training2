@@ -8,13 +8,18 @@ import android.content.pm.PackageManager
 import android.graphics.PixelFormat
 import android.hardware.camera2.CameraManager
 import android.hardware.display.DisplayManager
+import android.net.ConnectivityManager
+import android.net.NetworkInfo
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.widget.TextClock
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -25,13 +30,17 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.graphics.translationMatrix
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.yuruneji.cameratraining2.R
+import com.yuruneji.cameratraining2.common.DataProvider
 import com.yuruneji.cameratraining2.databinding.FragmentHomeBinding
 import com.yuruneji.cameratraining2.domain.usecase.FaceAnalyzer
 import com.yuruneji.cameratraining2.presentation.home.view.DrawFaceView
@@ -41,6 +50,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.util.concurrent.Executors
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class HomeFragment : Fragment() {
@@ -61,6 +71,9 @@ class HomeFragment : Fragment() {
     private val viewModel: HomeViewModel by viewModels()
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
+
+    @Inject
+    lateinit var dataProvider: DataProvider
 
     // private lateinit var previewView: PreviewView
     // private lateinit var surfaceView: SurfaceView
@@ -83,7 +96,11 @@ class HomeFragment : Fragment() {
     // private val windowManager: WindowManager by lazy {
     //     requireContext().getSystemService(WINDOW_SERVICE) as WindowManager
     // }
-    //
+
+    val connectivityManager by lazy {
+        requireContext().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+    }
+
     // /** 権限リクエスト */
     // private val permissionRequest =
     //     registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
@@ -115,14 +132,32 @@ class HomeFragment : Fragment() {
     //     }
     // }
 
+    override fun onAttach(context: Context) {
+        Timber.i(Throwable().stackTrace[0].methodName)
+        super.onAttach(context)
+    }
+
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        Timber.i(Throwable().stackTrace[0].methodName)
+        super.onCreate(savedInstanceState)
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        Timber.d("onCreateView()")
+        Timber.i(Throwable().stackTrace[0].methodName)
 
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
+
+        // Timber.i(dataProvider.getUserName())
+        // Timber.i(dataProvider.getUserPass())
+        //
+        // dataProvider.setUserName("aaaaa")
+        // dataProvider.setUserPass("zzzzzz")
+
 
         // previewView = binding.previewView
         // surfaceView = binding.surfaceView
@@ -153,6 +188,41 @@ class HomeFragment : Fragment() {
             textView.text = it
         }
 
+        // val myView = inflater.inflate(R.layout.my_layout, null)
+        // myView?.let {
+        //     myView.findViewById<TextView>(R.id.text1).text = "hoge"
+        //     binding.root.addView(myView)
+        // }
+
+        binding.clock.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                // Timber.i("${Throwable().stackTrace[0].methodName} ${getThreadName()} ${s} ${start} ${count} ${after}")
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                // Timber.i("${Throwable().stackTrace[0].methodName} ${getThreadName()} ${s} ${start} ${before} ${count}")
+
+                val activeNetwork: NetworkInfo? = connectivityManager.activeNetworkInfo
+                val isConnected: Boolean = activeNetwork?.isConnectedOrConnecting == true
+                val connectionType = activeNetwork?.type
+
+                if (isConnected) {
+                    binding.networkStatus.text = when (connectionType) {
+                        ConnectivityManager.TYPE_WIFI -> "Wifiに接続しています"
+                        ConnectivityManager.TYPE_MOBILE -> "モバイル通信に接続しています"
+                        else -> "その他のネットワークに接続しています"
+                    }
+                } else {
+                    binding.networkStatus.text = "インターネットに接続していません"
+                }
+                // Timber.i("networkInfo:${networkInfo == null}")
+            }
+
+            override fun afterTextChanged(s: Editable?) {
+                // Timber.i("${Throwable().stackTrace[0].methodName} ${getThreadName()} ${s}")
+            }
+        })
+
         // binding.previewView.setOnLongClickListener {
         //     findNavController().navigate(R.id.action_home_to_dashboard)
         //     true
@@ -171,8 +241,8 @@ class HomeFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        Timber.i(Throwable().stackTrace[0].methodName)
         super.onViewCreated(view, savedInstanceState)
-        Timber.d("onViewCreated()")
 
         // State
         lifecycleScope.launch {
@@ -212,14 +282,14 @@ class HomeFragment : Fragment() {
         }
     }
 
-    // override fun onStart() {
-    //     super.onStart()
-    //     Timber.d("onStart()")
-    // }
+    override fun onStart() {
+        Timber.i(Throwable().stackTrace[0].methodName)
+        super.onStart()
+    }
 
     override fun onResume() {
+        Timber.i(Throwable().stackTrace[0].methodName)
         super.onResume()
-        Timber.d("onResume()")
 
         // if (allPermissionsGranted()) {
         //     startCamera()
@@ -229,21 +299,25 @@ class HomeFragment : Fragment() {
     }
 
     override fun onPause() {
+        Timber.i(Throwable().stackTrace[0].methodName)
         super.onPause()
-        Timber.d("onPause()")
 
         // stopCamera()
     }
 
-    // override fun onStop() {
-    //     super.onStop()
-    //     Timber.d("onStop()")
-    // }
+    override fun onStop() {
+        Timber.i(Throwable().stackTrace[0].methodName)
+        super.onStop()
+    }
 
     override fun onDestroyView() {
+        Timber.i(Throwable().stackTrace[0].methodName)
         super.onDestroyView()
-        Timber.d("onDestroyView()")
         _binding = null
+    }
+
+    private fun getThreadName(): String {
+        return Thread.currentThread().name
     }
 
 }
