@@ -1,14 +1,18 @@
 package com.yuruneji.cameratraining2.di
 
+import android.content.Context
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.yuruneji.cameratraining2.common.Constants
+import com.yuruneji.cameratraining2.common.DataProvider
+import com.yuruneji.cameratraining2.common.DataStoreWrapper
 import com.yuruneji.cameratraining2.data.remote.AppService
 import com.yuruneji.cameratraining2.data.repository.AppRepositoryImpl
 import com.yuruneji.cameratraining2.domain.repository.AppRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -79,12 +83,12 @@ object Module {
     //     FaceRectView(context)
 
 
-    // @Provides
-    // @Singleton
-    // fun provideDataProvider(@ApplicationContext context: Context): DataProvider {
-    //     return DataProvider(context)
-    // }
-    //
+    @Provides
+    @Singleton
+    fun provideDataProvider(@ApplicationContext context: Context): DataProvider {
+        return DataProvider(context)
+    }
+
     // @Provides
     // @Singleton
     // fun provideDataStoreWrapper(@ApplicationContext context: Context): DataStoreWrapper {

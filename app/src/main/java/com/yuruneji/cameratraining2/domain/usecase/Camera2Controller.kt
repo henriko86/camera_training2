@@ -13,6 +13,9 @@ import android.hardware.camera2.CameraCaptureSession
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraDevice
 import android.hardware.camera2.CameraManager
+import android.hardware.camera2.CaptureRequest
+import android.hardware.camera2.params.OutputConfiguration
+import android.hardware.camera2.params.SessionConfiguration
 import android.hardware.display.DisplayManager
 import android.media.Image
 import android.media.ImageReader
@@ -31,6 +34,7 @@ import com.yuruneji.cameratraining2.domain.model.CameraData
 import timber.log.Timber
 import java.lang.Thread.currentThread
 import java.nio.ByteBuffer
+import java.util.concurrent.Executors
 
 
 /**
@@ -115,7 +119,7 @@ class Camera2Controller(
             try {
                 mainHandler.post {
                     if (mTextureView.isAvailable) {
-                        createCameraPreviewSession()
+                        createCameraPreviewSession(camera)
                     }
                 }
             } catch (t: Throwable) {
@@ -308,10 +312,33 @@ class Camera2Controller(
         }
     }
 
+    private fun createPreviewRequest(cameraDevice: CameraDevice): CaptureRequest {
+
+        val surface = Surface(this.mTextureView.surfaceTexture)
+        // val imageReader = ImageReader.newInstance(
+        //     this.textureView.width,
+        //     this.textureView.height,
+        //     ImageFormat.JPEG,
+        //     2
+        // )
+
+        // プレビューテクスチャの設定
+        val previewRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
+        previewRequestBuilder.addTarget(surface)
+        previewRequestBuilder.set(
+            CaptureRequest.CONTROL_AF_MODE,
+            CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE
+        )
+
+        return previewRequestBuilder.build()
+    }
+
     @Throws(CameraAccessException::class)
-    private fun createCameraPreviewSession() {
+    private fun createCameraPreviewSession(cameraDevice: CameraDevice) {
         Timber.i("createCameraPreviewSession() [${getThreadName()}]")
-        if (mCameraDevice == null || !mTextureView.isAvailable) return
+        if (!mTextureView.isAvailable) return
+
+        // val cameraDevice = mCameraDevice
 
         val characteristics = cameraManager.getCameraCharacteristics(mCameraId)
         val map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
@@ -379,6 +406,43 @@ class Camera2Controller(
         } catch (t: Throwable) {
             Timber.e(t)
         }
+
+
+        // プレビュー用のテクスチャ取得
+        val texture = this.mTextureView.surfaceTexture
+
+        val surface = Surface(texture)
+        val imageReader = ImageReader.newInstance(
+            this.mTextureView.width,
+            this.mTextureView.height,
+            ImageFormat.JPEG,
+            2
+        )
+
+        val surfaces = listOf(surface, imageReader.surface)
+
+        val type = SessionConfiguration.SESSION_REGULAR
+        val configurations = surfaces.map { OutputConfiguration(it) }
+        // val executor = this.activity.mainExecutor
+        // val executor = Executors.newSingleThreadExecutor()
+        val executor = Executors.newCachedThreadPool()
+
+        val previewRequest = this.createPreviewRequest(cameraDevice)
+        val callback = object: CameraCaptureSession.StateCallback() {
+            override fun onConfigured(cameraCaptureSession: CameraCaptureSession) {
+                // 起動成功時に呼ばれる
+                // this@CameraProcessor.cameraCaptureSession = cameraCaptureSession
+                cameraCaptureSession.setRepeatingRequest(previewRequest, null, null)
+            }
+
+            override fun onConfigureFailed(session: CameraCaptureSession) {
+                // 起動失敗時に呼ばれる
+            }
+        }
+
+        // 起動
+        val configuration = SessionConfiguration(type, configurations, executor, callback)
+        cameraDevice.createCaptureSession(configuration)
     }
 
     private fun getThreadName(): String {
