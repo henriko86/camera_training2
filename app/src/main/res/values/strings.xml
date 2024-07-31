@@ -10,7 +10,7 @@
     <string name="btn_back">戻る</string>
 
     <string name="camera_none">None</string>
-    <string name="camera_rgb">RGBカメラ</string>
-    <string name="camera_ir">IRカメラ</string>
+    <string name="camera_rgb">RGB</string>
+    <string name="camera_ir">IR</string>
 
 </resources>
