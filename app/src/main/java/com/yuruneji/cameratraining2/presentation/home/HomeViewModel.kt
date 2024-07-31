@@ -1,15 +1,17 @@
 package com.yuruneji.cameratraining2.presentation.home
 
+import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.yuruneji.cameratraining2.common.DataProvider
+import com.yuruneji.cameratraining2.common.DataStoreWrapper
 import com.yuruneji.cameratraining2.common.NetworkResponse
 import com.yuruneji.cameratraining2.data.remote.AppRequest
 import com.yuruneji.cameratraining2.domain.model.FaceDetectDetail
 import com.yuruneji.cameratraining2.domain.usecase.FaceAuthUseCase
-import com.yuruneji.cameratraining2.domain.usecase.Hoge
-import com.yuruneji.cameratraining2.domain.usecase.HogeController
 import com.yuruneji.cameratraining2.presentation.home.state.AuthState
 import com.yuruneji.cameratraining2.presentation.home.state.FaceAuthState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -27,13 +29,24 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
+    private val dataProvider: DataProvider,
+    private val dataStoreWrapper: DataStoreWrapper,
     private val faceAuthUseCase: FaceAuthUseCase
 ) : ViewModel() {
 
-    private val _text = MutableLiveData<String>().apply {
-        value = "This is home Fragment"
+    private val _title = MutableLiveData<String>().apply {
+        value = "ホーム画面"
     }
-    val text: LiveData<String> = _text
+    val title: LiveData<String> = _title
+
+    private val _cameraNone = MutableLiveData<Boolean>(true).apply {
+        value = true
+    }
+    private val _cameraRgb = MutableLiveData<Boolean>(false)
+    private val _cameraIr = MutableLiveData<Boolean>(false)
+    val cameraNone: LiveData<Boolean> = _cameraNone
+    val cameraRgb: LiveData<Boolean> = _cameraRgb
+    val cameraIr: LiveData<Boolean> = _cameraIr
 
 
     private val _state = MutableStateFlow(FaceAuthState())
@@ -46,17 +59,54 @@ class HomeViewModel @Inject constructor(
     private var cardAuthJob: Job? = null
     private var postProcessJob: Job? = null
 
-    private val hogeController: HogeController
+    // private val hogeController: HogeController
+
+    private object PreferenceKeys {
+        val KEY_NAME = stringPreferencesKey("KEY_NAME")
+        val ID = intPreferencesKey("id")
+        val NAME = stringPreferencesKey("name")
+    }
+
+    companion object {
+        //
+    }
 
     init {
-        hogeController = HogeController()
+        // hogeController = HogeController()
 
         viewModelScope.launch {
             Timber.i("HomeViewModel.init() ${getThreadName()}")
 
             delay(1000 * 15)
-            hogeController.stop()
+            // hogeController.stop()
         }
+
+        dataProvider.setUserName("aaaaaa")
+        val userName = dataProvider.getUserName()
+        Timber.i("userName=${userName}")
+
+        viewModelScope.launch(Dispatchers.Default) {
+            dataStoreWrapper.writeValue(PreferenceKeys.NAME, "xxxxx")
+
+            dataStoreWrapper.readValue(PreferenceKeys.NAME, "").collect {
+                Timber.i("userName=${it}")
+            }
+        }
+
+        viewModelScope.launch(Dispatchers.Default) {
+            dataStoreWrapper.incrementCounter()
+            dataStoreWrapper.exampleCounterFlow.collect {
+                Timber.i("userName=${it}")
+            }
+        }
+
+        viewModelScope.launch(Dispatchers.Default) {
+            dataStoreWrapper.incrementCounter()
+            //     dataStoreWrapper.exampleCounterFlow.collect {
+            //         // Timber.i("userName=${it}")
+            //     }
+        }
+
     }
 
     suspend fun faceAuth(faceDetectDetail: FaceDetectDetail) {

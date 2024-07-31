@@ -12,7 +12,7 @@ interface DataStoreWrapperContract {
      * DataStore に値を書き込む
      * @return 書き込みに成功したら true, 失敗（例外がスローされた）したら false
      */
-    suspend fun <T> writeValue(key: Preferences.Key<T>, value: T): Boolean
+    suspend fun <T> writeValue(key: Preferences.Key<T>, value: T)
 
     fun <T> readValue(key: Preferences.Key<T>, defaultValue: T): Flow<T>
 

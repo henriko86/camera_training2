@@ -5,27 +5,6 @@
     android:id="@+id/nav_graph"
     app:startDestination="@id/navigation_home">
 
-<!--    <fragment-->
-<!--        android:id="@+id/FirstFragment"-->
-<!--        android:name="com.yuruneji.cameratraining2.presentation.page1.FirstFragment"-->
-<!--        android:label="@string/first_fragment_label"-->
-<!--        tools:layout="@layout/fragment_first">-->
-
-<!--        <action-->
-<!--            android:id="@+id/action_FirstFragment_to_SecondFragment"-->
-<!--            app:destination="@id/SecondFragment" />-->
-<!--    </fragment>-->
-<!--    <fragment-->
-<!--        android:id="@+id/SecondFragment"-->
-<!--        android:name="com.yuruneji.cameratraining2.presentation.page1.SecondFragment"-->
-<!--        android:label="@string/second_fragment_label"-->
-<!--        tools:layout="@layout/fragment_second">-->
-
-<!--        <action-->
-<!--            android:id="@+id/action_SecondFragment_to_FirstFragment"-->
-<!--            app:destination="@id/FirstFragment" />-->
-<!--    </fragment>-->
-
     <fragment
         android:id="@+id/navigation_home"
         android:name="com.yuruneji.cameratraining2.presentation.home.HomeFragment"
@@ -41,25 +20,9 @@
             android:id="@+id/action_home_to_camera2"
             app:destination="@+id/navigation_camera2" />
         <action
-            android:id="@+id/action_home_to_setting"
-            app:destination="@+id/navigation_setting" />
+            android:id="@+id/action_home_to_setting_login"
+            app:destination="@+id/navigation_setting_login" />
     </fragment>
-
-<!--    <fragment-->
-<!--        android:id="@+id/navigation_dashboard"-->
-<!--        android:name="com.yuruneji.cameratraining2.presentation.dashboard.DashboardFragment"-->
-<!--        android:label="@string/title_dashboard"-->
-<!--        tools:layout="@layout/fragment_dashboard">-->
-<!--        <action-->
-<!--            android:id="@+id/action_dashboard_to_home"-->
-<!--            app:destination="@+id/navigation_home" />-->
-<!--    </fragment>-->
-
-<!--    <fragment-->
-<!--        android:id="@+id/navigation_notifications"-->
-<!--        android:name="com.yuruneji.cameratraining2.presentation.notifications.NotificationsFragment"-->
-<!--        android:label="@string/title_notifications"-->
-<!--        tools:layout="@layout/fragment_notifications" />-->
 
     <fragment
         android:id="@+id/navigation_camera"
@@ -82,12 +45,25 @@
     </fragment>
 
     <fragment
-        android:id="@+id/navigation_setting"
-        android:name="com.yuruneji.cameratraining2.presentation.setting.SettingFragment"
+        android:id="@+id/navigation_setting_login"
+        android:name="com.yuruneji.cameratraining2.presentation.setting.login.SettingLoginFragment"
         android:label="@string/title_setting"
-        tools:layout="@layout/fragment_setting">
+        tools:layout="@layout/fragment_setting_login">
         <action
-            android:id="@+id/action_setting_to_home"
+            android:id="@+id/action_setting_login_to_home"
+            app:destination="@+id/navigation_home" />
+        <action
+            android:id="@+id/action_setting_login_to_setting_main"
+            app:destination="@+id/navigation_setting_main" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigation_setting_main"
+        android:name="com.yuruneji.cameratraining2.presentation.setting.main.SettingMainFragment"
+        android:label="@string/title_setting"
+        tools:layout="@layout/fragment_setting_main">
+        <action
+            android:id="@+id/action_setting_main_to_home"
             app:destination="@+id/navigation_home" />
     </fragment>
 

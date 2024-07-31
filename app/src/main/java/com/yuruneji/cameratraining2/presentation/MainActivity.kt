@@ -1,23 +1,16 @@
 package com.yuruneji.cameratraining2.presentation
 
-import android.content.Context
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.stringPreferencesKey
-import androidx.datastore.preferences.preferencesDataStore
 import com.yuruneji.cameratraining2.databinding.ActivityMainBinding
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import timber.log.Timber
-
-// トップレベルに記述する必要がある
-val Context.dataStore: DataStore<Preferences> by preferencesDataStore("settings")
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
+
+    // トップレベルに記述する必要がある
+    // private val Context.dataStore: DataStore<Preferences> by preferencesDataStore("settings")
 
     private lateinit var binding: ActivityMainBinding
 
@@ -31,12 +24,12 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
 
-        val value: Flow<String> = dataStore
-            .data
-            .map { preferences ->
-                preferences[stringPreferencesKey("name")] ?: "not set"
-            }
-        Timber.i("hoge=${value.toString()}")
+        // val value: Flow<String> = dataStore
+        //     .data
+        //     .map { preferences ->
+        //         preferences[stringPreferencesKey("name")] ?: "not set"
+        //     }
+        // Timber.i("hoge=${value.toString()}")
 
 
         // val navView: BottomNavigationView = binding.navView

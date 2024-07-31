@@ -1,4 +1,4 @@
-package com.yuruneji.cameratraining2.presentation.setting.view
+package com.yuruneji.cameratraining2.presentation.view
 
 import android.app.DatePickerDialog
 import android.app.Dialog
