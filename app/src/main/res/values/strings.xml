@@ -9,7 +9,8 @@
 
     <string name="btn_back">戻る</string>
 
-    <string name="back_camera">後ろカメラ</string>
-    <string name="front_camera">前カメラ</string>
+    <string name="camera_none">None</string>
+    <string name="camera_rgb">RGBカメラ</string>
+    <string name="camera_ir">IRカメラ</string>
 
 </resources>

@@ -89,10 +89,10 @@ object Module {
         return DataProvider(context)
     }
 
-    // @Provides
-    // @Singleton
-    // fun provideDataStoreWrapper(@ApplicationContext context: Context): DataStoreWrapper {
-    //     return DataStoreWrapper(context, "settings")
-    // }
+    @Provides
+    @Singleton
+    fun provideDataStoreWrapper(@ApplicationContext context: Context): DataStoreWrapper {
+        return DataStoreWrapper(context, "settings2")
+    }
 
 }

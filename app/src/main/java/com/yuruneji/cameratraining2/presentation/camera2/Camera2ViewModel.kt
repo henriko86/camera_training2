@@ -75,8 +75,8 @@ class Camera2ViewModel @Inject constructor(
         camera2Controller = Camera2Controller(
             context,
             textureView,
-            480,
             640,
+            480,
             cameraId,
             object : Camera2Controller.Callback {
                 override fun onComplete(cameraData: CameraData) {

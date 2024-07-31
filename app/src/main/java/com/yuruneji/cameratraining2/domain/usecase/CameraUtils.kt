@@ -26,7 +26,7 @@ import kotlin.math.max
 object CameraUtils {
 
     /** Return the biggest preview size available which is smaller than the window */
-     fun findBestPreviewSize(windowSize: Size, characteristics: CameraCharacteristics):
+    private fun findBestPreviewSize(windowSize: Size, characteristics: CameraCharacteristics):
         Size {
             val supportedPreviewSizes: List<Size> =
                 characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)

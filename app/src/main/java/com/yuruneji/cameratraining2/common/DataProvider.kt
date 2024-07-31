@@ -9,12 +9,13 @@ import androidx.security.crypto.MasterKey
  * @author toru
  * @version 1.0
  */
-class DataProvider(context: Context) {
+open class DataProvider(context: Context) {
 
-    private var sharedPreference: SharedPreferences
-    private var editor: SharedPreferences.Editor
-    private var encryptedSharedPref: SharedPreferences
-    private var encryptedEditor: SharedPreferences.Editor
+    private var sharedPref: SharedPreferences = context.applicationContext
+        .getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+    private var editor: SharedPreferences.Editor = sharedPref.edit()
+    private var encSharedPref: SharedPreferences
+    private var encEditor: SharedPreferences.Editor
 
 
     companion object {
@@ -26,25 +27,21 @@ class DataProvider(context: Context) {
     }
 
     init {
-        sharedPreference = context.applicationContext
-            .getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
-        editor = sharedPreference.edit()
-
         val mainKey = MasterKey.Builder(context.applicationContext)
             .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
             .build()
-        encryptedSharedPref = EncryptedSharedPreferences.create(
+        encSharedPref = EncryptedSharedPreferences.create(
             context,
             ENCRYPTED_PREF_NAME,
             mainKey,
             EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
             EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
         )
-        encryptedEditor = encryptedSharedPref.edit()
+        encEditor = encSharedPref.edit()
     }
 
     fun getUserName(): String? {
-        return sharedPreference.getString(USER_NAME, "")
+        return sharedPref.getString(USER_NAME, "")
     }
 
     fun setUserName(userName: String) {
@@ -53,12 +50,12 @@ class DataProvider(context: Context) {
     }
 
     fun getUserPass(): String? {
-        return encryptedSharedPref.getString(USER_PASS, "")
+        return encSharedPref.getString(USER_PASS, "")
     }
 
     fun setUserPass(userPass: String) {
-        encryptedEditor.putString(USER_PASS, userPass)
-        encryptedEditor.commit()
+        encEditor.putString(USER_PASS, userPass)
+        encEditor.commit()
     }
 
 }
