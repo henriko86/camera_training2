@@ -108,7 +108,7 @@ class HomeFragment : Fragment() {
         })
 
         val cameraRadioGroup = binding.cameraRadioGroup
-        val list: List<String> = listOf("RGB", "IR")
+        val list: List<String> = listOf("None", "RGB", "IR")
         list.forEach {
             val radioButton = RadioButton(requireContext())
             radioButton.text = it
@@ -137,7 +137,7 @@ class HomeFragment : Fragment() {
 //         )
 //         listView.setAdapter(adapter)
         var mylist = arrayOf("CPU", "memory", "Mouse")
-        var listAdapter = ArrayAdapter(requireContext(), R.layout.list_item, R.id.text_view, mylist )
+        var listAdapter = ArrayAdapter(requireContext(), R.layout.list_item, R.id.text_view, mylist)
         binding.listView.adapter = listAdapter
 
         binding.btnCamerax.setOnClickListener {
@@ -207,7 +207,7 @@ class HomeFragment : Fragment() {
         super.onResume()
 
         // ドロップダウンの初期設定
-        val dropdown : AutoCompleteTextView = binding.dropdownItem
+        val dropdown: AutoCompleteTextView = binding.dropdownItem
         initDropdown(dropdown)
     }
 
@@ -236,7 +236,8 @@ class HomeFragment : Fragment() {
         // 「R.array.foodType_array」は「values/array.xml」で定義
         val foodTypes = resources.getStringArray(R.array.cameraType_array)
         // 「R.layout.dropdown_item」は「vlayout/dropdown_item.xml」で定義
-        val arrayAdapter = ArrayAdapter(dropdown.rootView.context, R.layout.dropdown_item, foodTypes)
+        val arrayAdapter =
+            ArrayAdapter(dropdown.rootView.context, R.layout.dropdown_item, foodTypes)
         dropdown.setAdapter(arrayAdapter)
     }
 }
