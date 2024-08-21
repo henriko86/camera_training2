@@ -1,7 +1,15 @@
 package com.yuruneji.cameratraining2.presentation
 
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
+import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
+import androidx.navigation.ui.AppBarConfiguration
+import androidx.navigation.ui.navigateUp
+import androidx.navigation.ui.setupActionBarWithNavController
+import com.yuruneji.cameratraining2.R
 import com.yuruneji.cameratraining2.databinding.ActivityMainBinding
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
@@ -12,6 +20,7 @@ class MainActivity : AppCompatActivity() {
     // トップレベルに記述する必要がある
     // private val Context.dataStore: DataStore<Preferences> by preferencesDataStore("settings")
 
+    private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -23,32 +32,16 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        setSupportActionBar(binding.toolbar)
 
-        // val value: Flow<String> = dataStore
-        //     .data
-        //     .map { preferences ->
-        //         preferences[stringPreferencesKey("name")] ?: "not set"
-        //     }
-        // Timber.i("hoge=${value.toString()}")
+        val navController = findNavController(R.id.nav_host_fragment_content_main)
+        appBarConfiguration = AppBarConfiguration(navController.graph)
+        setupActionBarWithNavController(navController, appBarConfiguration)
 
-
-        // val navView: BottomNavigationView = binding.navView
-        //
-        // val navController = findNavController(R.id.nav_host_fragment_activity_main)
-        // // Passing each menu ID as a set of Ids because each
-        // // menu should be considered as top level destinations.
-        // val appBarConfiguration = AppBarConfiguration(
-        //     setOf(
-        //         R.id.navigation_home, R.id.navigation_dashboard, R.id.navigation_notifications
-        //     )
-        // )
-        // setupActionBarWithNavController(navController, appBarConfiguration)
-        // navView.setupWithNavController(navController)
-
-        // if (savedInstanceState == null) {
-        //     supportFragmentManager.beginTransaction()
-        //         .replace(R.id.container, HomeFragment.newInstance())
-        //         .commitNow()
+        // binding.fab.setOnClickListener { view ->
+        //     Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+        //         .setAction("Action", null)
+        //         .setAnchorView(R.id.fab).show()
         // }
     }
 
@@ -80,5 +73,37 @@ class MainActivity : AppCompatActivity() {
     override fun onDestroy() {
         Timber.i(Throwable().stackTrace[0].methodName)
         super.onDestroy()
+    }
+
+    // override fun onCreateOptionsMenu(menu: Menu): Boolean {
+    //     // Inflate the menu; this adds items to the action bar if it is present.
+    //     menuInflater.inflate(R.menu.menu_main, menu)
+    //     return true
+    // }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        return when (item.itemId) {
+            R.id.action_settings -> {
+                openSettings()
+                true
+            }
+
+            else -> {
+                super.onOptionsItemSelected(item)
+            }
+        }
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        val navController = findNavController(R.id.nav_host_fragment_content_main)
+        return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
+    }
+
+    private fun openSettings() {
+        val navController = findNavController(R.id.nav_host_fragment_content_main)
+        navController.navigate(R.id.action_home_to_setting)
     }
 }

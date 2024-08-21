@@ -8,6 +8,8 @@ import android.content.pm.PackageManager
 import android.hardware.camera2.CameraManager
 import android.hardware.display.DisplayManager
 import android.os.Bundle
+import android.os.Handler
+import android.os.HandlerThread
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -22,6 +24,12 @@ import com.yuruneji.cameratraining2.R
 import com.yuruneji.cameratraining2.databinding.FragmentCameraBinding
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
+import java.io.File
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicBoolean
 
 @AndroidEntryPoint
 class CameraFragment : Fragment() {
@@ -38,6 +46,16 @@ class CameraFragment : Fragment() {
     private var _binding: FragmentCameraBinding? = null
     private val binding get() = _binding!!
 
+    private lateinit var mainHandler: Handler
+    private lateinit var handler1: Handler
+    private lateinit var handler2: Handler
+
+    private val executor1: ExecutorService = Executors.newSingleThreadExecutor()
+    private val executor2: ExecutorService = Executors.newFixedThreadPool(3)
+    private val executor3: ExecutorService = Executors.newCachedThreadPool()
+
+    private val isTask: AtomicBoolean = AtomicBoolean(false)
+
     private val cameraManager: CameraManager by lazy {
         requireContext().getSystemService(Context.CAMERA_SERVICE) as CameraManager
     }
@@ -52,18 +70,28 @@ class CameraFragment : Fragment() {
     private val permissionRequest =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
             if (allPermissionsGranted()) {
-                viewModel.startCamera(
-                    requireContext(),
-                    this,
-                    binding.previewView,
-                    binding.surfaceView
-                )
+                startCamera()
             } else {
                 Toast.makeText(
                     activity, "Permissions not granted by the user.", Toast.LENGTH_SHORT
                 ).show()
             }
         }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        mainHandler = Handler(requireContext().mainLooper)
+
+        var thread = HandlerThread("hoge1")
+        thread.start()
+        handler1 = Handler(thread.looper)
+
+        thread = HandlerThread("hoge2")
+        thread.start()
+        handler2 = Handler(thread.looper)
+
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -78,6 +106,11 @@ class CameraFragment : Fragment() {
             findNavController().navigate(R.id.action_camera_to_home)
         }
 
+        // binding.root.setOnLongClickListener {
+        //     findNavController().navigate(R.id.action_camera_to_log_view)
+        //     true
+        // }
+
         return binding.root
     }
 
@@ -91,17 +124,23 @@ class CameraFragment : Fragment() {
         Timber.d("onResume()")
 
         if (allPermissionsGranted()) {
-            viewModel.startCamera(requireContext(), this, binding.previewView, binding.surfaceView)
+            startCamera()
         } else {
             permissionRequest.launch(REQUIRED_PERMISSIONS)
         }
+
+        val today = LocalDateTime.now()
+        val fileName =
+            "${today.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))}.log"
+        val logFile = File(requireContext().filesDir, fileName)
+        viewModel.logUpload(fileName, logFile)
+
     }
 
     override fun onPause() {
         super.onPause()
         Timber.d("onPause()")
-
-        viewModel.stopCamera()
+        stopCamera()
     }
 
     override fun onDestroyView() {
@@ -114,5 +153,13 @@ class CameraFragment : Fragment() {
         ContextCompat.checkSelfPermission(
             requireContext(), it
         ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun startCamera() {
+        viewModel.startCamera(requireContext(), this, binding.previewView, binding.surfaceView)
+    }
+
+    private fun stopCamera() {
+        viewModel.stopCamera()
     }
 }

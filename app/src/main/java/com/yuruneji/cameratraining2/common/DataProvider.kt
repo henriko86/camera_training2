@@ -4,26 +4,26 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
+import org.apache.commons.lang3.SystemUtils.USER_NAME
 
 /**
  * @author toru
  * @version 1.0
  */
-open class DataProvider(context: Context) {
+abstract class DataProvider(
+    context: Context,
+    prefName: String
+) {
 
-    private var sharedPref: SharedPreferences = context.applicationContext
-        .getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
-    private var editor: SharedPreferences.Editor = sharedPref.edit()
-    private var encSharedPref: SharedPreferences
-    private var encEditor: SharedPreferences.Editor
-
+     var sharedPref: SharedPreferences = context.applicationContext
+        .getSharedPreferences(prefName, Context.MODE_PRIVATE)
+     var editor: SharedPreferences.Editor = sharedPref.edit()
+     var encSharedPref: SharedPreferences
+     var encEditor: SharedPreferences.Editor
 
     companion object {
-        private const val PREF_NAME = "SAMPLE17_PREF"
-        private const val ENCRYPTED_PREF_NAME = "SAMPLE17_ENCRYPTED_PREF"
-
-        private const val USER_NAME = "userName"
-        private const val USER_PASS = "userPass"
+        // private const val PREF_NAME = "SAMPLE17_PREF"
+        // private const val ENCRYPTED_PREF_NAME = "SAMPLE17_ENCRYPTED_PREF"
     }
 
     init {
@@ -32,7 +32,7 @@ open class DataProvider(context: Context) {
             .build()
         encSharedPref = EncryptedSharedPreferences.create(
             context,
-            ENCRYPTED_PREF_NAME,
+            prefName,
             mainKey,
             EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
             EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
@@ -40,22 +40,80 @@ open class DataProvider(context: Context) {
         encEditor = encSharedPref.edit()
     }
 
-    fun getUserName(): String? {
-        return sharedPref.getString(USER_NAME, "")
+     fun getEncString(key: String, defValue: String): String {
+        return encSharedPref.getString(key, defValue) ?: defValue
     }
 
-    fun setUserName(userName: String) {
-        editor.putString(USER_NAME, userName)
-        editor.commit()
+     fun setEncString(key: String, value: String) {
+        encEditor.apply {
+            putString(key, value)
+            commit()
+        }
     }
 
-    fun getUserPass(): String? {
-        return encSharedPref.getString(USER_PASS, "")
+     fun getString(key: String, defValue: String): String {
+        return sharedPref.getString(key, defValue) ?: defValue
     }
 
-    fun setUserPass(userPass: String) {
-        encEditor.putString(USER_PASS, userPass)
-        encEditor.commit()
+     fun setString(key: String, value: String) {
+        editor.apply {
+            putString(key, value)
+            commit()
+        }
     }
 
+     fun getInt(key: String, defValue: Int): Int {
+        return sharedPref.getInt(key, defValue)
+    }
+
+     fun setInt(key: String, value: Int) {
+        editor.apply {
+            putInt(key, value)
+            commit()
+        }
+    }
+
+     fun getLong(key: String, defValue: Long): Long {
+        return sharedPref.getLong(key, defValue)
+    }
+
+     fun setLong(key: String, value: Long) {
+        editor.apply {
+            putLong(key, value)
+            commit()
+        }
+    }
+
+     fun getFloat(key: String, defValue: Float): Float {
+        return sharedPref.getFloat(key, defValue)
+    }
+
+     fun setFloat(key: String, value: Float) {
+        editor.apply {
+            putFloat(key, value)
+            commit()
+        }
+    }
+
+     fun getBoolean(key: String, defValue: Boolean): Boolean {
+        return sharedPref.getBoolean(key, defValue)
+    }
+
+     fun setBoolean(key: String, value: Boolean) {
+        editor.apply {
+            putBoolean(key, value)
+            commit()
+        }
+    }
+
+     fun getStringSet(key: String, defValue: Set<String>): Set<String> {
+        return sharedPref.getStringSet(key, defValue) ?: defValue
+    }
+
+     fun setStringSet(key: String, value: Set<String>) {
+        editor.apply {
+            putStringSet(key, value)
+            commit()
+        }
+    }
 }
