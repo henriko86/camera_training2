@@ -1,6 +1,7 @@
 package com.yuruneji.cameratraining2.presentation.home
 
 import android.os.Bundle
+import android.view.ContextMenu
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -41,9 +42,9 @@ class HomeFragment : Fragment() {
             findNavController().navigate(R.id.action_home_to_camera)
         }
 
-        binding.btnSetting.setOnClickListener {
-            findNavController().navigate(R.id.action_home_to_setting)
-        }
+        // binding.btnSetting.setOnClickListener {
+        //     findNavController().navigate(R.id.action_home_to_setting)
+        // }
 
         binding.btnLogView.setOnClickListener {
             findNavController().navigate(R.id.action_home_to_log_view)
@@ -81,6 +82,14 @@ class HomeFragment : Fragment() {
         Timber.i(Throwable().stackTrace[0].methodName)
         super.onDestroyView()
         _binding = null
+    }
+
+    override fun onCreateContextMenu(
+        menu: ContextMenu,
+        v: View,
+        menuInfo: ContextMenu.ContextMenuInfo?
+    ) {
+        super.onCreateContextMenu(menu, v, menuInfo)
     }
 
 }

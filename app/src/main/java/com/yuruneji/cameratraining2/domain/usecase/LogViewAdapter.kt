@@ -23,7 +23,7 @@ class LogViewAdapter(context: Context, items: List<ListViewItem>) :
         // レイアウトの設定
         var view = convertView
         if (convertView == null) {
-            view = layoutInflater.inflate(R.layout.samplelist_item, parent, false)
+            view = layoutInflater.inflate(R.layout.log_view_list_item, parent, false)
         }
 
         // val title: TextView? = view?.findViewById(R.id.title)

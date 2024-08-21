@@ -38,7 +38,7 @@ class LogViewFragment : Fragment() {
     ): View {
         _binding = FragmentLogViewBinding.inflate(inflater, container, false)
 
-        listView = binding.sampleListview
+        listView = binding.listview
 
         binding.btnBack.setOnClickListener {
             findNavController().navigate(R.id.action_log_view_to_home)
