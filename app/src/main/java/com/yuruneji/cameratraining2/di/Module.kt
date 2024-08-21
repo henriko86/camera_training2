@@ -1,14 +1,18 @@
 package com.yuruneji.cameratraining2.di
 
 import android.content.Context
+import androidx.room.Room
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.yuruneji.cameratraining2.common.Constants
-import com.yuruneji.cameratraining2.common.DataProvider
 import com.yuruneji.cameratraining2.common.DataStoreWrapper
+import com.yuruneji.cameratraining2.common.UserDataProvider
+import com.yuruneji.cameratraining2.data.local.AppDatabase
+import com.yuruneji.cameratraining2.data.local.LogDao
 import com.yuruneji.cameratraining2.data.remote.AppService
 import com.yuruneji.cameratraining2.data.repository.AppRepositoryImpl
 import com.yuruneji.cameratraining2.domain.repository.AppRepository
+import com.yuruneji.cameratraining2.domain.usecase.LogFile
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -28,10 +32,20 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object Module {
 
-    // @Provides
-    // @Singleton
-    // fun provideDatabase(@ApplicationContext context: Context): AppDatabase =
-    //     Room.databaseBuilder(context, AppDatabase::class.java, name = "app_db").build()
+    @Provides
+    @Singleton
+    fun provideDatabase(@ApplicationContext context: Context): AppDatabase =
+        Room.databaseBuilder(context, AppDatabase::class.java, name = "app_db").build()
+
+    @Provides
+    @Singleton
+    fun provideLogDao(db: AppDatabase) = db.logDao()
+
+    @Provides
+    @Singleton
+    fun provideLogFile(logFile: LogDao): LogFile {
+        return LogFile(logFile)
+    }
 
     // @Provides
     // @Singleton
@@ -82,11 +96,10 @@ object Module {
     // fun provideFaceRectView(@ApplicationContext context: Context): FaceRectView =
     //     FaceRectView(context)
 
-
     @Provides
     @Singleton
-    fun provideDataProvider(@ApplicationContext context: Context): DataProvider {
-        return DataProvider(context)
+    fun provideUserDataProvider(@ApplicationContext context: Context): UserDataProvider {
+        return UserDataProvider(context)
     }
 
     @Provides

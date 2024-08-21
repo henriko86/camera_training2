@@ -1,4 +1,4 @@
-package com.yuruneji.cameratraining2.presentation.home.state
+package com.yuruneji.cameratraining2.presentation.camera.state
 
 import com.yuruneji.cameratraining2.domain.model.FaceAuthInfo
 

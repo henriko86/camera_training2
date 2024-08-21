@@ -10,6 +10,7 @@ data class AppResponse(
     val result: Int,
     val img: String,
     val rect: String,
+    val error: String?
 )
 
 fun AppResponse.toConvert(): FaceAuthInfo {

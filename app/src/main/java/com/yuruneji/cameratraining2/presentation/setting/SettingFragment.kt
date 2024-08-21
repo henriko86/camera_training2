@@ -1,4 +1,4 @@
-package com.yuruneji.cameratraining2.presentation.setting.login
+package com.yuruneji.cameratraining2.presentation.setting
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -8,33 +8,33 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.yuruneji.cameratraining2.R
-import com.yuruneji.cameratraining2.databinding.FragmentSettingLoginBinding
+import com.yuruneji.cameratraining2.databinding.FragmentSettingBinding
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
 
 @AndroidEntryPoint
-class SettingLoginFragment : Fragment() {
+class SettingFragment : Fragment() {
 
     companion object {
         // fun newInstance() = SettingLoginFragment()
     }
 
-    private var _binding: FragmentSettingLoginBinding? = null
+    private var _binding: FragmentSettingBinding? = null
     private val binding get() = _binding!!
-    private val viewModel: SettingLoginViewModel by viewModels()
+    private val viewModel: SettingViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentSettingLoginBinding.inflate(inflater, container, false)
+        _binding = FragmentSettingBinding.inflate(inflater, container, false)
 
         binding.backBtn.setOnClickListener {
-            findNavController().navigate(R.id.action_setting_login_to_home)
+            findNavController().navigate(R.id.action_setting_to_home)
         }
 
         binding.loginBtn.setOnClickListener {
-            findNavController().navigate(R.id.action_setting_login_to_setting_main)
+            findNavController().navigate(R.id.action_setting_to_home)
         }
 
         return binding.root

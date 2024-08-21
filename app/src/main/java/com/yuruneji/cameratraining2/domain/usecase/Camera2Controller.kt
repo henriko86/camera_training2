@@ -41,10 +41,10 @@ class Camera2Controller(
     private var mWidth: Int,
     private var mHeight: Int,
     private var mCameraId: String,
-    private var mCallabck: Callback
+    private var mCallabck: Camera2Callback
 ) {
 
-    interface Callback {
+    interface Camera2Callback {
         fun onComplete(cameraData: CameraData)
         fun onFailure(throwable: Throwable)
     }

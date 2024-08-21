@@ -10,7 +10,7 @@ import androidx.camera.core.CameraSelector
 object Constants {
 
     /** URL */
-    const val BASE_URL = "http://192.168.11.10:8080"
+    const val BASE_URL = "http://192.168.11.2:8080"
 
     /** カード認証　OR　顔認証 */
     const val AUTH_TYPE_CARD_OR_FACE = 0

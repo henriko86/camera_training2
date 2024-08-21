@@ -1,4 +1,4 @@
-package com.yuruneji.cameratraining2.presentation.home.state
+package com.yuruneji.cameratraining2.presentation.camera.state
 
 import com.yuruneji.cameratraining2.domain.model.FaceAuthInfo
 
@@ -6,7 +6,7 @@ import com.yuruneji.cameratraining2.domain.model.FaceAuthInfo
  * @author toru
  * @version 1.0
  */
-data class CardAuthState(
+data class PostProcessState(
     /**  */
     val isLoading: Boolean = false,
     /**  */
