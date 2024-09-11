@@ -3,12 +3,15 @@ package com.yuruneji.cameratraining2.presentation
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
+import com.google.android.material.appbar.MaterialToolbar
 import com.yuruneji.cameratraining2.R
 import com.yuruneji.cameratraining2.databinding.ActivityMainBinding
 import dagger.hilt.android.AndroidEntryPoint
@@ -22,19 +25,27 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
+    private lateinit var toolbar: MaterialToolbar
 
     override fun onCreate(savedInstanceState: Bundle?) {
         Timber.i(Throwable().stackTrace[0].methodName)
         super.onCreate(savedInstanceState)
 
-        // enableEdgeToEdge()
+        enableEdgeToEdge()
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        setSupportActionBar(binding.toolbar)
+        toolbar = binding.toolbar
+
+        setSupportActionBar(toolbar)
 
         val navController = findNavController(R.id.nav_host_fragment_content_main)
+        // navController.addOnDestinationChangedListener { _, destination, _ ->
+        //     toolbar.visibility =
+        //         if (destination.id == R.id.CameraFragment) View.GONE else View.VISIBLE
+        // }
+
         appBarConfiguration = AppBarConfiguration(navController.graph)
         setupActionBarWithNavController(navController, appBarConfiguration)
 
@@ -81,29 +92,29 @@ class MainActivity : AppCompatActivity() {
     //     return true
     // }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        return when (item.itemId) {
-            R.id.action_settings -> {
-                openSettings()
-                true
-            }
-
-            else -> {
-                super.onOptionsItemSelected(item)
-            }
-        }
-    }
+    // override fun onOptionsItemSelected(item: MenuItem): Boolean {
+    //     // Handle action bar item clicks here. The action bar will
+    //     // automatically handle clicks on the Home/Up button, so long
+    //     // as you specify a parent activity in AndroidManifest.xml.
+    //     return when (item.itemId) {
+    //         R.id.action_settings -> {
+    //             openSettings()
+    //             true
+    //         }
+    //
+    //         else -> {
+    //             super.onOptionsItemSelected(item)
+    //         }
+    //     }
+    // }
 
     override fun onSupportNavigateUp(): Boolean {
         val navController = findNavController(R.id.nav_host_fragment_content_main)
         return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
     }
 
-    private fun openSettings() {
-        val navController = findNavController(R.id.nav_host_fragment_content_main)
-        navController.navigate(R.id.action_home_to_setting)
-    }
+    // private fun openSettings() {
+    //     val navController = findNavController(R.id.nav_host_fragment_content_main)
+    //     navController.navigate(R.id.action_home_to_setting)
+    // }
 }

@@ -3,6 +3,7 @@ package com.yuruneji.cameratraining2.domain.usecase
 import android.content.Context
 import android.util.Log
 import com.yuruneji.cameratraining2.data.local.LogDao
+import com.yuruneji.cameratraining2.data.local.LogEntity
 import java.io.BufferedWriter
 import java.io.File
 import java.io.FileWriter
@@ -51,7 +52,7 @@ class LogFile @Inject constructor(
 
     private fun insertTable(priority: Int, tag: String?, message: String, t: Throwable?) {
         logDao.insert(
-            com.yuruneji.cameratraining2.data.local.Log(
+            LogEntity(
                 date = LocalDateTime.now(),
                 priority = priority,
                 tag = tag,
@@ -63,8 +64,7 @@ class LogFile @Inject constructor(
 
     private fun flush(context: Context, log: String) {
         val today = LocalDateTime.now()
-        val fileName =
-            "${today.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))}.log"
+        val fileName = "${today.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))}.log"
         val file = File(context.filesDir, fileName)
 
         // まだ当日分のファイルが作成されていなかったら

@@ -18,6 +18,7 @@ import com.yuruneji.cameratraining2.R
 import com.yuruneji.cameratraining2.common.NetworkResponse
 import com.yuruneji.cameratraining2.domain.usecase.FaceAnalyzer
 import com.yuruneji.cameratraining2.domain.usecase.LogUseCase
+import com.yuruneji.cameratraining2.domain.usecase.TestWebServer
 import com.yuruneji.cameratraining2.presentation.home.view.DrawFaceView
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -244,6 +245,23 @@ class CameraViewModel @Inject constructor(
 
             Timber.d("logUpload end")
         }
+    }
+
+    private var testWebServer: TestWebServer? = null
+    private val port = 8888
+    private val callback = object : TestWebServer.Callback {
+        override fun onConnect(keyA: String, keyB: String) {
+            Timber.d("onConnect keyA: $keyA, keyB: $keyB")
+        }
+    }
+
+    fun startWebServer() {
+        testWebServer = TestWebServer(port, callback)
+        testWebServer?.start()
+    }
+
+    fun stopWebServer() {
+        testWebServer?.stop()
     }
 
     private fun getThreadName(): String = Thread.currentThread().name

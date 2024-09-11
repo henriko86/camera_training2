@@ -102,14 +102,13 @@ class CameraFragment : Fragment() {
 
         _binding = FragmentCameraBinding.inflate(inflater, container, false)
 
-        binding.btnBack.setOnClickListener {
-            findNavController().navigate(R.id.action_camera_to_home)
+        binding.btnSetting.setOnClickListener {
+            findNavController().navigate(R.id.action_CameraFragment_to_SettingFragment)
         }
 
-        // binding.root.setOnLongClickListener {
-        //     findNavController().navigate(R.id.action_camera_to_log_view)
-        //     true
-        // }
+        binding.btnLogView.setOnClickListener {
+            findNavController().navigate(R.id.action_CameraFragment_to_LogViewFragment)
+        }
 
         return binding.root
     }
@@ -135,12 +134,17 @@ class CameraFragment : Fragment() {
         val logFile = File(requireContext().filesDir, fileName)
         viewModel.logUpload(fileName, logFile)
 
+        // Webサーバを起動
+        viewModel.startWebServer()
     }
 
     override fun onPause() {
         super.onPause()
         Timber.d("onPause()")
         stopCamera()
+
+        // Webサーバを停止
+        viewModel.stopWebServer()
     }
 
     override fun onDestroyView() {

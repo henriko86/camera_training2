@@ -11,8 +11,8 @@ import androidx.room.Query
 @Dao
 interface LogDao {
     @Query("SELECT * FROM log")
-    fun getAll(): List<Log>
+    fun getAll(): List<LogEntity>
 
     @Insert
-    fun insert(log: Log)
+    fun insert(log: LogEntity)
 }
