@@ -1,10 +1,13 @@
 package com.yuruneji.cameratraining2.presentation.home
 
 import android.os.Bundle
+import android.text.Editable
 import android.view.ContextMenu
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
+import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
@@ -38,17 +41,31 @@ class HomeFragment : Fragment() {
         Timber.i(Throwable().stackTrace[0].methodName)
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
 
-        binding.btnCamerax.setOnClickListener {
-            findNavController().navigate(R.id.action_home_to_camera)
-        }
-
-        // binding.btnSetting.setOnClickListener {
-        //     findNavController().navigate(R.id.action_home_to_setting)
+        // binding.btnCamerax.setOnClickListener {
+        //     findNavController().navigate(R.id.action_home_to_camera)
         // }
 
-        binding.btnLogView.setOnClickListener {
-            findNavController().navigate(R.id.action_home_to_log_view)
+        // binding.btnLogView.setOnClickListener {
+        //     findNavController().navigate(R.id.action_home_to_log_view)
+        // }
+
+        binding.password.text = Editable.Factory.getInstance().newEditable("xxxxx")
+        binding.password.addTextChangedListener {
+            Timber.d(it.toString())
         }
+
+        val array = arrayOf("未選択", "大阪", "名古屋", "東京")
+        val arrayAdapter =
+            ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, array)
+        binding.spinner1.adapter = arrayAdapter
+
+
+        // // Adapter作成
+        // val menuList = arrayListOf("Java", "Kotlin", "JavaScript", "TypeScript")
+        // val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, menuList)
+        // // Adapter登録
+        // binding.dropdown1.adapter.setAdapter(adapter)
+        // binding.dropdown1.adapter.text = menuList[0]
 
         return binding.root
     }

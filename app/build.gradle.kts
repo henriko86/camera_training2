@@ -82,6 +82,9 @@ dependencies {
     implementation("com.google.mlkit:barcode-scanning:17.2.0")
     implementation("com.google.mlkit:face-detection:16.1.5")
 
+    // NanoHttpd
+    implementation("org.nanohttpd:nanohttpd-webserver:2.3.1")
+
     // Retrofit
     val retrofit_version = "2.9.0"
     implementation("com.squareup.retrofit2:retrofit:$retrofit_version")
@@ -106,7 +109,7 @@ dependencies {
 
     // Apache Commons Lang 3.12.0
     implementation("org.apache.commons:commons-lang3:3.12.0")
-    // https://mvnrepository.com/artifact/commons-codec/commons-codec
+    // Apache Commons Codec 1.15
     implementation("commons-codec:commons-codec:1.15")
 
     // LeakCanary

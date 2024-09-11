@@ -29,13 +29,13 @@ class SettingFragment : Fragment() {
     ): View {
         _binding = FragmentSettingBinding.inflate(inflater, container, false)
 
-        binding.backBtn.setOnClickListener {
-            findNavController().navigate(R.id.action_setting_to_home)
-        }
+        // binding.backBtn.setOnClickListener {
+        //     findNavController().navigate(R.id.action_setting_to_home)
+        // }
 
-        binding.loginBtn.setOnClickListener {
-            findNavController().navigate(R.id.action_setting_to_home)
-        }
+        // binding.loginBtn.setOnClickListener {
+        //     findNavController().navigate(R.id.action_setting_to_home)
+        // }
 
         return binding.root
     }

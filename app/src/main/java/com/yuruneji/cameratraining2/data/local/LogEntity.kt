@@ -9,7 +9,7 @@ import java.time.LocalDateTime
  * @version 1.0
  */
 @Entity(tableName = "log")
-data class Log(
+data class LogEntity(
     @PrimaryKey()
     val date: LocalDateTime,
     val priority: Int,

@@ -9,9 +9,8 @@ import android.view.ViewGroup
 import android.widget.ListView
 import androidx.navigation.fragment.findNavController
 import com.yuruneji.cameratraining2.R
-import com.yuruneji.cameratraining2.databinding.FragmentCameraBinding
 import com.yuruneji.cameratraining2.databinding.FragmentLogViewBinding
-import com.yuruneji.cameratraining2.domain.usecase.ListViewItem
+import com.yuruneji.cameratraining2.domain.usecase.LogViewItem
 import com.yuruneji.cameratraining2.domain.usecase.LogViewAdapter
 import timber.log.Timber
 import java.io.File
@@ -40,9 +39,9 @@ class LogViewFragment : Fragment() {
 
         listView = binding.listview
 
-        binding.btnBack.setOnClickListener {
-            findNavController().navigate(R.id.action_log_view_to_home)
-        }
+        // binding.btnBack.setOnClickListener {
+        //     findNavController().navigate(R.id.action_log_view_to_home)
+        // }
 
         return binding.root
     }
@@ -59,11 +58,11 @@ class LogViewFragment : Fragment() {
             "${today.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))}.log"
         val logFile = File(requireContext().filesDir, fileName)
 
-        val listItem = mutableListOf<ListViewItem>()
+        val listItem = mutableListOf<LogViewItem>()
         try {
             FileReader(logFile).use { reader ->
                 for (line in reader.readLines()) {
-                    listItem.add(ListViewItem("", line))
+                    listItem.add(LogViewItem("", "", "", line))
                 }
             }
         } catch (e: Exception) {

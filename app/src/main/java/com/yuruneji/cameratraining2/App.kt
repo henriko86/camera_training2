@@ -23,26 +23,11 @@ class App : Application() {
 
         // Timber.plant(Timber.DebugTree())
         Timber.plant(LogTree(context = this, logFile = logFile))
-
-        // App.appContext=applicationContext
     }
 
-    init {
-        // instance = this
-    }
-
-    // companion object {
-    //     // var instance: App? = null
-    //
-    //     // fun appContext(): Context {
-    //     //     return instance!!.applicationContext
-    //     // }
-    //
-    //     lateinit var appContext: Context
-    //
-    // }
     class LogTree(private val context: Context, private val logFile: LogFile) : Timber.DebugTree() {
         override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
+            super.log(priority, tag, message, t)
             logFile.postLog(context, priority, tag, message, t)
         }
     }
