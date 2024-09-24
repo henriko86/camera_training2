@@ -6,12 +6,12 @@ plugins {
 }
 
 android {
-    namespace = "com.yuruneji.cameratraining2"
+    namespace = "com.yuruneji.camera_training2"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.yuruneji.cameratraining2"
-        minSdk = 29
+        applicationId = "com.yuruneji.camera_training2"
+        minSdk = 28
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -52,6 +52,7 @@ dependencies {
     implementation(libs.androidx.navigation.ui.ktx)
     implementation(libs.androidx.fragment.ktx)
     implementation(libs.androidx.legacy.support.v4)
+    implementation(libs.androidx.activity)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -111,6 +112,11 @@ dependencies {
     implementation("org.apache.commons:commons-lang3:3.12.0")
     // Apache Commons Codec 1.15
     implementation("commons-codec:commons-codec:1.15")
+    // Apache Commons Net 3.11.1
+    implementation("commons-net:commons-net:3.11.1")
+
+    // Location
+    implementation("com.google.android.gms:play-services-location:21.3.0")
 
     // LeakCanary
     debugImplementation("com.squareup.leakcanary:leakcanary-android:2.12")

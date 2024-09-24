@@ -3,55 +3,68 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/CameraFragment">
-
-<!--    <fragment-->
-<!--        android:id="@+id/navigation_home"-->
-<!--        android:name="com.yuruneji.cameratraining2.presentation.home.HomeFragment"-->
-<!--        android:label="@string/title_home"-->
-<!--        tools:layout="@layout/fragment_home">-->
-<!--        <action-->
-<!--            android:id="@+id/action_home_to_camera"-->
-<!--            app:destination="@+id/navigation_camera" />-->
-<!--        <action-->
-<!--            android:id="@+id/action_home_to_setting"-->
-<!--            app:destination="@+id/navigation_setting" />-->
-<!--        <action-->
-<!--            android:id="@+id/action_home_to_log_view"-->
-<!--            app:destination="@+id/navigation_log_view" />-->
-<!--    </fragment>-->
+    app:startDestination="@id/HomeFragment">
 
     <fragment
-        android:id="@+id/CameraFragment"
-        android:name="com.yuruneji.cameratraining2.presentation.camera.CameraFragment"
+        android:id="@+id/HomeFragment"
+        android:name="com.yuruneji.camera_training2.presentation.home.HomeFragment"
         android:label="@string/title_camera"
-        tools:layout="@layout/fragment_camera">
+        tools:layout="@layout/fragment_home">
         <action
-            android:id="@+id/action_CameraFragment_to_SettingFragment"
-            app:destination="@+id/SettingFragment" />
+            android:id="@+id/action_HomeFragment_to_CameraFragment"
+            app:destination="@+id/CameraFragment" />
         <action
-            android:id="@+id/action_CameraFragment_to_LogViewFragment"
+            android:id="@+id/action_HomeFragment_to_SettingHomeFragment"
+            app:destination="@+id/SettingHomeFragment" />
+        <action
+            android:id="@+id/action_HomeFragment_to_LogViewFragment"
             app:destination="@+id/LogViewFragment" />
     </fragment>
 
     <fragment
-        android:id="@+id/SettingFragment"
-        android:name="com.yuruneji.cameratraining2.presentation.setting.SettingFragment"
-        android:label="@string/title_setting"
-        tools:layout="@layout/fragment_setting">
+        android:id="@+id/CameraFragment"
+        android:name="com.yuruneji.camera_training2.presentation.camera.CameraFragment"
+        android:label="@string/title_camera"
+        tools:layout="@layout/fragment_camera">
         <action
-            android:id="@+id/action_SettingFragment_to_CameraFragment"
+            android:id="@+id/action_CameraFragment_to_SettingSignInFragment"
+            app:destination="@+id/SettingSignInFragment" />
+    </fragment>
+
+<!--    <fragment-->
+<!--        android:id="@+id/SettingSignInFragment"-->
+<!--        android:name="com.yuruneji.camera_training2.presentation.setting.sign_in.SettingSignInFragment"-->
+<!--        android:label="@string/title_setting"-->
+<!--        tools:layout="@layout/fragment_setting_sign_in">-->
+<!--        <action-->
+<!--            android:id="@+id/action_SettingSignInFragment_to_CameraFragment"-->
+<!--            app:destination="@+id/CameraFragment" />-->
+<!--        <action-->
+<!--            android:id="@+id/action_SettingSignInFragment_to_SettingHomeFragment"-->
+<!--            app:destination="@+id/SettingHomeFragment" />-->
+<!--    </fragment>-->
+
+    <fragment
+        android:id="@+id/SettingHomeFragment"
+        android:name="com.yuruneji.camera_training2.presentation.setting.home.SettingHomeFragment"
+        android:label="@string/title_setting"
+        tools:layout="@layout/fragment_setting_home">
+        <action
+            android:id="@+id/action_SettingHomeFragment_to_CameraFragment"
             app:destination="@+id/CameraFragment" />
+        <action
+            android:id="@+id/action_SettingHomeFragment_to_LogViewFragment"
+            app:destination="@+id/LogViewFragment" />
     </fragment>
 
     <fragment
         android:id="@+id/LogViewFragment"
-        android:name="com.yuruneji.cameratraining2.presentation.logview.LogViewFragment"
+        android:name="com.yuruneji.camera_training2.presentation.log_view.LogViewFragment"
         android:label="@string/title_log_view"
         tools:layout="@layout/fragment_log_view">
         <action
-            android:id="@+id/action_LogViewFragment_to_CameraFragment"
-            app:destination="@+id/CameraFragment" />
+            android:id="@+id/action_LogViewFragment_to_SettingHomeFragment"
+            app:destination="@+id/SettingHomeFragment" />
     </fragment>
 
 </navigation>
