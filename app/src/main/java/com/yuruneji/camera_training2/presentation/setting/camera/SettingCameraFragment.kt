@@ -13,10 +13,6 @@ import timber.log.Timber
 @AndroidEntryPoint
 class SettingCameraFragment : Fragment() {
 
-    companion object {
-        fun newInstance() = SettingCameraFragment()
-    }
-
     private var _binding: FragmentSettingCameraBinding? = null
     private val binding get() = _binding!!
     private val viewModel: SettingCameraViewModel by viewModels()

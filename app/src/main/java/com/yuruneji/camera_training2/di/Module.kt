@@ -5,14 +5,16 @@ import androidx.room.Room
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.yuruneji.camera_training2.common.Constants
-import com.yuruneji.camera_training2.common.DataStoreWrapper
-import com.yuruneji.camera_training2.common.UserDataProvider
+import com.yuruneji.camera_training2.common.data_store.LogViewDataStore
 import com.yuruneji.camera_training2.data.local.AppDatabase
 import com.yuruneji.camera_training2.data.local.LogDao
 import com.yuruneji.camera_training2.data.remote.AppService
 import com.yuruneji.camera_training2.data.repository.AppRepositoryImpl
+import com.yuruneji.camera_training2.data.repository.LogRepositoryImpl
+import com.yuruneji.camera_training2.data.repository.LogViewPreferencesRepositoryImpl
 import com.yuruneji.camera_training2.domain.repository.AppRepository
-import com.yuruneji.camera_training2.domain.usecase.LocationSensor
+import com.yuruneji.camera_training2.domain.repository.LogRepository
+import com.yuruneji.camera_training2.domain.repository.LogViewPreferencesRepository
 import com.yuruneji.camera_training2.domain.usecase.LogFile
 import com.yuruneji.camera_training2.domain.usecase.NetworkSensor
 import dagger.Module
@@ -47,6 +49,12 @@ object Module {
     @Singleton
     fun provideLogFile(logFile: LogDao): LogFile {
         return LogFile(logFile)
+    }
+
+    @Provides
+    @Singleton
+    fun provideLogRepository(logDao: LogDao): LogRepository {
+        return LogRepositoryImpl(logDao)
     }
 
     // @Provides
@@ -98,16 +106,35 @@ object Module {
     // fun provideFaceRectView(@ApplicationContext context: Context): FaceRectView =
     //     FaceRectView(context)
 
+    // @Provides
+    // @Singleton
+    // fun provideUserDataProvider(@ApplicationContext context: Context): UserDataProvider {
+    //     return UserDataProvider(context)
+    // }
+
+    // @Provides
+    // @Singleton
+    // fun providePreferencesRepository(@ApplicationContext context: Context): PreferencesRepository {
+    //     return PreferencesRepository(context)
+    // }
+
+    // @Provides
+    // @Singleton
+    // fun provideDataStoreWrapper(@ApplicationContext context: Context): DataStoreWrapper {
+    //     return DataStoreWrapper(context, "setting3")
+    // }
+
+    // ログ表示設定のDataStore
     @Provides
     @Singleton
-    fun provideUserDataProvider(@ApplicationContext context: Context): UserDataProvider {
-        return UserDataProvider(context)
+    fun provideLogViewDataStore(@ApplicationContext context: Context): LogViewDataStore {
+        return LogViewDataStore(context)
     }
 
     @Provides
     @Singleton
-    fun provideDataStoreWrapper(@ApplicationContext context: Context): DataStoreWrapper {
-        return DataStoreWrapper(context, "settings2")
+    fun provideLogViewPreferencesRepository(dataStore: LogViewDataStore): LogViewPreferencesRepository {
+        return LogViewPreferencesRepositoryImpl(dataStore)
     }
 
     @Provides

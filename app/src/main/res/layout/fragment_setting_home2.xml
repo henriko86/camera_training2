@@ -4,68 +4,52 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".presentation.home.HomeFragment">
+    tools:context=".presentation.setting.home.SettingHomeFragment">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:padding="32dp">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/content1"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
             <Button
+                android:id="@+id/btn_display"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="表示設定" />
+
+            <Button
                 android:id="@+id/btn_camera"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="32dp"
-                android:padding="16dp"
-                android:text="カメラ"
-                android:textAllCaps="false"
-                app:layout_constraintBottom_toTopOf="@+id/btn_log_view"
-                app:layout_constraintEnd_toStartOf="@+id/btn_log_view"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                android:text="カメラ設定" />
 
-            <Button
-                android:id="@+id/btn_setting_home"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="32dp"
-                android:padding="16dp"
-                android:text="設定"
-                android:textAllCaps="false"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/btn_camera" />
+        </LinearLayout>
 
-            <Button
-                android:id="@+id/btn_log_view"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="32dp"
-                android:padding="16dp"
-                android:text="ログ表示"
-                android:textAllCaps="false"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/btn_setting_home" />
-        </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <LinearLayout
             android:id="@+id/content2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="32dp"
-            android:visibility="gone"
+            android:orientation="vertical"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/content1">
+            app:layout_constraintTop_toTopOf="parent">
+
+<!--            <include-->
+<!--                android:id="@+id/text1"-->
+<!--                layout="@layout/form_text"-->
+<!--                app:layout_constraintTop_toTopOf="parent" />-->
 
             <com.google.android.material.switchmaterial.SwitchMaterial
                 android:id="@+id/switch1"
@@ -82,8 +66,9 @@
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="32dp"
                 android:hint="ユーザ名"
+                app:counterMaxLength="24"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/switch1">
@@ -102,6 +87,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:hint="パスワード"
+                app:counterEnabled="true"
+                app:counterMaxLength="24"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/user_layout"
@@ -118,7 +105,7 @@
                 android:id="@+id/spinner1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="32dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/password_layout" />
@@ -144,7 +131,72 @@
                     android:inputType="none" />
             </com.google.android.material.textfield.TextInputLayout>
 
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/date_layout"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:hint="日付"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/dropdown1_layout">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/date"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:editable="false"
+                    android:focusable="false"
+                    android:inputType="date" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/time_layout"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:hint="時間"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/date_layout">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/time"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:editable="false"
+                    android:focusable="false"
+                    android:inputType="time" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+
+        </LinearLayout>
+
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/content3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/content2">
+
+            <Button
+                android:id="@+id/btn_save"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="保存"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+
 </androidx.core.widget.NestedScrollView>

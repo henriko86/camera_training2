@@ -13,10 +13,6 @@ import timber.log.Timber
 @AndroidEntryPoint
 class SettingDisplayFragment : Fragment() {
 
-    companion object {
-        fun newInstance() = SettingDisplayFragment()
-    }
-
     private var _binding: FragmentSettingDisplayBinding? = null
     private val binding get() = _binding!!
     private val viewModel: SettingDisplayViewModel by viewModels()

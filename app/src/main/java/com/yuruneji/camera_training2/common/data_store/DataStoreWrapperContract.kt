@@ -1,4 +1,4 @@
-package com.yuruneji.camera_training2.common
+package com.yuruneji.camera_training2.common.data_store
 
 import androidx.datastore.preferences.core.Preferences
 import kotlinx.coroutines.flow.Flow
@@ -8,12 +8,16 @@ import kotlinx.coroutines.flow.Flow
  * @version 1.0
  */
 interface DataStoreWrapperContract {
+
     /**
      * DataStore に値を書き込む
      * @return 書き込みに成功したら true, 失敗（例外がスローされた）したら false
      */
     suspend fun <T> writeValue(key: Preferences.Key<T>, value: T)
 
+    /**
+     * DataStore から値を読み込む
+     */
     fun <T> readValue(key: Preferences.Key<T>, defaultValue: T): Flow<T>
 
     /**
@@ -21,4 +25,5 @@ interface DataStoreWrapperContract {
      * @return 削除に成功したら true, 失敗（例外がスローされた）したら false
      */
     suspend fun <T> removeValue(key: Preferences.Key<T>): Boolean
+
 }
