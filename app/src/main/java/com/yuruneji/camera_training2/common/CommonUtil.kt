@@ -1,26 +1,14 @@
 package com.yuruneji.camera_training2.common
 
-import android.content.Context
-import android.content.Context.CONNECTIVITY_SERVICE
-import android.content.Context.WIFI_SERVICE
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.BitmapRegionDecoder
 import android.graphics.Matrix
 import android.graphics.Rect
-import android.net.ConnectivityManager
-import android.net.LinkProperties
-import android.net.Network
-import android.net.wifi.WifiManager
-import android.util.Log
-import com.google.android.material.textfield.TextInputEditText
-import com.google.android.material.textfield.TextInputLayout
 import org.apache.commons.codec.binary.Hex
-import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.UnsupportedEncodingException
-import java.net.Inet4Address
 import java.util.Locale
 import kotlin.experimental.inv
 
@@ -146,27 +134,20 @@ object CommonUtil {
         }
     }
 
-    fun initTextView(layout: TextInputLayout, text: TextInputEditText) {
-
+    fun string2Ascii(str: String): ByteArray {
+        return str.toByteArray(Charsets.US_ASCII)
     }
 
-    fun getIpAddress(context: Context) {
-        // val manager1: WifiManager = context.getSystemService(WIFI_SERVICE) as WifiManager
-        // val ip = manager1.connectionInfo.ipAddress
-        // Timber.i(arrayOf<Int>(ip, ip shr 8, ip shr 16, ip shr 24).map { it and 0xff }
-        //     .joinToString("."))
+    fun int2AsciiString(i: Int, separator: String = ""): String {
+        return string2AsciiString(i.toString(), separator)
+    }
 
-        val manager: ConnectivityManager =
-            context.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
-        val networkCallback = object : ConnectivityManager.NetworkCallback() {
-            override fun onLinkPropertiesChanged(network: Network, linkProperties: LinkProperties) {
-                super.onLinkPropertiesChanged(network, linkProperties)
-                Timber.i(linkProperties.linkAddresses.filter {
-                    it.address is Inet4Address
-                }[0].address.hostName)
-            }
-        }
-        manager.registerDefaultNetworkCallback(networkCallback)
+    fun int2AsciiString(i: Int, size: Int, separator: String = ""): String {
+        return string2AsciiString(String.format("%0${size}d", i), separator)
+    }
+
+    fun string2AsciiString(str: String, separator: String = ""): String {
+        return str.toByteArray(Charsets.US_ASCII).joinToString(separator)
     }
 
 }

@@ -18,11 +18,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.yuruneji.camera_training2.R
 import com.yuruneji.camera_training2.common.NetworkResponse
+import com.yuruneji.camera_training2.data.remote.AppRequest
+import com.yuruneji.camera_training2.domain.usecase.CardFaceAuthUseCase
 import com.yuruneji.camera_training2.domain.usecase.FaceAnalyzer
+import com.yuruneji.camera_training2.domain.usecase.FaceAuthUseCase
 import com.yuruneji.camera_training2.domain.usecase.LogUseCase
 import com.yuruneji.camera_training2.domain.usecase.NetworkSensor
 import com.yuruneji.camera_training2.domain.usecase.TestWebServer
 import com.yuruneji.camera_training2.domain.usecase.TimeSensor
+import com.yuruneji.camera_training2.presentation.camera.state.AuthStateEnum
 import com.yuruneji.camera_training2.presentation.home.view.DrawFaceView
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -33,6 +37,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
@@ -49,6 +54,9 @@ import javax.inject.Inject
 class CameraViewModel @Inject constructor(
     private val logUseCase: LogUseCase,
     private val networkSensor: NetworkSensor,
+    private val cardAuthUseCase: FaceAuthUseCase,
+    private val faceAuthUseCase: FaceAuthUseCase,
+    private val cardFaceAuthUseCase: CardFaceAuthUseCase,
 ) : ViewModel() {
     //
 
@@ -75,6 +83,54 @@ class CameraViewModel @Inject constructor(
             Timber.i("surfaceDestroyed()")
         }
     }
+
+
+    // init {
+    //     viewModelScope.launch(Dispatchers.Default) {
+    //         while (isActive) {
+    //             Timber.i("hoge1 ${getThreadName()}")
+    //             delay(10_000)
+    //         }
+    //     }
+    //
+    //     viewModelScope.launch(Dispatchers.Default) {
+    //         while (isActive) {
+    //             Timber.i("hoge2 ${getThreadName()}")
+    //             delay(9_000)
+    //         }
+    //     }
+    //
+    //     viewModelScope.launch(Dispatchers.Default) {
+    //         while (isActive) {
+    //             Timber.i("hoge3 ${getThreadName()}")
+    //             delay(8_000)
+    //         }
+    //     }
+    //
+    //
+    //     viewModelScope.launch(Dispatchers.IO) {
+    //         while (isActive) {
+    //             Timber.i("hoge4 ${getThreadName()}")
+    //             delay(10_000)
+    //         }
+    //     }
+    //
+    //     viewModelScope.launch(Dispatchers.IO) {
+    //         while (isActive) {
+    //             Timber.i("hoge5 ${getThreadName()}")
+    //             delay(9_000)
+    //         }
+    //     }
+    //
+    //     viewModelScope.launch(Dispatchers.IO) {
+    //         while (isActive) {
+    //             Timber.i("hoge6 ${getThreadName()}")
+    //             delay(8_000)
+    //         }
+    //     }
+    //
+    // }
+
 
     fun startCamera(
         context: Context,
@@ -209,6 +265,137 @@ class CameraViewModel @Inject constructor(
         faceAnalyzer?.close()
     }
 
+    private val _cardFaceAuthState = MutableLiveData<AuthStateEnum>()
+    val cardFaceAuthState: MutableLiveData<AuthStateEnum> = _cardFaceAuthState
+    private var cardFaceAuthJob: Job? = null
+
+    fun startCardFaceAuth() {
+        Timber.d("カード&顔認証 start")
+        viewModelScope.launch(Dispatchers.IO) {
+            val result = withTimeoutOrNull(10_000L) {
+                cardFaceAuthJob = launch {
+                    _cardFaceAuthState.postValue(AuthStateEnum.LOADING)
+
+                    startCardAuth()
+
+                    repeat(1000) { i ->
+                        Timber.d("    カード&顔認証 sleeping $i ...")
+                        delay(1000L)
+                    }
+                }
+                cardFaceAuthJob?.join()
+
+                Timber.d("カード&顔認証 end")
+
+                "Done"
+            }
+
+            if (result == null) {
+                _cardFaceAuthState.postValue(AuthStateEnum.FAIL)
+            } else {
+                _cardFaceAuthState.postValue(AuthStateEnum.SUCCESS)
+            }
+
+            Timber.d("カード&顔認証 result: $result")
+        }
+    }
+
+    suspend fun cancelCardFaceAuth() {
+        cardFaceAuthJob?.cancelAndJoin()
+    }
+
+
+    private val _cardAuthState = MutableLiveData<AuthStateEnum>()
+    val cardAuthState: MutableLiveData<AuthStateEnum> = _cardAuthState
+
+    /** カード認証Job */
+    private var cardAuthJob: Job? = null
+
+    /**
+     * カード認証を開始
+     */
+    fun startCardAuth() {
+        viewModelScope.launch(Dispatchers.IO) {
+            Timber.d("  カード認証 start")
+
+            val request = AppRequest()
+            val cardAuthJob = cardAuthUseCase(request).onEach { result ->
+                when (result) {
+                    is NetworkResponse.Success -> {
+                        Timber.d("  カード認証 ${result.data}")
+                        _cardAuthState.postValue(AuthStateEnum.SUCCESS)
+                    }
+
+                    is NetworkResponse.Failure -> {
+                        Timber.w("  カード認証 ${result.error}")
+                        _cardAuthState.postValue(AuthStateEnum.FAIL)
+                    }
+
+                    is NetworkResponse.Loading -> {
+                        Timber.d("  カード認証 読み込み中.....")
+                        _cardAuthState.postValue(AuthStateEnum.LOADING)
+                    }
+                }
+            }.launchIn(this)
+            cardAuthJob.join()
+
+            Timber.d("  カード認証 end")
+        }
+    }
+
+    /**
+     * カード認証をキャンセル
+     */
+    suspend fun cancelCardAuth() {
+        cardAuthJob?.cancelAndJoin()
+    }
+
+
+    private val _faceAuthState = MutableLiveData<AuthStateEnum>()
+    val faceAuthState: MutableLiveData<AuthStateEnum> = _faceAuthState
+
+    /** 顔認証Job */
+    private var faceAuthJob: Job? = null
+
+    /**
+     * 顔認証を開始
+     */
+    fun startFaceAuth() {
+        viewModelScope.launch(Dispatchers.IO) {
+            Timber.d("  顔認証 start")
+            val request = AppRequest()
+            faceAuthJob = faceAuthUseCase(request).onEach { result ->
+                when (result) {
+                    is NetworkResponse.Success -> {
+                        Timber.d("  顔認証 ${result.data}")
+                        _faceAuthState.postValue(AuthStateEnum.SUCCESS)
+                    }
+
+                    is NetworkResponse.Failure -> {
+                        Timber.w("  顔認証 ${result.error}")
+                        _faceAuthState.postValue(AuthStateEnum.FAIL)
+                    }
+
+                    is NetworkResponse.Loading -> {
+                        Timber.d("  顔認証 読み込み中.....")
+                        _faceAuthState.postValue(AuthStateEnum.LOADING)
+                    }
+                }
+            }.launchIn(this)
+            faceAuthJob?.join()
+
+            Timber.d("  顔認証 end")
+        }
+    }
+
+    /**
+     * 顔認証をキャンセル
+     */
+    suspend fun cancelFaceAuth() {
+        faceAuthJob?.cancelAndJoin()
+    }
+
+
     fun getLogFile(): File {
         val file = File("hoge.log")
         // file.createNewFile()
@@ -256,25 +443,34 @@ class CameraViewModel @Inject constructor(
         }
     }
 
-    private var testWebServer: TestWebServer? = null
-    private val port = 8888
-    private val callback = object : TestWebServer.Callback {
-        override fun onConnect(keyA: String, keyB: String) {
-            Timber.d("onConnect keyA: $keyA, keyB: $keyB")
-        }
-    }
 
+    /** TestWebServer */
+    private var testWebServer: TestWebServer? = null
+
+    /** TestWebServer ポート */
+    private val port = 8888
+
+    /**
+     * TestWebServerを開始
+     */
     fun startWebServer() {
-        testWebServer = TestWebServer(port, callback)
+        testWebServer = TestWebServer(port, object : TestWebServer.Callback {
+            override fun onConnect(keyA: String, keyB: String) {
+                Timber.d("onConnect keyA: $keyA, keyB: $keyB")
+            }
+        })
         testWebServer?.start()
     }
 
+    /**
+     * TestWebServerを停止
+     */
     fun stopWebServer() {
         testWebServer?.stop()
     }
 
 
-    private val _networkState = MutableLiveData(networkSensor.checkNetworkAvailable())
+    private val _networkState = MutableLiveData<Boolean>()
     val networkState: MutableLiveData<Boolean> = _networkState
     private var networkSensorJob: Job? = null
 
@@ -282,6 +478,17 @@ class CameraViewModel @Inject constructor(
         networkSensorJob = launch {
             while (isActive) {
                 _networkState.postValue(networkSensor.checkNetworkAvailable())
+
+                // val str = "90123ABCabc"
+                // Timber.d(str)
+                // Timber.d(CommonUtil.string2Ascii(str).joinToString(":"))
+
+                // Timber.d(CommonUtil.int2AsciiString(123, ":"))
+                // Timber.d(CommonUtil.int2AsciiString(1, 4, ":"))
+                // Timber.d(CommonUtil.string2AsciiString("ABCabc", ":"))
+
+                // val str2 = CommonUtil.string2AsciiString(str)
+                // Timber.d(CommonUtil.string2AsciiString(str2, ":"))
 
                 delay(delayTime)
             }
@@ -292,18 +499,36 @@ class CameraViewModel @Inject constructor(
         networkSensorJob?.cancelAndJoin()
     }
 
-    private val timeSensor = TimeSensor()
 
+    /** IPアドレス */
+    private val _ipAddress: MutableLiveData<String> = MutableLiveData<String>()
+
+    /** IPアドレス */
+    val ipAddress: LiveData<String> = _ipAddress
+
+    /**
+     * IPアドレスを取得
+     */
+    fun getIpAddress(context: Context) {
+        networkSensor.getIpAddress(context) { ipAddress ->
+            _ipAddress.postValue(ipAddress)
+        }
+    }
+
+
+    private val timeSensor = TimeSensor()
     private val _timeCheck: MutableLiveData<Boolean> = MutableLiveData<Boolean>()
     val timeCheck: LiveData<Boolean> = _timeCheck
     private var timeCheckJob: Job? = null
 
-    fun startTimeCheck() = viewModelScope.launch(Dispatchers.Default) {
-        timeCheckJob = launch {
-            while (isActive) {
-                _timeCheck.postValue(timeSensor.checkTime())
+    fun startTimeCheck(delayTime: Long) {
+        viewModelScope.launch(Dispatchers.Default) {
+            timeCheckJob = launch {
+                while (isActive) {
+                    _timeCheck.postValue(timeSensor.checkTime())
 
-                delay(10_000)
+                    delay(delayTime)
+                }
             }
         }
     }
@@ -313,6 +538,8 @@ class CameraViewModel @Inject constructor(
     }
 
 
+    /**
+     * スレッド名を取得
+     */
     private fun getThreadName(): String = Thread.currentThread().name
-
 }
