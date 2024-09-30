@@ -55,9 +55,9 @@ class LogViewHolder(
         // }
 
         if (textColor > 0) {
-            binding.date.setTextColor(ContextCompat.getColor(itemView.context, textColor))
+            // binding.date.setTextColor(ContextCompat.getColor(itemView.context, textColor))
             binding.priority.setTextColor(ContextCompat.getColor(itemView.context, textColor))
-            binding.tag.setTextColor(ContextCompat.getColor(itemView.context, textColor))
+            // binding.tag.setTextColor(ContextCompat.getColor(itemView.context, textColor))
         }
         // if (backgroundColor > 0) {
         //     binding.date.setBackgroundColor(ContextCompat.getColor(itemView.context, backgroundColor))

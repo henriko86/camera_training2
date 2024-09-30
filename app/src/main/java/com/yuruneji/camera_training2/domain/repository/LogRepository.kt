@@ -9,8 +9,7 @@ import java.time.LocalDateTime
  * @version 1.0
  */
 interface LogRepository {
-    // fun log(): Flow<List<LogEntity>>
     fun log(date: LocalDateTime): Flow<List<LogEntity>>
-    // suspend fun fetchInitialPreferences(): UserPreferences
-    // suspend fun updateDebugShowDebug(show: Boolean)
+    fun log(date: LocalDateTime, priority: IntArray): Flow<List<LogEntity>>
+    fun log(from: LocalDateTime, to: LocalDateTime, priority: IntArray): Flow<List<LogEntity>>
 }
