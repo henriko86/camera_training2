@@ -7,11 +7,17 @@ import java.time.LocalDate
  * @version 1.0
  */
 data class LogViewState(
-    val date: LocalDate = LocalDate.now(),
-    val priorityVerbose: Boolean = true,
-    val priorityDebug: Boolean = true,
-    val priorityInfo: Boolean = true,
-    val priorityWarn: Boolean = true,
-    val priorityError: Boolean = true,
-    val priorityAssert: Boolean = true
+    var date: LocalDate? = LocalDate.now(),
+    // var time: LocalTime? = null,
+    var period: LogPeriod = LogPeriod.DAY,
+    var priorityVerbose: Boolean = true,
+    var priorityDebug: Boolean = true,
+    var priorityInfo: Boolean = true,
+    var priorityWarn: Boolean = true,
+    var priorityError: Boolean = true,
+    var priorityAssert: Boolean = true
 )
+
+enum class LogPeriod {
+    DAY, HALF_DAY, HOUR6, HOUR3, HOUR
+}

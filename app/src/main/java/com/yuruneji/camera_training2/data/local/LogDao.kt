@@ -20,8 +20,11 @@ interface LogDao {
     @Query("SELECT * FROM log WHERE date(date) = date(:date)")
     fun get(date: LocalDateTime): Flow<List<LogEntity>>
 
-    // @Query("SELECT * FROM log WHERE date(date) >= date(:from) AND date(date) <= date(:to)")
-    // fun get(from: LocalDateTime, to: LocalDateTime): Flow<List<LogEntity>>
+    @Query("SELECT * FROM log WHERE date(date) = date(:date) AND priority IN (:priority)")
+    fun get(date: LocalDateTime, priority: IntArray): Flow<List<LogEntity>>
+
+    @Query("SELECT * FROM log WHERE datetime(date) >= datetime(:from) AND datetime(date) <= datetime(:to) AND priority IN (:priority)")
+    fun get(from: LocalDateTime, to: LocalDateTime, priority: IntArray): Flow<List<LogEntity>>
 
     @Insert
     fun insert(log: LogEntity)

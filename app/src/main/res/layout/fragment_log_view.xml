@@ -10,13 +10,31 @@
         android:id="@+id/listview"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_margin="8dp"
+        android:layout_margin="16dp"
         android:scrollbars="vertical"
         app:layoutManager="LinearLayoutManager"
         app:layout_constraintBottom_toTopOf="@+id/from_layout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <!--    <androidx.coordinatorlayout.widget.CoordinatorLayout-->
+    <!--        android:layout_width="match_parent"-->
+    <!--        android:layout_height="match_parent"-->
+    <!--        android:visibility="gone"-->
+    <!--        app:layout_constraintBottom_toBottomOf="parent"-->
+    <!--        app:layout_constraintEnd_toEndOf="parent">-->
+
+    <!--        <com.google.android.material.floatingactionbutton.FloatingActionButton-->
+    <!--            android:id="@+id/fab"-->
+    <!--            android:layout_width="wrap_content"-->
+    <!--            android:layout_height="wrap_content"-->
+    <!--            android:layout_gravity="bottom|end"-->
+    <!--            android:layout_marginEnd="@dimen/fab_margin"-->
+    <!--            android:layout_marginBottom="16dp"-->
+    <!--            app:srcCompat="@drawable/baseline_settings_24" />-->
+
+    <!--    </androidx.coordinatorlayout.widget.CoordinatorLayout>-->
 
     <LinearLayout
         android:id="@+id/from_layout"
@@ -52,38 +70,60 @@
                     android:layout_height="wrap_content"
                     android:editable="false"
                     android:focusable="false"
-                    android:inputType="date" />
+                    android:inputType="text" />
             </com.google.android.material.textfield.TextInputLayout>
 
+<!--            <com.google.android.material.textfield.TextInputLayout-->
+<!--                android:id="@+id/time_layout"-->
+<!--                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"-->
+<!--                android:layout_width="0dp"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_marginLeft="8dp"-->
+<!--                android:layout_weight="1"-->
+<!--                android:hint="時間"-->
+<!--                android:visibility="gone"-->
+<!--                app:layout_constraintEnd_toEndOf="parent"-->
+<!--                app:layout_constraintStart_toStartOf="parent"-->
+<!--                app:layout_constraintTop_toBottomOf="@+id/dropdown1_layout">-->
+
+<!--                <com.google.android.material.textfield.TextInputEditText-->
+<!--                    android:id="@+id/time"-->
+<!--                    android:layout_width="match_parent"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:editable="false"-->
+<!--                    android:focusable="false"-->
+<!--                    android:inputType="time" />-->
+<!--            </com.google.android.material.textfield.TextInputLayout>-->
+
             <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/time_layout"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:id="@+id/period_layout"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="8dp"
                 android:layout_weight="1"
-                android:hint="時間"
-                android:visibility="gone"
+                android:hint="期間"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/dropdown1_layout">
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/time"
+                <AutoCompleteTextView
+                    android:id="@+id/period"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:editable="false"
+                    android:clickable="false"
+                    android:cursorVisible="false"
                     android:focusable="false"
-                    android:inputType="date" />
+                    android:inputType="none" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <Button
-                android:id="@+id/log_priority_btn"
+                android:id="@+id/priority_btn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="16dp"
                 android:src="@drawable/baseline_settings_24"
-                android:text="ログレベル" />
+                android:text="レベル" />
         </LinearLayout>
 
         <LinearLayout

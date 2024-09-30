@@ -22,7 +22,7 @@ data class LogEntity(
 )
 
 fun LogEntity.convert(): LogViewItem {
-    val dateStr = date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+    val dateStr = date.format(DateTimeFormatter.ofPattern("HH:mm:ss.SSS"))
     // val priorityStr = when (priority) {
     //     Log.VERBOSE -> "VERBOSE"
     //     Log.DEBUG -> "DEBUG"

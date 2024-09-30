@@ -1,27 +1,34 @@
 package com.yuruneji.camera_training2.presentation.log_view
 
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.yuruneji.camera_training2.common.data_store.LogViewDataStore
+import com.google.android.material.switchmaterial.SwitchMaterial
+import com.google.android.material.textfield.TextInputEditText
+import com.yuruneji.camera_training2.R
 import com.yuruneji.camera_training2.data.local.convert
 import com.yuruneji.camera_training2.databinding.FragmentLogViewBinding
+import com.yuruneji.camera_training2.presentation.log_view.state.LogPeriod
 import com.yuruneji.camera_training2.presentation.log_view.state.LogViewState
 import com.yuruneji.camera_training2.presentation.log_view.view.LogViewAdapter
-import com.yuruneji.camera_training2.presentation.log_view.view.LogViewItem
 import com.yuruneji.camera_training2.presentation.view.DatePickerFragment
 import com.yuruneji.camera_training2.presentation.view.TimePickerFragment
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.time.LocalDate
-import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 
 @AndroidEntryPoint
 class LogViewFragment : Fragment(), DatePickerFragment.OnSelectedDateListener, TimePickerFragment.OnSelectedTimeListener {
@@ -30,6 +37,7 @@ class LogViewFragment : Fragment(), DatePickerFragment.OnSelectedDateListener, T
     private val binding get() = _binding!!
     private val viewModel: LogViewViewModel by viewModels()
     private val adapter: LogViewAdapter = LogViewAdapter()
+    private var logViewState: LogViewState = LogViewState()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -46,19 +54,6 @@ class LogViewFragment : Fragment(), DatePickerFragment.OnSelectedDateListener, T
 
         setupRecyclerView()
 
-        // viewModel.initialSetupEvent.observe(viewLifecycleOwner) { initialSetupEvent ->
-        //     updateTaskFilters(
-        //         initialSetupEvent.priorityVerbose,
-        //         initialSetupEvent.priorityDebug,
-        //         initialSetupEvent.priorityInfo,
-        //         initialSetupEvent.priorityWarn,
-        //         initialSetupEvent.priorityError,
-        //         initialSetupEvent.priorityAssert,
-        //     )
-        //     setupOnCheckedChangeListeners()
-        //     observePreferenceChanges()
-        // }
-
         setupOnCheckedChangeListeners()
         observePreferenceChanges()
     }
@@ -72,7 +67,6 @@ class LogViewFragment : Fragment(), DatePickerFragment.OnSelectedDateListener, T
     private fun setupRecyclerView() {
         val decoration = DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL)
         binding.listview.addItemDecoration(decoration)
-
         binding.listview.adapter = adapter
     }
 
@@ -85,149 +79,150 @@ class LogViewFragment : Fragment(), DatePickerFragment.OnSelectedDateListener, T
         }
 
         // 時間
-        binding.time.setOnClickListener {
-            val datePicker = DatePickerFragment()
-            datePicker.show(childFragmentManager, "datePicker")
-        }
+        // binding.time.setOnClickListener {
+        //     val timePicker = TimePickerFragment()
+        //     timePicker.show(childFragmentManager, "timePicker")
+        // }
 
-        // ログレベル
-        binding.logPriorityBtn.setOnClickListener {
-            MaterialAlertDialogBuilder(requireContext())
-                .setTitle("デバッグレベル")
-                // .setMessage("メッセージ内容\nここに表示される文字は自動で改行されるようになっています．")
-                .setMultiChoiceItems(debugTextList, debugList) { dialog, which, isChecked ->
-                    Timber.d("which: $which, isChecked: $isChecked")
-                    when (which) {
-                        0 -> debugList[0] = isChecked
-                        1 -> debugList[1] = isChecked
-                        2 -> debugList[2] = isChecked
-                        3 -> debugList[3] = isChecked
-                        4 -> debugList[4] = isChecked
-                        5 -> debugList[5] = isChecked
+        // 期間
+        val periodList = arrayOf("1日", "半日", "6時間", "3時間", "1時間")
+        val periodListAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, periodList)
+
+        binding.period.setAdapter(periodListAdapter)
+        binding.period.setText(periodList[0], false)
+        binding.period.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+            }
+
+            override fun afterTextChanged(s: Editable?) {
+                s?.let {
+                    when (s.toString()) {
+                        periodList[0] -> viewModel.setPeriod(LogPeriod.DAY)
+                        periodList[1] -> viewModel.setPeriod(LogPeriod.HALF_DAY)
+                        periodList[2] -> viewModel.setPeriod(LogPeriod.HOUR6)
+                        periodList[3] -> viewModel.setPeriod(LogPeriod.HOUR3)
+                        periodList[4] -> viewModel.setPeriod(LogPeriod.HOUR)
                     }
-
-                    // viewModel.showDebug(debugList)
-                    viewModel.setSelectCond(
-                        LogViewState(
-                            date = date,
-                            priorityVerbose = debugList[0],
-                            priorityDebug = debugList[1],
-                            priorityInfo = debugList[2],
-                            priorityWarn = debugList[3],
-                            priorityError = debugList[4],
-                            priorityAssert = debugList[5],
-                        )
-                    )
                 }
+            }
+        })
+
+        // フローティングボタン
+        binding.priorityBtn.setOnClickListener {
+            val dialogLayout = LayoutInflater.from(context).inflate(R.layout.dialog_log_view_setting, null)
+
+            // val dateEditText = dialogLayout.findViewById<TextInputEditText>(R.id.date)
+            // dateEditText.setOnClickListener {
+            //     val datePicker = DatePickerFragment()
+            //     datePicker.show(childFragmentManager, "datePicker")
+            // }
+
+            // val timeEditText = dialogLayout.findViewById<TextInputEditText>(R.id.time)
+            // timeEditText.setOnClickListener {
+            //     val timePicker = TimePickerFragment()
+            //     timePicker.show(childFragmentManager, "timePicker")
+            // }
+
+            // val periodList = arrayOf("1日", "半日", "時間")
+            // val periodListAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, periodList)
+
+            // val periodRadioGroup = dialogLayout.findViewById<AutoCompleteTextView>(R.id.period)
+            // periodRadioGroup.setAdapter(periodListAdapter)
+            // periodRadioGroup.setText(periodList[0], false)
+            // periodRadioGroup.addTextChangedListener(object : TextWatcher {
+            //     override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+            //     }
+            //
+            //     override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+            //     }
+            //
+            //     override fun afterTextChanged(s: Editable?) {
+            //         s?.let {
+            //             when (s.toString()) {
+            //                 periodList[0] -> viewModel.setPeriod(LogPeriod.DAY)
+            //                 periodList[1] -> viewModel.setPeriod(LogPeriod.HALF_DAY)
+            //                 periodList[2] -> viewModel.setPeriod(LogPeriod.HOUR)
+            //             }
+            //         }
+            //     }
+            // })
+
+            val verboseSwitch = dialogLayout.findViewById<SwitchMaterial>(R.id.switch_verbose)
+            verboseSwitch.setOnCheckedChangeListener { _, isChecked ->
+                viewModel.setPriorityVerbose(isChecked)
+            }
+
+            val debugSwitch = dialogLayout.findViewById<SwitchMaterial>(R.id.switch_debug)
+            debugSwitch.setOnCheckedChangeListener { _, isChecked ->
+                viewModel.setPriorityDebug(isChecked)
+            }
+
+            val infoSwitch = dialogLayout.findViewById<SwitchMaterial>(R.id.switch_info)
+            infoSwitch.setOnCheckedChangeListener { _, isChecked ->
+                viewModel.setPriorityInfo(isChecked)
+            }
+
+            val warnSwitch = dialogLayout.findViewById<SwitchMaterial>(R.id.switch_warn)
+            warnSwitch.setOnCheckedChangeListener { _, isChecked ->
+                viewModel.setPriorityWarn(isChecked)
+            }
+
+            val errorSwitch = dialogLayout.findViewById<SwitchMaterial>(R.id.switch_error)
+            errorSwitch.setOnCheckedChangeListener { _, isChecked ->
+                viewModel.setPriorityError(isChecked)
+            }
+
+            val assertSwitch = dialogLayout.findViewById<SwitchMaterial>(R.id.switch_assert)
+            assertSwitch.setOnCheckedChangeListener { _, isChecked ->
+                viewModel.setPriorityAssert(isChecked)
+            }
+
+            // dateEditText.text = Editable.Factory.getInstance().newEditable(logViewState.date.toString())
+            verboseSwitch.isChecked = logViewState.priorityVerbose
+            debugSwitch.isChecked = logViewState.priorityDebug
+            infoSwitch.isChecked = logViewState.priorityInfo
+            warnSwitch.isChecked = logViewState.priorityWarn
+            errorSwitch.isChecked = logViewState.priorityError
+            assertSwitch.isChecked = logViewState.priorityAssert
+
+            MaterialAlertDialogBuilder(requireContext())
+                .setTitle("ログレベル")
+                .setView(dialogLayout)
                 .show()
         }
     }
 
     private fun observePreferenceChanges() {
-        // viewModel.tasksUiModel.observe(viewLifecycleOwner) { tasksUiModel ->
-        //     tasksUiModel.tasks.let { items ->
-        //         val items2: List<LogViewItem> = items.map {
-        //             it.convert()
-        //         }
-        //         adapter.submitList(items2)
-        //     }
-        //     updateTaskFilters(
-        //         tasksUiModel.priorityVerbose,
-        //         tasksUiModel.priorityDebug,
-        //         tasksUiModel.priorityInfo,
-        //         tasksUiModel.priorityWarn,
-        //         tasksUiModel.priorityError,
-        //         tasksUiModel.priorityAssert
-        //     )
-        // }
 
-        // 画面から取ってきた検索条件を設定する
-        viewModel.setSelectCond(
-            LogViewState(
-                date = date,
-                priorityVerbose = debugList[0],
-                priorityDebug = debugList[1],
-                priorityInfo = debugList[2],
-                priorityWarn = debugList[3],
-                priorityError = debugList[4],
-                priorityAssert = debugList[5],
-            )
-        )
+        viewModel.logViewState.observe(viewLifecycleOwner) {
+            logViewState = it
+            viewModel.setSelectCond(logViewState)
+        }
 
         // 検索結果のObserve
         viewModel.selectData().observe(viewLifecycleOwner) { someEntity ->
-            // 結果をViewに表示してやる
-            // displayData(someEntity)
             someEntity?.let {
-                val items2: List<LogViewItem> = someEntity.map {
-                    it.convert()
-                }
-                adapter.submitList(items2)
+                adapter.submitList(someEntity.map { it.convert() })
             }
         }
     }
 
-    private var date: LocalDate = LocalDate.now()
-    private val debugTextList = arrayOf("Verbose", "Debug", "Info", "Warn", "Error", "Assert")
-    private val debugList = booleanArrayOf(false, false, false, false, false, false)
-
-
-    private fun updateTaskFilters(
-        priorityVerbose: Boolean,
-        priorityDebug: Boolean,
-        priorityInfo: Boolean,
-        priorityWarn: Boolean,
-        priorityError: Boolean,
-        priorityAssert: Boolean
-    ) {
-        with(binding) {
-            // showDebugShowDebug.isChecked = showCompleted
-            // sortDeadline.isChecked = sortOrder == SortOrder.BY_DEADLINE || sortOrder == SortOrder.BY_DEADLINE_AND_PRIORITY
-            // sortPriority.isChecked = sortOrder == SortOrder.BY_PRIORITY || sortOrder == SortOrder.BY_DEADLINE_AND_PRIORITY
-        }
-
-        debugList[0] = priorityVerbose
-        debugList[1] = priorityDebug
-        debugList[2] = priorityInfo
-        debugList[3] = priorityWarn
-        debugList[4] = priorityError
-        debugList[5] = priorityAssert
-
-        // when (which) {
-        //     0 -> debugList[0] = isChecked
-        //     1 -> debugList[1] = isChecked
-        //     2 -> debugList[2] = isChecked
-        //     3 -> debugList[3] = isChecked
-        //     4 -> debugList[4] = isChecked
-        //     5 -> debugList[5] = isChecked
-        // }
-    }
-
     override fun selectedDate(year: Int, month: Int, dayOfMonth: Int) {
-        Timber.d("year: $year, month: $month, dayOfMonth: $dayOfMonth")
-
         lifecycleScope.launch {
-            binding.date.setText("$year-${month + 1}-$dayOfMonth")
-
-            // viewModel.setDate(year, month + 1, dayOfMonth)
-
-            date = LocalDateTime.of(year, month + 1, dayOfMonth, 0, 0).toLocalDate()
-
-            viewModel.setSelectCond(
-                LogViewState(
-                    date = date,
-                    priorityVerbose = debugList[0],
-                    priorityDebug = debugList[1],
-                    priorityInfo = debugList[2],
-                    priorityWarn = debugList[3],
-                    priorityError = debugList[4],
-                    priorityAssert = debugList[5],
-                )
-            )
+            val date = LocalDate.of(year, month + 1, dayOfMonth)
+            binding.date.text = Editable.Factory.getInstance().newEditable(date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
+            viewModel.setDate(date)
         }
     }
 
     override fun selectedTime(hour: Int, minute: Int) {
-        Timber.d("hour: $hour, minute: $minute")
+        lifecycleScope.launch {
+            val time = LocalTime.of(hour, minute)
+            // binding.time.text = Editable.Factory.getInstance().newEditable(time.format(DateTimeFormatter.ofPattern("HH:mm")))
+            // viewModel.setTime(time)
+        }
     }
 }
