@@ -1,4 +1,4 @@
-package com.yuruneji.camera_training2.common.data_store
+package com.yuruneji.camera_training2.data.local.datastore
 
 import android.content.Context
 import androidx.datastore.preferences.core.booleanPreferencesKey

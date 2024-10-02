@@ -1,10 +1,11 @@
-package com.yuruneji.camera_training2.data.local
+package com.yuruneji.camera_training2.data.local.db
 
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
+import com.yuruneji.camera_training2.data.local.datastore.LogEntity
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDateTime
 

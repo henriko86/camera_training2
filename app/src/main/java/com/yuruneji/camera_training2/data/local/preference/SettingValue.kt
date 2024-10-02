@@ -1,4 +1,4 @@
-package com.yuruneji.camera_training2.common
+package com.yuruneji.camera_training2.data.local.preference
 
 import android.content.Context
 import android.content.SharedPreferences
@@ -11,7 +11,7 @@ import androidx.security.crypto.MasterKey
  */
 open class SettingValue(
     context: Context,
-    prefName: String
+    prefName: String = PREF_NAME
 ) {
 
     private var sharedPref: SharedPreferences = context.applicationContext.getSharedPreferences(prefName, Context.MODE_PRIVATE)
@@ -21,8 +21,7 @@ open class SettingValue(
     private var encEditor: SharedPreferences.Editor
 
     companion object {
-        // private const val PREF_NAME = "SAMPLE17_PREF"
-        // private const val ENCRYPTED_PREF_NAME = "SAMPLE17_ENCRYPTED_PREF"
+        private const val PREF_NAME = "setting_value"
     }
 
     init {

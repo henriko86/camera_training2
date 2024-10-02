@@ -6,7 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.switchMap
-import com.yuruneji.camera_training2.data.local.LogEntity
+import com.yuruneji.camera_training2.data.local.datastore.LogEntity
 import com.yuruneji.camera_training2.domain.repository.LogRepository
 import com.yuruneji.camera_training2.presentation.log_view.state.LogPeriod
 import com.yuruneji.camera_training2.presentation.log_view.state.LogViewState

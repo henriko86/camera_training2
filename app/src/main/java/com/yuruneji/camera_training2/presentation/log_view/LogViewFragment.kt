@@ -7,16 +7,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
-import android.widget.AutoCompleteTextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.switchmaterial.SwitchMaterial
-import com.google.android.material.textfield.TextInputEditText
 import com.yuruneji.camera_training2.R
-import com.yuruneji.camera_training2.data.local.convert
+import com.yuruneji.camera_training2.data.local.datastore.convert
 import com.yuruneji.camera_training2.databinding.FragmentLogViewBinding
 import com.yuruneji.camera_training2.presentation.log_view.state.LogPeriod
 import com.yuruneji.camera_training2.presentation.log_view.state.LogViewState

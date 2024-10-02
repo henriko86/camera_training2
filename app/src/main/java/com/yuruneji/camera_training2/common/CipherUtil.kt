@@ -4,6 +4,7 @@ import android.content.Context
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.util.Base64
+import com.yuruneji.camera_training2.data.local.preference.SettingValue
 import org.apache.commons.lang3.RandomStringUtils
 import timber.log.Timber
 import java.io.ByteArrayInputStream
@@ -22,6 +23,24 @@ import javax.crypto.spec.IvParameterSpec
  */
 class CipherUtil(context: Context) {
 
+    companion object {
+
+        /** プロバイダー */
+        private const val KEY_PROVIDER: String = "AndroidKeyStore"
+
+        /** エイリアス */
+        private const val KEY_ALIAS: String = "CipherUtil"
+
+        /** アルゴリズム */
+        private const val ALGORITHM: String = "AES/CBC/PKCS7Padding"
+
+        /** SharedPreferences */
+        private const val PREF_NAME = "cipher_util"
+
+        /** IVキー */
+        private const val PREF_IV_KEY = "iv"
+    }
+
     /** KeyStore */
     private lateinit var keyStore: KeyStore
 
@@ -37,11 +56,6 @@ class CipherUtil(context: Context) {
             keyStore = KeyStore.getInstance(KEY_PROVIDER).apply {
                 load(null)
             }
-
-            // val aliases: Enumeration<String> = keyStore.aliases()
-            // aliases.asSequence().forEach { alias ->
-            //     Timber.d("alias=$alias")
-            // }
 
             createAESKey()
         } catch (e: Exception) {
@@ -138,23 +152,5 @@ class CipherUtil(context: Context) {
             settingValue.setEncString(PREF_IV_KEY, iv)
         }
         return iv
-    }
-
-    companion object {
-
-        /** プロバイダー */
-        private const val KEY_PROVIDER: String = "AndroidKeyStore"
-
-        /** エイリアス */
-        private const val KEY_ALIAS: String = "CipherUtil"
-
-        /** アルゴリズム */
-        private const val ALGORITHM: String = "AES/CBC/PKCS7Padding"
-
-        /** SharedPreferences */
-        private const val PREF_NAME = "CipherUtil"
-
-        /** IVキー */
-        private const val PREF_IV_KEY = "iv"
     }
 }

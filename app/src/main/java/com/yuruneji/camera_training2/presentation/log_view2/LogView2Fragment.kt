@@ -9,7 +9,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.yuruneji.camera_training2.data.local.convert
+import com.yuruneji.camera_training2.data.local.datastore.convert
 import com.yuruneji.camera_training2.databinding.FragmentLogView2Binding
 import com.yuruneji.camera_training2.presentation.log_view.view.LogViewAdapter
 import com.yuruneji.camera_training2.presentation.log_view.view.LogViewItem

@@ -12,7 +12,7 @@ import javax.inject.Inject
  * @author toru
  * @version 1.0
  */
-class LogUseCase @Inject constructor(
+class LogUploadUseCase @Inject constructor(
     private val repository: AppRepository,
 ) {
     operator fun invoke(log: MultipartBody.Part): Flow<NetworkResponse<AppResponse>> = flow {

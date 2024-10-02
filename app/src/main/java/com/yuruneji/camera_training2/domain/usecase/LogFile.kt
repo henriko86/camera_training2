@@ -2,8 +2,8 @@ package com.yuruneji.camera_training2.domain.usecase
 
 import android.content.Context
 import android.util.Log
-import com.yuruneji.camera_training2.data.local.LogDao
-import com.yuruneji.camera_training2.data.local.LogEntity
+import com.yuruneji.camera_training2.data.local.db.LogDao
+import com.yuruneji.camera_training2.data.local.datastore.LogEntity
 import java.io.BufferedWriter
 import java.io.File
 import java.io.FileWriter

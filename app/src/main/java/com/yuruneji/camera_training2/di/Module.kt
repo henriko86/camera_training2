@@ -5,9 +5,9 @@ import androidx.room.Room
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.yuruneji.camera_training2.common.Constants
-import com.yuruneji.camera_training2.common.data_store.LogViewDataStore
-import com.yuruneji.camera_training2.data.local.AppDatabase
-import com.yuruneji.camera_training2.data.local.LogDao
+import com.yuruneji.camera_training2.data.local.datastore.LogViewDataStore
+import com.yuruneji.camera_training2.data.local.db.AppDatabase
+import com.yuruneji.camera_training2.data.local.db.LogDao
 import com.yuruneji.camera_training2.data.remote.AppService
 import com.yuruneji.camera_training2.data.repository.AppRepositoryImpl
 import com.yuruneji.camera_training2.data.repository.LogRepositoryImpl

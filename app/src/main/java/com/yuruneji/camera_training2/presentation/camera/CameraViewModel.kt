@@ -25,10 +25,10 @@ import com.yuruneji.camera_training2.domain.usecase.CardFaceAuthUseCase
 import com.yuruneji.camera_training2.domain.usecase.FaceAnalyzer
 import com.yuruneji.camera_training2.domain.usecase.FaceAuthUseCase
 import com.yuruneji.camera_training2.domain.usecase.LocationSensor
-import com.yuruneji.camera_training2.domain.usecase.LogUseCase
+import com.yuruneji.camera_training2.domain.usecase.LogUploadUseCase
 import com.yuruneji.camera_training2.domain.usecase.NetworkSensor
 import com.yuruneji.camera_training2.domain.usecase.TestWebServer
-import com.yuruneji.camera_training2.domain.usecase.TimeSensor
+import com.yuruneji.camera_training2.common.TimeService
 import com.yuruneji.camera_training2.presentation.camera.state.AuthStateEnum
 import com.yuruneji.camera_training2.presentation.home.view.DrawFaceView
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -55,7 +55,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class CameraViewModel @Inject constructor(
-    private val logUseCase: LogUseCase,
+    private val logUploadUseCase: LogUploadUseCase,
     private val networkSensor: NetworkSensor,
     private val cardAuthUseCase: FaceAuthUseCase,
     private val faceAuthUseCase: FaceAuthUseCase,
@@ -180,7 +180,7 @@ class CameraViewModel @Inject constructor(
                 cameraProvider.unbindAll()
                 // カメラをライフサイクルにバインド
                 camera = cameraProvider.bindToLifecycle(
-                    owner as LifecycleOwner,
+                    owner,
                     cameraSelector,
                     preview,
                     imageAnalysis
@@ -352,7 +352,7 @@ class CameraViewModel @Inject constructor(
                 "LogFile", fileName, file.asRequestBody("text/plain".toMediaType())
             )
 
-            val job = logUseCase(log).onEach { result ->
+            val job = logUploadUseCase(log).onEach { result ->
                 when (result) {
                     is NetworkResponse.Success -> {
                         Timber.d("${result.data}")
@@ -409,9 +409,7 @@ class CameraViewModel @Inject constructor(
     fun startNetworkSensor(delayTime: Long) = viewModelScope.launch(Dispatchers.Default) {
         networkSensorJob = launch {
             while (isActive) {
-                Timber.i("ネットワーク状態 start (${getThreadName()})")
                 _networkState.postValue(networkSensor.checkNetworkAvailable())
-                Timber.i("ネットワーク状態 end (${getThreadName()})")
 
                 // val str = "90123ABCabc"
                 // Timber.d(str)
@@ -443,16 +441,20 @@ class CameraViewModel @Inject constructor(
     /**
      * IPアドレスを取得
      */
-    fun getIpAddress(context: Context) {
-        networkSensor.getIpAddress(context) { ipAddress ->
+    fun getIpAddress() {
+        networkSensor.getIpAddress { ipAddress ->
             _ipAddress.postValue(ipAddress)
         }
     }
 
 
-    private val timeSensor = TimeSensor()
+    /** 時刻チェック */
     private val _timeCheck: MutableLiveData<Boolean> = MutableLiveData<Boolean>()
+
+    /** 時刻チェック */
     val timeCheck: LiveData<Boolean> = _timeCheck
+
+    /** 時刻チェック */
     private var timeCheckJob: Job? = null
 
     /**
@@ -463,7 +465,7 @@ class CameraViewModel @Inject constructor(
             timeCheckJob = launch {
                 while (isActive) {
                     Timber.i("時刻チェック start (${getThreadName()})")
-                    _timeCheck.postValue(timeSensor.checkTime())
+                    _timeCheck.postValue(TimeService.isTimeSync())
                     Timber.i("時刻チェック end (${getThreadName()})")
 
                     delay(delayTime)
@@ -472,7 +474,7 @@ class CameraViewModel @Inject constructor(
         }
     }
 
-    fun isTimeCheck(): Boolean {
+    fun isTimeCheckActive(): Boolean {
         return timeCheckJob?.isActive ?: false
     }
 
@@ -493,7 +495,12 @@ class CameraViewModel @Inject constructor(
     /** 位置情報 */
     val location: LiveData<Location> = _location
 
-    fun initLocationSensor(activity: Activity, owner: LifecycleOwner) {
+    /**
+     * 位置情報を初期化
+     * @param activity Activity
+     * @param owner LifecycleOwner
+     */
+    fun initLocation(activity: Activity, owner: LifecycleOwner) {
         locationSensor = LocationSensor(activity)
         locationSensor.requestLocationPermission()
 
@@ -502,12 +509,18 @@ class CameraViewModel @Inject constructor(
         }
     }
 
-    /** 位置情報 */
-    fun startLocationSensor(intervalTime: Long) {
+    /**
+     * 位置情報取得処理を開始
+     * @param intervalTime 位置情報取得間隔
+     */
+    fun startLocation(intervalTime: Long) {
         locationSensor.start(intervalTime)
     }
 
-    fun stopLocationSensor() {
+    /**
+     * 位置情報取得処理を停止
+     */
+    fun stopLocation() {
         locationSensor.stop()
     }
 

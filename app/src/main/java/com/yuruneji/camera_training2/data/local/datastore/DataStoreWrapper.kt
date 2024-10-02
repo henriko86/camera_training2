@@ -1,4 +1,4 @@
-package com.yuruneji.camera_training2.common.data_store
+package com.yuruneji.camera_training2.data.local.datastore
 
 import android.content.Context
 import androidx.datastore.core.DataStore
@@ -12,7 +12,27 @@ import kotlinx.coroutines.flow.map
  * @author toru
  * @version 1.0
  */
-abstract class DataStoreWrapper(private val context: Context, fileName: String) : DataStoreWrapperContract {
+interface IDataStoreWrapper {
+
+    /**
+     * DataStore に値を書き込む
+     * @return 書き込みに成功したら true, 失敗（例外がスローされた）したら false
+     */
+    suspend fun <T> writeValue(key: Preferences.Key<T>, value: T)
+
+    /**
+     * DataStore から値を読み込む
+     */
+    fun <T> readValue(key: Preferences.Key<T>, defaultValue: T): Flow<T>
+
+    /**
+     * DataStore から値を削除する
+     * @return 削除に成功したら true, 失敗（例外がスローされた）したら false
+     */
+    suspend fun <T> removeValue(key: Preferences.Key<T>): Boolean
+}
+
+abstract class DataStoreWrapper(private val context: Context, fileName: String) : IDataStoreWrapper {
 
     private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = fileName)
 
