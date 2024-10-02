@@ -2,11 +2,8 @@ package com.yuruneji.camera_training2.domain.usecase
 
 import android.Manifest
 import android.app.Activity
-import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
-import android.os.Looper
-import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LiveData
@@ -18,7 +15,7 @@ import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import timber.log.Timber
-import javax.inject.Inject
+import java.util.concurrent.Executors
 
 /**
  * @author toru
@@ -33,67 +30,44 @@ class LocationSensor(private val activity: Activity) {
     private val _location: MutableLiveData<Location> = MutableLiveData<Location>()
     val location: LiveData<Location> = _location
 
-    private val fusedLocationClient: FusedLocationProviderClient =
-        LocationServices.getFusedLocationProviderClient(activity)
+    private val fusedLocationClient: FusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(activity)
 
-    private var locationCallback: LocationCallback? = null
-
-    var run: Boolean = false
+    private var locationCallback: LocationCallback = object : LocationCallback() {
+        override fun onLocationResult(locationResult: LocationResult) {
+            for (location in locationResult.locations) {
+                Timber.i("位置情報 start (${Thread.currentThread().name})")
+                _location.postValue(location)
+                Timber.i("位置情報 end (${Thread.currentThread().name})")
+            }
+        }
+    }
 
     fun start(intervalTime: Long) {
         if (checkLocationPermission()) {
-            val locationRequest: LocationRequest.Builder =
-                LocationRequest.Builder(intervalTime)
-                    .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
+            val locationRequestBuild = LocationRequest.Builder(intervalTime)
+                .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
+                .build()
 
-            locationCallback = object : LocationCallback() {
-                override fun onLocationResult(locationResult: LocationResult) {
-                    for (location in locationResult.locations) {
-                        _location.postValue(location)
-                    }
-                }
-            }
-
-            fusedLocationClient.requestLocationUpdates(
-                locationRequest.build(),
-                locationCallback as LocationCallback,
-                Looper.getMainLooper()
-            )
-
+            fusedLocationClient.requestLocationUpdates(locationRequestBuild, Executors.newSingleThreadExecutor(), locationCallback)
         }
-        run = true
     }
 
     fun stop() {
-        locationCallback?.let {
-            fusedLocationClient.removeLocationUpdates(it)
-            locationCallback = null
-        }
-        run = false
+        fusedLocationClient.removeLocationUpdates(locationCallback)
     }
 
     fun requestLocationPermission() {
 
         // 位置情報の権限があるか確認する
-        val isAccept = ContextCompat.checkSelfPermission(
-            activity,
-            Manifest.permission.ACCESS_FINE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED
+        val isAccept = ContextCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
 
         if (!isAccept) {
             // 権限が許可されていない場合はリクエストする
-            ActivityCompat.requestPermissions(
-                activity,
-                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                LOCATION_PERMISSION_REQUEST_CODE
-            )
+            ActivityCompat.requestPermissions(activity, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_PERMISSION_REQUEST_CODE)
         }
     }
 
     private fun checkLocationPermission(): Boolean {
-        return ActivityCompat.checkSelfPermission(
-            activity,
-            Manifest.permission.ACCESS_FINE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED
+        return ActivityCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
     }
 }
