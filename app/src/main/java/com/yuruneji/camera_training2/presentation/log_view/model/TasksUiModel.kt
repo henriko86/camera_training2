@@ -1,6 +1,6 @@
 package com.yuruneji.camera_training2.presentation.log_view.model
 
-import com.yuruneji.camera_training2.data.local.LogEntity
+import com.yuruneji.camera_training2.data.local.datastore.LogEntity
 
 /**
  * @author toru

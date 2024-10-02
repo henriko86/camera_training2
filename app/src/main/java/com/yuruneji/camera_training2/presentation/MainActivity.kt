@@ -8,6 +8,7 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import com.yuruneji.camera_training2.R
+import com.yuruneji.camera_training2.common.CipherUtil
 import com.yuruneji.camera_training2.databinding.ActivityMainBinding
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
@@ -17,12 +18,13 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
-    // private lateinit var keyStoreUtil: CipherUtil
+
+    private lateinit var keyStoreUtil: CipherUtil
 
     override fun onCreate(savedInstanceState: Bundle?) {
         Timber.i(Throwable().stackTrace[0].methodName)
         super.onCreate(savedInstanceState)
-        // enableEdgeToEdge()
+        enableEdgeToEdge()
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -32,15 +34,15 @@ class MainActivity : AppCompatActivity() {
         appBarConfiguration = AppBarConfiguration(navController.graph)
         setupActionBarWithNavController(navController, appBarConfiguration)
 
+        keyStoreUtil = CipherUtil(this)
+        val plainText = "ここに入力された文字列を暗号化・復号します"
+        val encryptedText: String? = keyStoreUtil.encrypt(plainText)
+        val decryptedText: String? = keyStoreUtil.decrypt(encryptedText ?: "")
 
-        // keyStoreUtil = CipherUtil(this)
-        // val plainText = "ここに入力された文字列を暗号化・復号します"
-        // val encryptedText: String? = keyStoreUtil.encrypt(plainText)
-        // val decryptedText: String? = keyStoreUtil.decrypt(encryptedText ?: "")
-        //
-        // Timber.d("plainText    =$plainText")
-        // Timber.d("encryptedText=$encryptedText")
-        // Timber.d("decryptedText=$decryptedText")
+        Timber.d("plainText    =$plainText")
+        Timber.d("encryptedText=$encryptedText")
+        Timber.d("decryptedText=$decryptedText")
+        Timber.d("")
 
         // binding.fab.setOnClickListener { view ->
         //     // onFabClick(view)

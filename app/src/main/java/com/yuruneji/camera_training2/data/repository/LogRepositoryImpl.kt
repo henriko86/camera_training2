@@ -1,7 +1,7 @@
 package com.yuruneji.camera_training2.data.repository
 
-import com.yuruneji.camera_training2.data.local.LogDao
-import com.yuruneji.camera_training2.data.local.LogEntity
+import com.yuruneji.camera_training2.data.local.db.LogDao
+import com.yuruneji.camera_training2.data.local.datastore.LogEntity
 import com.yuruneji.camera_training2.domain.repository.LogRepository
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDateTime

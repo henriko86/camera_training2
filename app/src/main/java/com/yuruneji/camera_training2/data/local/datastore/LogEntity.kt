@@ -1,4 +1,4 @@
-package com.yuruneji.camera_training2.data.local
+package com.yuruneji.camera_training2.data.local.datastore
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

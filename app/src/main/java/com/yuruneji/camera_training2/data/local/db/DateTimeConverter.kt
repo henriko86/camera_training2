@@ -1,4 +1,4 @@
-package com.yuruneji.camera_training2.data.local
+package com.yuruneji.camera_training2.data.local.db
 
 import androidx.room.TypeConverter
 import java.time.LocalDateTime

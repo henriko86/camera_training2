@@ -1,7 +1,6 @@
 package com.yuruneji.camera_training2.domain.usecase
 
-import com.yuruneji.camera_training2.common.CardFaceAuthNetworkResponse
-import com.yuruneji.camera_training2.common.NetworkResponse
+import com.yuruneji.camera_training2.common.CardFaceAuthResponse
 import com.yuruneji.camera_training2.data.remote.AppRequest
 import com.yuruneji.camera_training2.data.remote.toConvert
 import com.yuruneji.camera_training2.domain.model.FaceAuthInfo
@@ -17,13 +16,13 @@ import javax.inject.Inject
 class CardFaceAuthUseCase @Inject constructor(
     private val repository: AppRepository,
 ) {
-    operator fun invoke(request: AppRequest): Flow<CardFaceAuthNetworkResponse<FaceAuthInfo>> = flow {
+    operator fun invoke(request: AppRequest): Flow<CardFaceAuthResponse<FaceAuthInfo>> = flow {
         try {
-            emit(CardFaceAuthNetworkResponse.Loading())
+            emit(CardFaceAuthResponse.Loading())
             val data = repository.faceAuth(request).toConvert()
-            emit(CardFaceAuthNetworkResponse.Success(data))
+            emit(CardFaceAuthResponse.Success(data))
         } catch (e: Exception) {
-            emit(CardFaceAuthNetworkResponse.Failure(e))
+            emit(CardFaceAuthResponse.Failure(e))
         }
     }
 }

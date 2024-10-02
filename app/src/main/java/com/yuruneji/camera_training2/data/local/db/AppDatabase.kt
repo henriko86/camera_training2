@@ -1,8 +1,9 @@
-package com.yuruneji.camera_training2.data.local
+package com.yuruneji.camera_training2.data.local.db
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import com.yuruneji.camera_training2.data.local.datastore.LogEntity
 
 /**
  * @author toru

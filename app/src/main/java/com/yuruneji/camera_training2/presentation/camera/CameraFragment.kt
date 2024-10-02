@@ -1,31 +1,21 @@
 package com.yuruneji.camera_training2.presentation.camera
 
 import android.Manifest
-import android.app.ProgressDialog.show
 import android.content.pm.PackageManager
-import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowInsets
-import android.view.WindowInsetsController
-import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.runtime.snapshots.Snapshot.Companion.observe
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.yuruneji.camera_training2.R
 import com.yuruneji.camera_training2.databinding.FragmentCameraBinding
-import com.yuruneji.camera_training2.domain.usecase.LocationSensor
 import com.yuruneji.camera_training2.presentation.camera.state.AuthStateEnum
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -63,7 +53,7 @@ class CameraFragment : Fragment() {
         super.onCreate(savedInstanceState)
 
         // 位置情報
-        viewModel.initLocationSensor(requireActivity(), this)
+        viewModel.initLocation(requireActivity(), this)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -88,7 +78,7 @@ class CameraFragment : Fragment() {
         Timber.d("onResume()")
 
         // フルスクリーン
-        toggleFullScreen(true)
+        // toggleFullScreen(true)
 
         // リスナーをセットアップ
         setupListeners()
@@ -102,7 +92,7 @@ class CameraFragment : Fragment() {
         stopListeners()
 
         // フルスクリーン
-        toggleFullScreen(false)
+        // toggleFullScreen(false)
     }
 
     override fun onDestroyView() {
@@ -120,7 +110,7 @@ class CameraFragment : Fragment() {
 
         // カード認証したてい
         binding.cardAuthBtn.setOnClickListener {
-            val cardNo = "X1234567890"
+            // val cardNo = "X1234567890"
             viewModel.startCardFaceAuth()
         }
     }
@@ -188,13 +178,13 @@ class CameraFragment : Fragment() {
             Timber.d("networkState: $it ${Thread.currentThread().name}")
             when (it) {
                 true -> {
-                    binding.text1.text = "ネットワーク状態: オンライン (${getTimeStr()})"
+                    binding.text1.text = getString(R.string.debug_network_online, getTimeStr())
                     // IPアドレス
-                    viewModel.getIpAddress(requireContext())
+                    viewModel.getIpAddress()
                 }
 
                 false -> {
-                    binding.text1.text = "ネットワーク状態: オフライン (${getTimeStr()})"
+                    binding.text1.text = getString(R.string.debug_network_offline, getTimeStr())
                     binding.text4.text = ""
                 }
             }
@@ -203,19 +193,19 @@ class CameraFragment : Fragment() {
         // 位置情報
         viewModel.location.observe(viewLifecycleOwner) {
             Timber.i("location: ${it.latitude}, ${it.longitude}")
-            binding.text2.text = "緯度:${it.latitude},経度:${it.longitude} (${getTimeStr()})"
+            binding.text2.text = getString(R.string.debug_location, it.latitude.toString(), it.longitude.toString(), getTimeStr())
         }
 
         // 時間
         viewModel.timeCheck.observe(viewLifecycleOwner) {
             Timber.i("timeCheck: $it")
-            binding.text3.text = "時刻チェック ${it} (${getTimeStr()})"
+            binding.text3.text = getString(R.string.debug_time_check, it.toString(), getTimeStr())
         }
 
         // IPアドレス
         viewModel.ipAddress.observe(viewLifecycleOwner) {
-            Timber.i("ipAddress: $it")
-            binding.text4.text = "IPアドレス ${it} (${getTimeStr()})"
+            Timber.i("IP Address: $it")
+            binding.text4.text = getString(R.string.debug_ip_address, it, getTimeStr())
         }
     }
 
@@ -241,7 +231,7 @@ class CameraFragment : Fragment() {
         viewModel.startNetworkSensor(10_000)
 
         // 位置情報
-        viewModel.startLocationSensor(60_000)
+        viewModel.startLocation(60_000)
 
         // 時間チェック
         viewModel.startTimeCheck(300_000)
@@ -261,7 +251,7 @@ class CameraFragment : Fragment() {
         viewModel.stopNetworkSensor()
 
         // 位置情報
-        viewModel.stopLocationSensor()
+        viewModel.stopLocation()
 
         // 時間
         viewModel.stopTimeCheck()
@@ -298,43 +288,43 @@ class CameraFragment : Fragment() {
         return DateTimeFormatter.ofPattern("HH:mm:ss").format(LocalDateTime.now())
     }
 
-    /**
-     * フルスクリーン
-     * @param isFullScreen フルスクリーン表示
-     */
-    private fun toggleFullScreen(isFullScreen: Boolean) {
-        if (isFullScreen) {
-            lifecycleScope.launch {
-                activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
-
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    activity?.window?.insetsController?.hide(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
-                    activity?.window?.insetsController?.systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-                } else {
-                    val flags =
-                        View.SYSTEM_UI_FLAG_LOW_PROFILE or
-                                View.SYSTEM_UI_FLAG_FULLSCREEN or
-                                View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
-                                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
-                                View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
-                                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                    activity?.window?.decorView?.systemUiVisibility = flags
-                }
-
-                (activity as? AppCompatActivity)?.supportActionBar?.hide()
-            }
-        } else {
-            lifecycleScope.launch {
-                activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
-
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    activity?.window?.insetsController?.show(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
-                } else {
-                    activity?.window?.decorView?.systemUiVisibility = 0
-                }
-
-                (activity as? AppCompatActivity)?.supportActionBar?.show()
-            }
-        }
-    }
+    // /**
+    //  * フルスクリーン
+    //  * @param isFullScreen フルスクリーン表示
+    //  */
+    // private fun toggleFullScreen(isFullScreen: Boolean) {
+    //     if (isFullScreen) {
+    //         lifecycleScope.launch {
+    //             activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
+    //
+    //             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+    //                 activity?.window?.insetsController?.hide(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
+    //                 activity?.window?.insetsController?.systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+    //             } else {
+    //                 val flags =
+    //                     View.SYSTEM_UI_FLAG_LOW_PROFILE or
+    //                             View.SYSTEM_UI_FLAG_FULLSCREEN or
+    //                             View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
+    //                             View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
+    //                             View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
+    //                             View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+    //                 activity?.window?.decorView?.systemUiVisibility = flags
+    //             }
+    //
+    //             (activity as? AppCompatActivity)?.supportActionBar?.hide()
+    //         }
+    //     } else {
+    //         lifecycleScope.launch {
+    //             activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
+    //
+    //             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+    //                 activity?.window?.insetsController?.show(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
+    //             } else {
+    //                 activity?.window?.decorView?.systemUiVisibility = 0
+    //             }
+    //
+    //             (activity as? AppCompatActivity)?.supportActionBar?.show()
+    //         }
+    //     }
+    // }
 }

@@ -20,15 +20,13 @@ class NetworkSensor @Inject constructor(
     // private val _networkState = MutableStateFlow(isNetworkAvailable())
     // val networkState: StateFlow<Boolean> = _networkState
 
-    private var connectivityManager = context.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
-
+    private val connectivityManager = context.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
 
     fun checkNetworkAvailable(): Boolean {
         return isNetworkAvailable()
     }
 
-    fun getIpAddress(context: Context, callback: (String) -> Unit) {
-        val manager: ConnectivityManager = context.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
+    fun getIpAddress(callback: (String) -> Unit) {
         val networkCallback = object : ConnectivityManager.NetworkCallback() {
             override fun onLinkPropertiesChanged(network: Network, linkProperties: LinkProperties) {
                 super.onLinkPropertiesChanged(network, linkProperties)
@@ -38,18 +36,18 @@ class NetworkSensor @Inject constructor(
                 }[0].address.hostName)
             }
         }
-        manager.registerDefaultNetworkCallback(networkCallback)
+        connectivityManager.registerDefaultNetworkCallback(networkCallback)
     }
 
     private fun isNetworkAvailable(): Boolean {
-            val nw = connectivityManager.activeNetwork ?: return false
-            val actNw = connectivityManager.getNetworkCapabilities(nw) ?: return false
-            return when {
-                actNw.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
-                actNw.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
-                actNw.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> true
-                actNw.hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH) -> true
-                else -> false
-            }
+        val nw = connectivityManager.activeNetwork ?: return false
+        val actNw = connectivityManager.getNetworkCapabilities(nw) ?: return false
+        return when {
+            actNw.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
+            actNw.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
+            actNw.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> true
+            actNw.hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH) -> true
+            else -> false
+        }
     }
 }

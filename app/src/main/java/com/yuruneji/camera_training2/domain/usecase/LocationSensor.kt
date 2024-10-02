@@ -30,7 +30,7 @@ class LocationSensor(private val activity: Activity) {
     private val _location: MutableLiveData<Location> = MutableLiveData<Location>()
     val location: LiveData<Location> = _location
 
-    private val fusedLocationClient: FusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(activity)
+    private val locationClient: FusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(activity)
 
     private var locationCallback: LocationCallback = object : LocationCallback() {
         override fun onLocationResult(locationResult: LocationResult) {
@@ -48,12 +48,12 @@ class LocationSensor(private val activity: Activity) {
                 .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
                 .build()
 
-            fusedLocationClient.requestLocationUpdates(locationRequestBuild, Executors.newSingleThreadExecutor(), locationCallback)
+            locationClient.requestLocationUpdates(locationRequestBuild, Executors.newSingleThreadExecutor(), locationCallback)
         }
     }
 
     fun stop() {
-        fusedLocationClient.removeLocationUpdates(locationCallback)
+        locationClient.removeLocationUpdates(locationCallback)
     }
 
     fun requestLocationPermission() {
