@@ -1,7 +1,9 @@
 package com.yuruneji.camera_training2.presentation.camera
 
+import android.app.Activity
 import android.content.Context
 import android.graphics.PixelFormat
+import android.location.Location
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 import androidx.camera.core.Camera
@@ -22,6 +24,7 @@ import com.yuruneji.camera_training2.data.remote.AppRequest
 import com.yuruneji.camera_training2.domain.usecase.CardFaceAuthUseCase
 import com.yuruneji.camera_training2.domain.usecase.FaceAnalyzer
 import com.yuruneji.camera_training2.domain.usecase.FaceAuthUseCase
+import com.yuruneji.camera_training2.domain.usecase.LocationSensor
 import com.yuruneji.camera_training2.domain.usecase.LogUseCase
 import com.yuruneji.camera_training2.domain.usecase.NetworkSensor
 import com.yuruneji.camera_training2.domain.usecase.TestWebServer
@@ -84,54 +87,6 @@ class CameraViewModel @Inject constructor(
         }
     }
 
-
-    // init {
-    //     viewModelScope.launch(Dispatchers.Default) {
-    //         while (isActive) {
-    //             Timber.i("hoge1 ${getThreadName()}")
-    //             delay(10_000)
-    //         }
-    //     }
-    //
-    //     viewModelScope.launch(Dispatchers.Default) {
-    //         while (isActive) {
-    //             Timber.i("hoge2 ${getThreadName()}")
-    //             delay(9_000)
-    //         }
-    //     }
-    //
-    //     viewModelScope.launch(Dispatchers.Default) {
-    //         while (isActive) {
-    //             Timber.i("hoge3 ${getThreadName()}")
-    //             delay(8_000)
-    //         }
-    //     }
-    //
-    //
-    //     viewModelScope.launch(Dispatchers.IO) {
-    //         while (isActive) {
-    //             Timber.i("hoge4 ${getThreadName()}")
-    //             delay(10_000)
-    //         }
-    //     }
-    //
-    //     viewModelScope.launch(Dispatchers.IO) {
-    //         while (isActive) {
-    //             Timber.i("hoge5 ${getThreadName()}")
-    //             delay(9_000)
-    //         }
-    //     }
-    //
-    //     viewModelScope.launch(Dispatchers.IO) {
-    //         while (isActive) {
-    //             Timber.i("hoge6 ${getThreadName()}")
-    //             delay(8_000)
-    //         }
-    //     }
-    //
-    // }
-
-
     fun startCamera(
         context: Context,
         owner: LifecycleOwner,
@@ -144,36 +99,13 @@ class CameraViewModel @Inject constructor(
         surfaceView.holder.setFormat(PixelFormat.TRANSLUCENT)
         surfaceView.setZOrderOnTop(true)
 
+        // 顔枠表示
         ContextCompat.getDrawable(context, R.drawable.face_rect)?.let { drawable ->
-            Timber.i("${previewView.width}, ${previewView.height}")
-
-            // 顔枠表示
             drawFaceView = DrawFaceView(
                 surfaceView = surfaceView,
                 drawable = drawable
             )
         }
-
-        // cameraManager.cameraIdList.forEach { id ->
-        //     Timber.i("カメラID:${id}")
-        // }
-
-        // surfaceView.holder.setFormat(PixelFormat.TRANSLUCENT)
-        // // surfaceView.holder.addCallback(surfaceHolderCallback)
-        // surfaceView.setZOrderOnTop(true)
-
-
-        // val windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager?
-        // val rotation = windowManager!!.defaultDisplay.rotation
-        // when (rotation) {
-        //     Surface.ROTATION_0 -> {}
-        //     Surface.ROTATION_90 -> {}
-        //     Surface.ROTATION_180 -> {}
-        //     Surface.ROTATION_270 -> {}
-        //     else -> {}
-        // }
-        // cameraManager.getCameraCharacteristics()
-
 
         val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
         cameraProviderFuture.addListener({
@@ -477,7 +409,9 @@ class CameraViewModel @Inject constructor(
     fun startNetworkSensor(delayTime: Long) = viewModelScope.launch(Dispatchers.Default) {
         networkSensorJob = launch {
             while (isActive) {
+                Timber.i("ネットワーク状態 start (${getThreadName()})")
                 _networkState.postValue(networkSensor.checkNetworkAvailable())
+                Timber.i("ネットワーク状態 end (${getThreadName()})")
 
                 // val str = "90123ABCabc"
                 // Timber.d(str)
@@ -521,11 +455,16 @@ class CameraViewModel @Inject constructor(
     val timeCheck: LiveData<Boolean> = _timeCheck
     private var timeCheckJob: Job? = null
 
+    /**
+     * 時刻チェックを開始
+     */
     fun startTimeCheck(delayTime: Long) {
         viewModelScope.launch(Dispatchers.Default) {
             timeCheckJob = launch {
                 while (isActive) {
+                    Timber.i("時刻チェック start (${getThreadName()})")
                     _timeCheck.postValue(timeSensor.checkTime())
+                    Timber.i("時刻チェック end (${getThreadName()})")
 
                     delay(delayTime)
                 }
@@ -533,8 +472,43 @@ class CameraViewModel @Inject constructor(
         }
     }
 
+    fun isTimeCheck(): Boolean {
+        return timeCheckJob?.isActive ?: false
+    }
+
+    /**
+     * 時刻チェックを停止
+     */
     fun stopTimeCheck() = viewModelScope.launch(Dispatchers.Default) {
         timeCheckJob?.cancelAndJoin()
+    }
+
+
+    /** 位置情報 */
+    private lateinit var locationSensor: LocationSensor
+
+    /** 位置情報 */
+    private val _location: MutableLiveData<Location> = MutableLiveData<Location>()
+
+    /** 位置情報 */
+    val location: LiveData<Location> = _location
+
+    fun initLocationSensor(activity: Activity, owner: LifecycleOwner) {
+        locationSensor = LocationSensor(activity)
+        locationSensor.requestLocationPermission()
+
+        locationSensor.location.observe(owner) {
+            _location.postValue(it)
+        }
+    }
+
+    /** 位置情報 */
+    fun startLocationSensor(intervalTime: Long) {
+        locationSensor.start(intervalTime)
+    }
+
+    fun stopLocationSensor() {
+        locationSensor.stop()
     }
 
 
