@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <declare-styleable name="NumberView">
-        <attr name="number" format="integer" />
-        <attr name="displayMode" format="enum">
-            <enum name="number" value="0" />
-            <enum name="english" value="1" />
-            <enum name="japanese" value="2" />
-        </attr>
-    </declare-styleable>
-    <declare-styleable name="FullscreenAttrs">
-        <attr name="fullscreenBackgroundColor" format="color" />
-        <attr name="fullscreenTextColor" format="color" />
-    </declare-styleable>
+<!--    <declare-styleable name="NumberView">-->
+<!--        <attr name="number" format="integer" />-->
+<!--        <attr name="displayMode" format="enum">-->
+<!--            <enum name="number" value="0" />-->
+<!--            <enum name="english" value="1" />-->
+<!--            <enum name="japanese" value="2" />-->
+<!--        </attr>-->
+<!--    </declare-styleable>-->
+<!--    <declare-styleable name="FullscreenAttrs">-->
+<!--        <attr name="fullscreenBackgroundColor" format="color" />-->
+<!--        <attr name="fullscreenTextColor" format="color" />-->
+<!--    </declare-styleable>-->
 </resources>
