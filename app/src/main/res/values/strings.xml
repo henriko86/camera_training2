@@ -3,25 +3,17 @@
 
     <string name="title_home">ホーム</string>
     <string name="title_camera">カメラ</string>
-    <string name="title_setting_login">設定ログイン</string>
-    <string name="title_setting_home">設定ホーム</string>
-    <string name="title_setting_camera">カメラ設定</string>
-    <string name="title_setting_display">表示設定</string>
-    <string name="title_setting_sound">音設定</string>
+    <string name="title_setting">設定</string>
     <string name="title_log_view">ログ表示</string>
-    <string name="title_log_view2">ログ表示2</string>
 
     <string name="btn_back">戻る</string>
 
     <string name="camera_none">None</string>
     <string name="camera_rgb">RGB</string>
     <string name="camera_ir">IR</string>
-    <string name="dummy_button">Dummy Button</string>
-    <string name="dummy_content">DUMMY\nCONTENT</string>
-    <string name="title_activity_fullscreen">FullscreenActivity</string>
 
 
-    <string name="text.xxxx">xxxx</string>
+    <string name="xxx">xxx</string>
     <string name="debug_ip_address">IP Address %1$s (%2$s)</string>
     <string name="debug_time_check">時刻チェック %1$s (%2$s)</string>
     <string name="debug_location">緯度:%1$s,経度:%2$s (%3$s)</string>

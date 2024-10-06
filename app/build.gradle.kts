@@ -1,13 +1,15 @@
+import com.android.build.api.dsl.VariantDimension
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     kotlin("kapt")
+    // id("com.google.devtools.ksp")
     id("com.google.dagger.hilt.android")
-    id("com.google.protobuf")
 }
 
 android {
-    namespace = "com.yuruneji.camera_training2"
+    namespace = "com.yuruneji.camera_training"
     compileSdk = 34
 
     defaultConfig {
@@ -18,6 +20,30 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // buildConfigField("boolean", "FROM_PROPERTIES", "${project.properties["from_properties"]}")
+        // buildConfigField("boolean", "FROM_PROPERTIES", "${project.properties["from_properties"]}")
+        // buildConfigField("String", "HOGE_API_KEY", "\"${project.properties["hoge_api_key"]}\"")
+        // buildConfigField("int[]", "HOGE_ARRAY", "{1, 2, 3}")
+        // buildConfigField("String[]", "PROPERTIES_ARRAY", "${project.properties["hoge_array"]}")
+        // buildConfigField("int", "HOGE_VERSION", "${project.properties["hoge_version"]}")
+        // buildConfigField("double", "HOGE_PI", "${project.properties["hoge_pi"]}")
+        // buildConfigField("java.util.ArrayList<String>", "HUGA_LIST", "new java.util.ArrayList<>()")
+
+        bindProperty {
+            stringConfigField("API_URL_BASE", "${project.properties["API_URL_BASE"]}")
+            stringConfigField("API_URL_DEVELOP", "${project.properties["API_URL_DEVELOP"]}")
+            stringConfigField("API_URL_STAGING", "${project.properties["API_URL_STAGING"]}")
+            stringConfigField("API_URL_PRODUCTION", "${project.properties["API_URL_PRODUCTION"]}")
+
+            // stringConfigField("STRING_CONFIG_FIELD", "string string")
+            // intConfigField("INT_CONFIG_FIELD", 111)
+            // longConfigField("LONG_CONFIG_FIELD", 222L)
+            // floatConfigField("FLOAT_CONFIG_FIELD", 333.333f)
+            // doubleConfigField("DOUBLE_CONFIG_FIELD", 44.44)
+            // booleanConfigField("BOOLEAN_CONFIG_FIELD", default = true)
+            // stringResource("STRING_RESOURCE", "xxx")
+        }
     }
 
     buildTypes {
@@ -27,14 +53,16 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "17"
     }
     buildFeatures {
+        buildConfig = true
         viewBinding = true
+        dataBinding = true
     }
 }
 
@@ -57,19 +85,21 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
-    // Hilt
+    // DI: Hilt
     val hilt_version = "2.49"
     implementation("com.google.dagger:hilt-android:$hilt_version")
     kapt("com.google.dagger:hilt-android-compiler:$hilt_version")
+    // ksp("com.google.dagger:hilt-compiler:$hilt_version")
 
-    // Room
+    // DB: Room
     val room_version = "2.6.1"
     implementation("androidx.room:room-runtime:$room_version")
     annotationProcessor("androidx.room:room-compiler:$room_version")
     kapt("androidx.room:room-compiler:$room_version")
+    // ksp("androidx.room:room-compiler:2.5.0")
     implementation("androidx.room:room-ktx:$room_version")
 
-    // CameraX
+    // Camera: CameraX
     val camerax_version = "1.4.0-beta02"
     implementation("androidx.camera:camera-core:${camerax_version}")
     implementation("androidx.camera:camera-camera2:${camerax_version}")
@@ -79,30 +109,30 @@ dependencies {
     implementation("androidx.camera:camera-mlkit-vision:${camerax_version}")
     implementation("androidx.camera:camera-extensions:${camerax_version}")
 
-    // ML Kit
+    // mobile SDK: ML Kit
     implementation("com.google.mlkit:barcode-scanning:17.2.0")
     implementation("com.google.mlkit:face-detection:16.1.5")
 
-    // NanoHttpd
+    // WebServer: NanoHttpd
     implementation("org.nanohttpd:nanohttpd-webserver:2.3.1")
 
-    // Retrofit
+    // HTTP Client:Retrofit
     val retrofit_version = "2.9.0"
     implementation("com.squareup.retrofit2:retrofit:$retrofit_version")
     implementation("com.squareup.retrofit2:converter-moshi:$retrofit_version")
 
-    // Moshi
+    // Json: Moshi
     val moshi_version = "1.14.0"
     implementation("com.squareup.moshi:moshi-kotlin:$moshi_version")
 
-    // Coil
+    // Image: Coil
     val coil_version = "2.4.0"
     implementation("io.coil-kt:coil-compose:$coil_version")
 
-    // Timber
+    // Log: Timber
     implementation("com.jakewharton.timber:timber:5.0.1")
 
-    // Security-Crypto
+    // Crypto: Security-Crypto
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
 
     // DataStore
@@ -118,30 +148,56 @@ dependencies {
     // Location
     implementation("com.google.android.gms:play-services-location:21.3.0")
 
-    // LeakCanary
+    // Debug: LeakCanary
     debugImplementation("com.squareup.leakcanary:leakcanary-android:2.12")
-
-    // datastore
-    implementation("androidx.datastore:datastore:1.0.0")
-
-    // protobuf
-    implementation("com.google.protobuf:protobuf-javalite:3.22.4")
 
 }
 
-protobuf {
-    protoc {
-        artifact = "com.google.protobuf:protoc:3.22.4"
-    }
-    // plugins {
-    generateProtoTasks {
-        all().forEach {
-            it.builtins {
-                create("java") {
-                    option("lite")
-                }
-            }
+interface BindPropertyScope {
+    fun stringConfigField(name: String, default: String = "")
+    fun intConfigField(name: String, default: Int = 0)
+    fun longConfigField(name: String, default: Long = 0L)
+    fun floatConfigField(name: String, default: Float = 0f)
+    fun doubleConfigField(name: String, default: Double = 0.0)
+    fun booleanConfigField(name: String, default: Boolean = false)
+    fun stringResource(name: String, default: String = "")
+}
+
+fun VariantDimension.bindProperty(configure: BindPropertyScope.() -> Unit) {
+    object : BindPropertyScope {
+        override fun stringConfigField(name: String, default: String) {
+            val value = (project.properties[name] as? String) ?: default
+            buildConfigField("String", name, "\"$value\"")
         }
-    }
-    // }
+
+        override fun intConfigField(name: String, default: Int) {
+            val value = (project.properties[name] as? String)?.toInt() ?: default
+            buildConfigField("int", name, value.toString())
+        }
+
+        override fun longConfigField(name: String, default: Long) {
+            val value = (project.properties[name] as? String)?.toLong() ?: default
+            buildConfigField("long", name, value.toString())
+        }
+
+        override fun floatConfigField(name: String, default: Float) {
+            val value = (project.properties[name] as? String)?.toFloat() ?: default
+            buildConfigField("float", name, value.toString())
+        }
+
+        override fun doubleConfigField(name: String, default: Double) {
+            val value = (project.properties[name] as? String)?.toDouble() ?: default
+            buildConfigField("double", name, value.toString())
+        }
+
+        override fun booleanConfigField(name: String, default: Boolean) {
+            val value = (project.properties[name] as? String)?.toBoolean() ?: default
+            buildConfigField("boolean", name, value.toString())
+        }
+
+        override fun stringResource(name: String, default: String) {
+            val value = (project.properties[name] as? String) ?: default
+            resValue("string", name, value)
+        }
+    }.configure()
 }
