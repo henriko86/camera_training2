@@ -11,7 +11,7 @@ import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetector
 import com.google.mlkit.vision.face.FaceDetectorOptions
 import com.yuruneji.camera_training.common.CommonUtil
-import com.yuruneji.camera_training.domain.model.FaceItem
+import com.yuruneji.camera_training.domain.model.FaceItemModel
 import timber.log.Timber
 
 /**
@@ -19,7 +19,7 @@ import timber.log.Timber
  * @version 1.0
  */
 class FaceAnalyzer(
-    val onFaceDetect: (Int, Int, List<FaceItem>) -> Unit
+    val onFaceDetect: (Int, Int, List<FaceItemModel>) -> Unit
 ) : ImageAnalysis.Analyzer {
 
     private var isShutdown = false
@@ -46,7 +46,7 @@ class FaceAnalyzer(
                 .addOnSuccessListener { faces ->
                     if (faces.isNotEmpty()) {
                         val bmp: Bitmap = CommonUtil.flipBitmap(imageProxy.toBitmap(), rotation)
-                        val faceList = mutableListOf<FaceItem>()
+                        val faceList = mutableListOf<FaceItemModel>()
                         for (face in faces) {
                             val rect = face.boundingBox
                             val rect2 = Rect().also { // 左右反転（フロントカメラ対応）
@@ -57,7 +57,7 @@ class FaceAnalyzer(
                             }
                             val faceBitmap = CommonUtil.faceClipping(bmp, rect2)
 
-                            faceList.add(FaceItem(faceBitmap, rect, face))
+                            faceList.add(FaceItemModel(faceBitmap, rect, face))
                         }
 
                         onFaceDetect(image.width, image.height, faceList)

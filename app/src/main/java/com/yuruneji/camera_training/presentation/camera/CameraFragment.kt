@@ -15,13 +15,16 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.yuruneji.camera_training.R
-import com.yuruneji.camera_training.common.AuthStateEnum
 import com.yuruneji.camera_training.common.CommonUtil.getTimeStr
+import com.yuruneji.camera_training.data.local.preference.CameraPreferences
+import com.yuruneji.camera_training.data.local.preference.convertModel
 import com.yuruneji.camera_training.databinding.FragmentCameraBinding
-import com.yuruneji.camera_training.presentation.camera.state.CameraSettingState
+import com.yuruneji.camera_training.domain.model.AppRequestModel
+import com.yuruneji.camera_training.domain.model.AppResponseModel
+import com.yuruneji.camera_training.domain.model.CameraSettingModel
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
-
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class CameraFragment : Fragment() {
@@ -36,6 +39,12 @@ class CameraFragment : Fragment() {
     private var _binding: FragmentCameraBinding? = null
     private val binding get() = _binding!!
     private val viewModel: CameraViewModel by viewModels()
+
+    @Inject
+    lateinit var cameraPref: CameraPreferences
+
+    private lateinit var cameraSettingModel: CameraSettingModel
+
 
     /** 権限リクエスト */
     private val permissionRequest =
@@ -67,6 +76,9 @@ class CameraFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         Timber.d("onViewCreated()")
 
+        cameraSettingModel = cameraPref.convertModel()
+
+        updateCameraSettingView(cameraSettingModel)
         setupViewEvent()
         observeAuthStateChanges()
         observeDeviceInfoChanges()
@@ -128,11 +140,6 @@ class CameraFragment : Fragment() {
 
     private fun observeAuthStateChanges() {
 
-        // カメラ設定
-        viewModel.cameraSettingState.observe(viewLifecycleOwner) {
-            updateCameraSettingView(it)
-        }
-
         // 認証待ちプログレスバー
         viewModel.authWaitProgressbar.observe(viewLifecycleOwner) {
             if (it) {
@@ -145,45 +152,41 @@ class CameraFragment : Fragment() {
         // 顔認証
         viewModel.faceAuthState.observe(viewLifecycleOwner) { state ->
             state?.let {
-                when (state) {
-                    AuthStateEnum.LOADING -> {
-                        Timber.d("顔認証 読み込み中.....")
-                    }
-
-                    AuthStateEnum.SUCCESS -> {
-                        Timber.d("顔認証 成功")
-                    }
-
-                    AuthStateEnum.FAIL -> {
-                        Timber.d("顔認証 失敗")
-                    }
+                if (state.isLoading) {
+                    Timber.d("顔認証 読み込み中.....")
+                } else {
+                    updateAuthResultView(state.req, state.resp, state.error)
+                    viewModel.setAuthResultView()
                 }
             }
         }
 
-        // 顔認証
+        // カード認証
         viewModel.cardAuthState.observe(viewLifecycleOwner) { state ->
             state?.let {
-                when (state) {
-                    AuthStateEnum.LOADING -> {
-                        Timber.d("カード認証 読み込み中.....")
-                    }
-
-                    AuthStateEnum.SUCCESS -> {
-                        Timber.d("カード認証 成功")
-                    }
-
-                    AuthStateEnum.FAIL -> {
-                        Timber.d("カード認証 失敗")
-                    }
+                if (state.isLoading) {
+                    Timber.d("カード認証 読み込み中.....")
+                } else {
+                    updateAuthResultView(state.req, state.resp, state.error)
+                    viewModel.setAuthResultView()
                 }
             }
         }
-
-
     }
 
     private fun observeDeviceInfoChanges() {
+
+        // 認証結果表示
+        viewModel.authResultView.observe(viewLifecycleOwner) {
+            if (it) {
+                binding.resultName.visibility = View.VISIBLE
+                binding.resultMessage.visibility = View.VISIBLE
+            } else {
+                binding.resultName.visibility = View.GONE
+                binding.resultMessage.visibility = View.GONE
+            }
+        }
+
 
         // ネットワーク状態
         viewModel.networkState.observe(viewLifecycleOwner) {
@@ -272,7 +275,6 @@ class CameraFragment : Fragment() {
         viewModel.stopTimeCheck()
     }
 
-
     /**
      * 権限の確認
      */
@@ -319,7 +321,13 @@ class CameraFragment : Fragment() {
     }
 
     @UiThread
-    fun updateCameraSettingView(cameraSettingState: CameraSettingState) {
+    fun updateCameraSettingView(cameraSettingState: CameraSettingModel) {
+        Timber.d("updateCameraSettingView() $cameraSettingState")
+
+
+        // 認証結果
+        binding.resultName.visibility = View.GONE
+        binding.resultMessage.visibility = View.GONE
 
 
         // 顔認証
@@ -345,8 +353,18 @@ class CameraFragment : Fragment() {
         } else {
             binding.iconQrAuthState.visibility = View.GONE
         }
+    }
 
-
+    @UiThread
+    fun updateAuthResultView(req: AppRequestModel?, resp: AppResponseModel?, error: Throwable?) {
+        if (error != null) {
+            binding.resultName.text = "Error"
+            binding.resultMessage.text = error.message
+        }
+        if (resp != null) {
+            binding.resultName.text = resp.name
+            binding.resultMessage.text = "認証成功"
+        }
     }
 
     @UiThread

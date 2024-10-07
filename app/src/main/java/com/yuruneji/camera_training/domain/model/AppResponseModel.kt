@@ -6,5 +6,5 @@ package com.yuruneji.camera_training.domain.model
  */
 data class AppResponseModel(
     val result: Int,
-    val error: String?,
+    val name: String,
 )

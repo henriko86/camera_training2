@@ -8,7 +8,7 @@ import com.google.mlkit.vision.barcode.common.Barcode
  * @author toru
  * @version 1.0
  */
-data class QrItem(
+data class QrItemModel(
     val rect: Rect,
     val barcode: Barcode
 )
