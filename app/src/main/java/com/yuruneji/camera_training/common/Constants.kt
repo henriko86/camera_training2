@@ -223,11 +223,11 @@ enum class MinFaceSize(val no: Int, val value: String, val size: Float) {
     }
 }
 
-/**
- * 認証状態
- */
-enum class AuthStateEnum {
-    LOADING,
-    SUCCESS,
-    FAIL
-}
+// /**
+//  * 認証状態
+//  */
+// enum class AuthStateEnum {
+//     LOADING,
+//     SUCCESS,
+//     FAIL
+// }

@@ -1,6 +1,8 @@
 package com.yuruneji.camera_training.presentation.home
 
+import android.content.Intent
 import android.os.Bundle
+import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,6 +14,10 @@ import com.yuruneji.camera_training.databinding.FragmentHomeBinding
 import timber.log.Timber
 
 class HomeFragment : Fragment() {
+
+    companion object {
+        private const val REQUEST_CODE = 1
+    }
 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
@@ -56,6 +62,27 @@ class HomeFragment : Fragment() {
         Timber.d("xxx=${BuildConfig.API_URL_PRODUCTION}")
         Timber.d("xxx=")
         Timber.d("")
+
+
+        // ACTION_INTERNET_CONNECTIVITY
+        binding.settingsInternetConnectivity.setOnClickListener {
+            startActivityForResult(Intent(Settings.Panel.ACTION_INTERNET_CONNECTIVITY), REQUEST_CODE)
+        }
+
+        // ACTION_WIFI
+        binding.settingsWifi.setOnClickListener {
+            startActivityForResult(Intent(Settings.Panel.ACTION_WIFI), REQUEST_CODE)
+        }
+
+        // ACTION_NFC
+        binding.settingsNfc.setOnClickListener {
+            startActivityForResult(Intent(Settings.Panel.ACTION_NFC), REQUEST_CODE)
+        }
+
+        // ACTION_VOLUME
+        binding.settingsVolume.setOnClickListener {
+            startActivityForResult(Intent(Settings.Panel.ACTION_VOLUME), REQUEST_CODE)
+        }
     }
 
     override fun onDestroyView() {

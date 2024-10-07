@@ -8,7 +8,7 @@ import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
-import com.yuruneji.camera_training.domain.model.QrItem
+import com.yuruneji.camera_training.domain.model.QrItemModel
 import timber.log.Timber
 
 /**
@@ -16,7 +16,7 @@ import timber.log.Timber
  * @version 1.0
  */
 class QrCodeAnalyzer(
-    private val onBarCodeDetected: (Int, Int, List<QrItem>) -> Unit
+    private val onBarCodeDetected: (Int, Int, List<QrItemModel>) -> Unit
 ) : ImageAnalysis.Analyzer {
 
     private var isShutdown = false
@@ -43,11 +43,11 @@ class QrCodeAnalyzer(
                         // val rotation = image.imageInfo.rotationDegrees
                         // val bmp: Bitmap = CommonUtil.flipBitmap(image.toBitmap(), rotation)
 
-                        val qrList = mutableListOf<QrItem>()
+                        val qrList = mutableListOf<QrItemModel>()
                         for (barCode in barCodes) {
                             val rect = barCode.boundingBox
                             rect?.let {
-                                qrList.add(QrItem(rect, barCode))
+                                qrList.add(QrItemModel(rect, barCode))
                             }
                         }
 

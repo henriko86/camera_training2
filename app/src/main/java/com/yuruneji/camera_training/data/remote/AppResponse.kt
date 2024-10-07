@@ -8,12 +8,12 @@ import com.yuruneji.camera_training.domain.model.AppResponseModel
  */
 data class AppResponse(
     val result: Int,
-    val error: String?
+    val name: String,
 )
 
 fun AppResponse.toConvert(): AppResponseModel {
     return AppResponseModel(
         result = result,
-        error = error
+        name = name,
     )
 }

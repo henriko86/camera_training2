@@ -9,7 +9,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="32dp">
+        android:paddingHorizontal="64dp"
+        android:paddingVertical="16dp">
 
         <Button
             android:id="@+id/camera_btn"
@@ -31,6 +32,35 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:text="ログ表示" />
+
+        <Button
+            android:id="@+id/settings_internet_connectivity"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Internet" />
+
+        <Button
+            android:id="@+id/settings_wifi"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Wi-Fi" />
+
+        <Button
+            android:id="@+id/settings_nfc"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="NFC" />
+
+        <Button
+            android:id="@+id/settings_volume"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Volume" />
+
     </LinearLayout>
 
 </androidx.core.widget.NestedScrollView>

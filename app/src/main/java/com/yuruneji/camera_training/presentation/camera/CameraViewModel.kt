@@ -19,17 +19,15 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.yuruneji.camera_training.common.AuthStateEnum
-import com.yuruneji.camera_training.common.LogUploadResponse
 import com.yuruneji.camera_training.common.AuthResponse
+import com.yuruneji.camera_training.common.LogUploadResponse
 import com.yuruneji.camera_training.common.SoundManager
 import com.yuruneji.camera_training.common.TimeService
 import com.yuruneji.camera_training.common.toByteArray
 import com.yuruneji.camera_training.data.local.preference.CameraPreferences
-import com.yuruneji.camera_training.data.local.preference.convertCameraSettingState
 import com.yuruneji.camera_training.domain.model.AppRequestModel
-import com.yuruneji.camera_training.domain.model.FaceItem
-import com.yuruneji.camera_training.domain.model.QrItem
+import com.yuruneji.camera_training.domain.model.FaceItemModel
+import com.yuruneji.camera_training.domain.model.QrItemModel
 import com.yuruneji.camera_training.domain.usecase.CardAuthUseCase
 import com.yuruneji.camera_training.domain.usecase.FaceAnalyzer
 import com.yuruneji.camera_training.domain.usecase.FaceAuthUseCase
@@ -38,7 +36,7 @@ import com.yuruneji.camera_training.domain.usecase.LogUploadUseCase
 import com.yuruneji.camera_training.domain.usecase.NetworkSensor
 import com.yuruneji.camera_training.domain.usecase.QrCodeAnalyzer
 import com.yuruneji.camera_training.domain.usecase.TestWebServer
-import com.yuruneji.camera_training.presentation.camera.state.CameraSettingState
+import com.yuruneji.camera_training.presentation.camera.state.AuthState
 import com.yuruneji.camera_training.presentation.camera.view.DrawRectView
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -98,7 +96,7 @@ class CameraViewModel @Inject constructor(
      * @param height       画像高さ
      * @param faceItemList 顔情報
      */
-    private fun drawFace(width: Int, height: Int, faceItemList: List<FaceItem>) {
+    private fun drawFace(width: Int, height: Int, faceItemList: List<FaceItemModel>) {
         drawFaceView?.draw(width, height, faceItemList.map { it.faceRect })
     }
 
@@ -127,7 +125,7 @@ class CameraViewModel @Inject constructor(
      * @param height     画像高さ
      * @param qrItemList QR情報
      */
-    private fun drawQr(width: Int, height: Int, qrItemList: List<QrItem>) {
+    private fun drawQr(width: Int, height: Int, qrItemList: List<QrItemModel>) {
         drawQrView?.draw(width, height, qrItemList.map { it.rect })
     }
 
@@ -157,8 +155,8 @@ class CameraViewModel @Inject constructor(
     }
 
 
-    private val _cameraSettingState = MutableLiveData<CameraSettingState>()
-    val cameraSettingState: LiveData<CameraSettingState> = _cameraSettingState
+    // private val _cameraSettingModel = MutableLiveData<CameraSettingModel>()
+    // val cameraSettingModel: LiveData<CameraSettingModel> = _cameraSettingModel
 
     /** 顔認証実行有無 */
     private val isFaceAuth = AtomicBoolean(true)
@@ -184,7 +182,7 @@ class CameraViewModel @Inject constructor(
         Timber.i(Throwable().stackTrace[0].methodName)
 
 
-        _cameraSettingState.postValue(cameraPref.convertCameraSettingState())
+        // _cameraSettingState.postValue(cameraPref.convertCameraSettingState())
 
         // 顔認証
         val faceAnalyzer = FaceAnalyzer { width, height, faceItem ->
@@ -263,8 +261,8 @@ class CameraViewModel @Inject constructor(
      * @param height
      * @param itemList
      */
-    private fun faceAnalyze(width: Int, height: Int, itemList: List<FaceItem>) {
-        if (cameraPref.isFaceAuth()) {
+    private fun faceAnalyze(width: Int, height: Int, itemList: List<FaceItemModel>) {
+        if (cameraPref.faceAuth) {
             viewModelScope.launch(Dispatchers.Default) {
                 drawFace(width, height, itemList)
 
@@ -281,8 +279,8 @@ class CameraViewModel @Inject constructor(
      * @param height
      * @param itemList
      */
-    private fun qrAnalyze(width: Int, height: Int, itemList: List<QrItem>) {
-        if (cameraPref.isQrAuth()) {
+    private fun qrAnalyze(width: Int, height: Int, itemList: List<QrItemModel>) {
+        if (cameraPref.qrAuth) {
             viewModelScope.launch(Dispatchers.Default) {
                 drawQr(width, height, itemList)
 
@@ -296,16 +294,16 @@ class CameraViewModel @Inject constructor(
     }
 
     /** 顔認証状態 */
-    private val _faceAuthState = MutableLiveData<AuthStateEnum>()
+    private val _faceAuthState = MutableLiveData<AuthState>()
 
     /** 顔認証状態 */
-    val faceAuthState: LiveData<AuthStateEnum> = _faceAuthState
+    val faceAuthState: LiveData<AuthState> = _faceAuthState
 
     /**
      * 顔認証を開始
      * @param faceItem 顔情報
      */
-    private fun faceAuth(faceItem: FaceItem) {
+    private fun faceAuth(faceItem: FaceItemModel) {
         viewModelScope.launch(Dispatchers.IO) {
             if (authFlag.getAndSet(true)) {
                 return@launch
@@ -347,26 +345,40 @@ class CameraViewModel @Inject constructor(
                         Timber.d("顔認証 ${result.resp}")
 
                         playAuthSuccessSound()
-                        _faceAuthState.postValue(AuthStateEnum.SUCCESS)
+                        _faceAuthState.postValue(
+                            AuthState(
+                                req = result.req,
+                                resp = result.resp
+                            )
+                        )
                     }
 
                     is AuthResponse.Failure -> {
                         Timber.w("顔認証 ${result.error}")
 
                         playAuthFailSound()
-                        _faceAuthState.postValue(AuthStateEnum.FAIL)
+                        _faceAuthState.postValue(
+                            AuthState(
+                                req = result.req,
+                                error = result.error
+                            )
+                        )
                     }
 
                     is AuthResponse.Loading -> {
                         Timber.d("顔認証 読み込み中.....")
-                        _faceAuthState.postValue(AuthStateEnum.LOADING)
+                        _faceAuthState.postValue(
+                            AuthState(
+                                isLoading = true
+                            )
+                        )
                     }
                 }
             }.launchIn(this)
             authJob?.join()
 
             _authWaitProgressbar.postValue(true)
-            delay(5000)
+            delay(10_000L)
             _authWaitProgressbar.postValue(false)
 
             authFlag.set(false)
@@ -376,10 +388,10 @@ class CameraViewModel @Inject constructor(
     }
 
     /** カード認証状態 */
-    private val _cardAuthState = MutableLiveData<AuthStateEnum>()
+    private val _cardAuthState = MutableLiveData<AuthState>()
 
     /** カード認証状態 */
-    val cardAuthState: LiveData<AuthStateEnum> = _cardAuthState
+    val cardAuthState: LiveData<AuthState> = _cardAuthState
 
     /**
      * カード認証を開始
@@ -405,26 +417,40 @@ class CameraViewModel @Inject constructor(
                         Timber.d("  カード認証 ${result.resp}")
 
                         playAuthSuccessSound()
-                        _cardAuthState.postValue(AuthStateEnum.SUCCESS)
+                        _cardAuthState.postValue(
+                            AuthState(
+                                req = result.req,
+                                resp = result.resp
+                            )
+                        )
                     }
 
                     is AuthResponse.Failure -> {
                         Timber.w("  カード認証 ${result.error}")
 
                         playAuthFailSound()
-                        _cardAuthState.postValue(AuthStateEnum.FAIL)
+                        _cardAuthState.postValue(
+                            AuthState(
+                                req = result.req,
+                                error = result.error
+                            )
+                        )
                     }
 
                     is AuthResponse.Loading -> {
                         Timber.d("  カード認証 読み込み中.....")
-                        _cardAuthState.postValue(AuthStateEnum.LOADING)
+                        _cardAuthState.postValue(
+                            AuthState(
+                                isLoading = true
+                            )
+                        )
                     }
                 }
             }.launchIn(this)
             authJob?.join()
 
             _authWaitProgressbar.postValue(true)
-            delay(5000)
+            delay(10_000L)
             _authWaitProgressbar.postValue(false)
 
             authFlag.set(false)
@@ -439,6 +465,25 @@ class CameraViewModel @Inject constructor(
     fun cancelAuth() {
         viewModelScope.launch(Dispatchers.Default) {
             authJob?.cancelAndJoin()
+        }
+    }
+
+
+    private val _authResultView = MutableLiveData<Boolean>()
+    val authResultView: LiveData<Boolean> = _authResultView
+    private var authResultViewJob: Job? = null
+
+    fun setAuthResultView() {
+        viewModelScope.launch(Dispatchers.Default) {
+            if (authResultViewJob?.isActive == true) {
+                authResultViewJob?.cancelAndJoin()
+            }
+
+            authResultViewJob = launch {
+                _authResultView.postValue(true)
+                delay(5_000L)
+                _authResultView.postValue(false)
+            }
         }
     }
 

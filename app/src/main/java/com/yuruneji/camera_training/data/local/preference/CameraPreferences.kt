@@ -1,107 +1,114 @@
 package com.yuruneji.camera_training.data.local.preference
 
 import android.content.Context
-import com.yuruneji.camera_training.presentation.camera.state.CameraSettingState
+import com.yuruneji.camera_training.domain.model.CameraSettingModel
 
 /**
+ * カメラ設定
  * @author toru
  * @version 1.0
  */
 class CameraPreferences(context: Context) : BasePreferences(context, PREF_NAME) {
 
     companion object {
+        /** 保存ファイル名 */
         const val PREF_NAME = "camera_preferences"
 
+        /** 使用カメラ */
         private const val LENS_FACING = "lens_facing"
+
+        /** APIタイプ*/
         private const val API_TYPE = "api_type"
+
+        /** 認証方法 [単要素認証,多要素認証] */
         private const val AUTH_METHOD = "auth_method"
+
+        /** 多要素認証 [カード＆顔認証,QRコード＆顔認証] */
         private const val MULTI_AUTH_TYPE = "multi_auth_type"
+
+        /** 顔認証 */
         private const val FACE_AUTH = "face_auth"
+
+        /** カード認証 */
         private const val CARD_AUTH = "card_auth"
+
+        /** QRコード認証 */
         private const val QR_AUTH = "qr_auth"
+
+        /** 最小顔サイズ */
         private const val MIN_FACE_SIZE = "min_face_size"
     }
 
-    fun getLensFacing(): Int {
-        return getInt(LENS_FACING, 0)
-    }
+    /**
+     * 使用カメラ
+     */
+    var lensFacing: Int
+        get() = getInt(LENS_FACING, 0)
+        set(value) = setInt(LENS_FACING, value)
 
-    fun setLensFacing(value: Int) {
-        setInt(LENS_FACING, value)
-    }
+    /**
+     * APIタイプ
+     */
+    var apiType: Int
+        get() = getInt(API_TYPE, 0)
+        set(value) = setInt(API_TYPE, value)
 
-    fun getApiType(): Int {
-        return getInt(API_TYPE, 0)
-    }
+    /**
+     * 認証方法 [単要素認証,多要素認証]
+     */
+    var authMethod: Int
+        get() = getInt(AUTH_METHOD, 0)
+        set(value) = setInt(AUTH_METHOD, value)
 
-    fun setApiType(value: Int) {
-        setInt(API_TYPE, value)
-    }
+    /**
+     * 多要素認証 [カード＆顔認証,QRコード＆顔認証]
+     */
+    var multiAuthType: Int
+        get() = getInt(MULTI_AUTH_TYPE, 0)
+        set(value) = setInt(MULTI_AUTH_TYPE, value)
 
-    // AUTH_METHOD
-    fun getAuthMethod(): Int {
-        return getInt(AUTH_METHOD, 0)
-    }
+    /**
+     * 顔認証
+     */
+    var faceAuth: Boolean
+        get() = getBoolean(FACE_AUTH, false)
+        set(value) = setBoolean(FACE_AUTH, value)
 
-    fun setAuthMethod(value: Int) {
-        setInt(AUTH_METHOD, value)
-    }
+    /**
+     * カード認証
+     */
+    var cardAuth: Boolean
+        get() = getBoolean(CARD_AUTH, false)
+        set(value) = setBoolean(CARD_AUTH, value)
 
-    // MULTI_AUTH_TYPE
-    fun getMultiAuthType(): Int {
-        return getInt(MULTI_AUTH_TYPE, 0)
-    }
+    /**
+     * QRコード認証
+     */
+    var qrAuth: Boolean
+        get() = getBoolean(QR_AUTH, false)
+        set(value) = setBoolean(QR_AUTH, value)
 
-    fun setMultiAuthType(value: Int) {
-        setInt(MULTI_AUTH_TYPE, value)
-    }
-
-    // FACE_AUTH
-    fun isFaceAuth(): Boolean {
-        return getBoolean(FACE_AUTH, false)
-    }
-
-    fun setFaceAuth(value: Boolean) {
-        setBoolean(FACE_AUTH, value)
-    }
-
-    // CARD_AUTH
-    fun isCardAuth(): Boolean {
-        return getBoolean(CARD_AUTH, false)
-    }
-
-    fun setCardAuth(value: Boolean) {
-        setBoolean(CARD_AUTH, value)
-    }
-
-
-    // QR_AUTH
-    fun isQrAuth(): Boolean {
-        return getBoolean(QR_AUTH, false)
-    }
-
-    fun setQrAuth(value: Boolean) {
-        setBoolean(QR_AUTH, value)
-    }
-
-    // MIN_FACE_SIZE
-    fun getMinFaceSize(): Float {
-        return getFloat(MIN_FACE_SIZE, 0.15f)
-    }
-
-    fun setMinFaceSize(value: Float) {
-        setFloat(MIN_FACE_SIZE, value)
-    }
+    /**
+     * 最小顔サイズ
+     */
+    var minFaceSize: Float
+        get() = getFloat(MIN_FACE_SIZE, 0.15f)
+        set(value) = setFloat(MIN_FACE_SIZE, value)
 
 }
 
-fun CameraPreferences.convertCameraSettingState(): CameraSettingState {
-    return CameraSettingState(
-        lensFacing = getLensFacing(),
-        authMethod = getAuthMethod(),
-        multiAuthType = getMultiAuthType(),
-        faceAuth = isFaceAuth(),
-        cardAuth = isCardAuth(),
-        qrAuth = isQrAuth()
+/**
+ * CameraPreferencesをCameraSettingStateに変換
+ */
+fun CameraPreferences.convertModel(): CameraSettingModel {
+    return CameraSettingModel(
+        lensFacing = lensFacing,
+        apiType = apiType,
+        authMethod = authMethod,
+        multiAuthType = multiAuthType,
+        faceAuth = faceAuth,
+        cardAuth = cardAuth,
+        qrAuth = qrAuth,
+        minFaceSize = minFaceSize
     )
 }

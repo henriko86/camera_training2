@@ -23,6 +23,7 @@ import com.yuruneji.camera_training.domain.usecase.NetworkSensor
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.components.ViewModelComponent
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
@@ -86,11 +87,11 @@ object Module {
         return SoundManager(context)
     }
 
-    
+
     /** DB */
     @Provides
     @Singleton
-    fun provideDatabase(@ApplicationContext context: Context): AppDatabase =
+    fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase =
         Room.databaseBuilder(context, AppDatabase::class.java, name = "app_db").build()
 
     @Provides
@@ -99,38 +100,34 @@ object Module {
 
     @Provides
     @Singleton
-    fun provideLogFile(logFile: LogDao): LogFile {
-        return LogFile(logFile)
-    }
-
-    @Provides
-    @Singleton
     fun provideLogRepository(logDao: LogDao): LogRepository {
         return LogRepositoryImpl(logDao)
     }
 
-    // @Provides
-    // @Singleton
-    // fun provideUserDao(db: AppDatabase) = db.userDao()
 
-    // @Provides
-    // @Singleton
-    // fun provideAppSettingDao(db: AppDatabase) = db.appSettingDao()
+    /** ログ */
+    @Provides
+    @Singleton
+    fun provideLogFile(logFile: LogDao): LogFile {
+        return LogFile(logFile)
+    }
 
-    // @Provides
-    // @Singleton
-    // fun provideAppSettingRepository(
-    //     appSettingDao: AppSettingDao,
-    // ): AppSettingRepository {
-    //     return AppSettingRepositoryImpl(appSettingDao)
-    // }
 
-    /** HTTP */
+    /** Json */
     @Singleton
     @Provides
     fun provideMoshi(): Moshi = Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
 
-    @Singleton
+
+}
+
+
+@Module
+@InstallIn(ViewModelComponent::class)
+object ViewModelModule {
+
+
+    /** HTTP */
     @Provides
     fun provideHttpClient(): OkHttpClient =
         OkHttpClient.Builder()
@@ -140,9 +137,8 @@ object Module {
             .build()
 
     @Provides
-    @Singleton
     fun provideAppService(okHttpClient: OkHttpClient, moshi: Moshi, cameraPref: CameraPreferences): AppService {
-        val url = when (cameraPref.getApiType()) {
+        val url = when (cameraPref.apiType) {
             ApiType.DEVELOP.no -> BuildConfig.API_URL_DEVELOP
             ApiType.STAGING.no -> BuildConfig.API_URL_STAGING
             ApiType.PRODUCTION.no -> BuildConfig.API_URL_PRODUCTION
@@ -159,7 +155,6 @@ object Module {
     }
 
     @Provides
-    @Singleton
     fun provideAppRepository(api: AppService): AppRepository = AppRepositoryImpl(api)
 
 
