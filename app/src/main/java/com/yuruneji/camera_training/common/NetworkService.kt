@@ -1,4 +1,4 @@
-package com.yuruneji.camera_training.domain.usecase
+package com.yuruneji.camera_training.common
 
 import android.content.Context
 import android.content.Context.CONNECTIVITY_SERVICE
@@ -13,19 +13,22 @@ import javax.inject.Inject
  * @author toru
  * @version 1.0
  */
-class NetworkSensor @Inject constructor(
+class NetworkService @Inject constructor(
     context: Context
 ) {
 
-    // private val _networkState = MutableStateFlow(isNetworkAvailable())
-    // val networkState: StateFlow<Boolean> = _networkState
-
     private val connectivityManager = context.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
 
+    /**
+     * ネットワーク利用可能
+     */
     fun checkNetworkAvailable(): Boolean {
         return isNetworkAvailable()
     }
 
+    /**
+     * IPアドレス取得
+     */
     fun getIpAddress(callback: (String) -> Unit) {
         val networkCallback = object : ConnectivityManager.NetworkCallback() {
             override fun onLinkPropertiesChanged(network: Network, linkProperties: LinkProperties) {
