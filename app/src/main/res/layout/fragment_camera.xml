@@ -71,10 +71,10 @@
             android:id="@+id/result_name_content"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="8dp"
-            android:layout_marginVertical="4dp"
-            android:background="@drawable/result_name_bg"
-            app:layout_constraintBottom_toTopOf="@+id/result_message_content"
+            android:layout_marginHorizontal="32dp"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/view_result_bg"
+            app:layout_constraintBottom_toTopOf="@+id/footer_content"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent">
 
@@ -86,22 +86,10 @@
                 android:text="result_name"
                 android:textColor="@color/white"
                 android:textSize="32sp"
-                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintBottom_toTopOf="@+id/result_message"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/result_message_content"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="8dp"
-            android:layout_marginVertical="4dp"
-            android:background="@drawable/result_name_bg"
-            app:layout_constraintBottom_toTopOf="@+id/footer_content"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent">
 
             <TextView
                 android:id="@+id/result_message"
@@ -114,8 +102,7 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
+                app:layout_constraintTop_toBottomOf="@+id/result_name" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -124,7 +111,7 @@
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="8dp"
             android:layout_marginVertical="4dp"
-            android:background="@drawable/footer_bg"
+            android:background="@drawable/view_footer_bg"
             app:layout_constraintBottom_toTopOf="@+id/auth_wait_progressbar"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent">

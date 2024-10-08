@@ -1,10 +1,8 @@
 package com.yuruneji.camera_training.presentation.camera
 
-import android.app.Activity
 import android.content.Context
 import android.graphics.Matrix
 import android.graphics.PixelFormat
-import android.location.Location
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 import androidx.camera.core.Camera
@@ -19,9 +17,13 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.yuruneji.camera_training.common.AuthMethod
 import com.yuruneji.camera_training.common.AuthResponse
+import com.yuruneji.camera_training.common.Constants
 import com.yuruneji.camera_training.common.LogUploadResponse
-import com.yuruneji.camera_training.common.SoundManager
+import com.yuruneji.camera_training.common.MultiAuthType
+import com.yuruneji.camera_training.common.NetworkService
+import com.yuruneji.camera_training.common.SoundService
 import com.yuruneji.camera_training.common.TimeService
 import com.yuruneji.camera_training.common.toByteArray
 import com.yuruneji.camera_training.data.local.preference.CameraPreferences
@@ -31,11 +33,8 @@ import com.yuruneji.camera_training.domain.model.QrItemModel
 import com.yuruneji.camera_training.domain.usecase.CardAuthUseCase
 import com.yuruneji.camera_training.domain.usecase.FaceAnalyzer
 import com.yuruneji.camera_training.domain.usecase.FaceAuthUseCase
-import com.yuruneji.camera_training.domain.usecase.LocationSensor
 import com.yuruneji.camera_training.domain.usecase.LogUploadUseCase
-import com.yuruneji.camera_training.domain.usecase.NetworkSensor
 import com.yuruneji.camera_training.domain.usecase.QrCodeAnalyzer
-import com.yuruneji.camera_training.domain.usecase.TestWebServer
 import com.yuruneji.camera_training.presentation.camera.state.AuthState
 import com.yuruneji.camera_training.presentation.camera.view.DrawRectView
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -47,6 +46,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
@@ -59,17 +59,26 @@ import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 
-
 @HiltViewModel
 class CameraViewModel @Inject constructor(
     private val cameraPref: CameraPreferences,
-    private val soundManager: SoundManager,
-    private val networkSensor: NetworkSensor,
+    private val networkSensor: NetworkService,
     private val faceAuthUseCase: FaceAuthUseCase,
     private val cardAuthUseCase: CardAuthUseCase,
     private val logUploadUseCase: LogUploadUseCase,
 ) : ViewModel() {
 
+    companion object {
+        //
+    }
+
+    init {
+        // 時刻チェック
+        startTimeCheck()
+
+        // ネットワーク状態
+        startNetworkSensor()
+    }
 
     /** 顔枠表示 */
     private var drawFaceView: DrawRectView? = null
@@ -158,14 +167,19 @@ class CameraViewModel @Inject constructor(
     // private val _cameraSettingModel = MutableLiveData<CameraSettingModel>()
     // val cameraSettingModel: LiveData<CameraSettingModel> = _cameraSettingModel
 
+    private var singleAuthFlag = cameraPref.authMethod == AuthMethod.SINGLE.no
+
+    fun isMultiCardFaceAuth() = cameraPref.multiAuthType == MultiAuthType.CARD_FACE.no
+    fun isMultiQrFaceAuth() = cameraPref.multiAuthType == MultiAuthType.QR_FACE.no
+
     /** 顔認証実行有無 */
-    private val isFaceAuth = AtomicBoolean(true)
+    private val isFaceAuth = AtomicBoolean(false)
 
     /** カード認証実行有無 */
-    private val isCardAuth = AtomicBoolean(true)
+    private val isCardAuth = AtomicBoolean(false)
 
     /** QRコード認証実行有無 */
-    private val isQrAuth = AtomicBoolean(true)
+    private val isQrAuth = AtomicBoolean(false)
 
 
     /**
@@ -183,6 +197,26 @@ class CameraViewModel @Inject constructor(
 
 
         // _cameraSettingState.postValue(cameraPref.convertCameraSettingState())
+
+        if (singleAuthFlag) { // 単要素認証
+            if (cameraPref.faceAuth) { // 顔認証
+                isFaceAuth.set(true)
+            }
+            if (cameraPref.cardAuth) { // カード認証
+                isCardAuth.set(true)
+            }
+            if (cameraPref.qrAuth) { // QRコード認証
+                isQrAuth.set(true)
+            }
+        } else { // 多要素認証
+            if (isMultiCardFaceAuth()) {
+                isCardAuth.set(true)
+            }
+            if (isMultiQrFaceAuth()) {
+                isQrAuth.set(true)
+            }
+        }
+
 
         // 顔認証
         val faceAnalyzer = FaceAnalyzer { width, height, faceItem ->
@@ -262,7 +296,7 @@ class CameraViewModel @Inject constructor(
      * @param itemList
      */
     private fun faceAnalyze(width: Int, height: Int, itemList: List<FaceItemModel>) {
-        if (cameraPref.faceAuth) {
+        if (isFaceAuth.get()) {
             viewModelScope.launch(Dispatchers.Default) {
                 drawFace(width, height, itemList)
 
@@ -280,7 +314,7 @@ class CameraViewModel @Inject constructor(
      * @param itemList
      */
     private fun qrAnalyze(width: Int, height: Int, itemList: List<QrItemModel>) {
-        if (cameraPref.qrAuth) {
+        if (isQrAuth.get()) {
             viewModelScope.launch(Dispatchers.Default) {
                 drawQr(width, height, itemList)
 
@@ -337,14 +371,14 @@ class CameraViewModel @Inject constructor(
                 img = "data:image/jpeg;base64,${Base64.getEncoder().encodeToString(faceItem.faceBitmap?.toByteArray())}"
             )
 
-            playAuthStartSound()
+            soundService?.playAuthStart()
 
             authJob = faceAuthUseCase(model).onEach { result ->
                 when (result) {
                     is AuthResponse.Success -> {
                         Timber.d("顔認証 ${result.resp}")
 
-                        playAuthSuccessSound()
+                        soundService?.playAuthSuccess()
                         _faceAuthState.postValue(
                             AuthState(
                                 req = result.req,
@@ -356,7 +390,7 @@ class CameraViewModel @Inject constructor(
                     is AuthResponse.Failure -> {
                         Timber.w("顔認証 ${result.error}")
 
-                        playAuthFailSound()
+                        soundService?.playAuthError()
                         _faceAuthState.postValue(
                             AuthState(
                                 req = result.req,
@@ -409,14 +443,14 @@ class CameraViewModel @Inject constructor(
                 card = authCode
             )
 
-            playAuthStartSound()
+            soundService?.playAuthStart()
 
             authJob = cardAuthUseCase(model).onEach { result ->
                 when (result) {
                     is AuthResponse.Success -> {
                         Timber.d("  カード認証 ${result.resp}")
 
-                        playAuthSuccessSound()
+                        soundService?.playAuthSuccess()
                         _cardAuthState.postValue(
                             AuthState(
                                 req = result.req,
@@ -428,7 +462,7 @@ class CameraViewModel @Inject constructor(
                     is AuthResponse.Failure -> {
                         Timber.w("  カード認証 ${result.error}")
 
-                        playAuthFailSound()
+                        soundService?.playAuthError()
                         _cardAuthState.postValue(
                             AuthState(
                                 req = result.req,
@@ -475,6 +509,7 @@ class CameraViewModel @Inject constructor(
 
     fun setAuthResultView() {
         viewModelScope.launch(Dispatchers.Default) {
+            Timber.d("${authResultViewJob?.isActive}")
             if (authResultViewJob?.isActive == true) {
                 authResultViewJob?.cancelAndJoin()
             }
@@ -488,16 +523,13 @@ class CameraViewModel @Inject constructor(
     }
 
 
-    /** ログアップロード */
-    private var logUploadJob: Job? = null
-
     /**
      * ログアップロードを開始
      * @param context Context
      */
     fun startLogUpload(context: Context) {
         viewModelScope.launch(Dispatchers.Default) {
-            logUploadJob = launch {
+            while (isActive) {
                 val today = LocalDateTime.now()
                 val fileName = "${today.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))}.log"
                 val logFile = File(context.filesDir, fileName)
@@ -510,111 +542,55 @@ class CameraViewModel @Inject constructor(
     }
 
     /**
-     * ログアップロードを停止
-     */
-    fun stopLogUpload() {
-        viewModelScope.launch {
-            logUploadJob?.cancelAndJoin()
-        }
-    }
-
-    /**
      * ログアップロード
      * @param fileName ログファイル名
      * @param file     ログファイル
      */
-    private fun logUpload(fileName: String, file: File) {
-        Timber.d("logUpload start")
+    private suspend fun logUpload(fileName: String, file: File) = withContext(Dispatchers.IO) {
+        val log = MultipartBody.Part.createFormData(
+            "LogFile", fileName, file.asRequestBody("text/plain".toMediaType())
+        )
 
-        viewModelScope.launch(Dispatchers.IO) {
-            val log = MultipartBody.Part.createFormData(
-                "LogFile", fileName, file.asRequestBody("text/plain".toMediaType())
-            )
-
-            val job = logUploadUseCase(log).onEach { result ->
-                when (result) {
-                    is LogUploadResponse.Success -> {
-                        Timber.d("${result.data}")
-                        Timber.d("ログアップロード!!!! [" + getThreadName() + "]")
-                    }
-
-                    is LogUploadResponse.Failure -> {
-                        Timber.w("${result.error}")
-                        Timber.d("ログアップロードエラー [" + getThreadName() + "]")
-                    }
-
-                    is LogUploadResponse.Loading -> {
-                        Timber.d("ログアップロード 読み込み中..... [" + getThreadName() + "]")
-                    }
+        logUploadUseCase(log).onEach { result ->
+            when (result) {
+                is LogUploadResponse.Success -> {
+                    Timber.d("${result.data}")
+                    Timber.d("ログアップロード!!!! [" + getThreadName() + "]")
                 }
-            }.launchIn(this)
-            job.join()
 
-            Timber.d("logUpload end")
-        }
-    }
+                is LogUploadResponse.Failure -> {
+                    Timber.w("${result.error}")
+                    Timber.d("ログアップロードエラー [" + getThreadName() + "]")
+                }
 
-
-    /** TestWebServer */
-    private var testWebServer: TestWebServer? = null
-
-    /** TestWebServer ポート */
-    private val port = 8888
-
-    /**
-     * TestWebServerを開始
-     */
-    fun startWebServer() {
-        testWebServer = TestWebServer(port, object : TestWebServer.Callback {
-            override fun onConnect(keyA: String, keyB: String) {
-                Timber.d("onConnect keyA: $keyA, keyB: $keyB")
+                is LogUploadResponse.Loading -> {
+                    Timber.d("ログアップロード 読み込み中..... [" + getThreadName() + "]")
+                }
             }
-        })
-        testWebServer?.start()
-    }
-
-    /**
-     * TestWebServerを停止
-     */
-    fun stopWebServer() {
-        testWebServer?.stop()
+        }.launchIn(this)
     }
 
 
     /** ネットワーク状態 */
-    private val _networkState = MutableLiveData<Boolean>(false)
+    private val _networkState = MutableLiveData(false)
 
     /** ネットワーク状態 */
     val networkState: LiveData<Boolean> = _networkState
-
-    /** ネットワーク状態監視Job */
-    private var networkSensorJob: Job? = null
 
     /**
      * ネットワーク状態監視を開始
      * @param delayTime 監視間隔
      */
-    fun startNetworkSensor(delayTime: Long = 10_000L) {
+    private fun startNetworkSensor(delayTime: Long = 10_000L) {
         viewModelScope.launch(Dispatchers.Default) {
-            networkSensorJob = launch {
-                while (isActive) {
-                    val result = networkSensor.checkNetworkAvailable()
-                    if (result != _networkState.value) {
-                        _networkState.postValue(result)
-                    }
-
-                    delay(delayTime)
+            while (isActive) {
+                val result = networkSensor.checkNetworkAvailable()
+                if (result != _networkState.value) {
+                    _networkState.postValue(result)
                 }
-            }
-        }
-    }
 
-    /**
-     * ネットワーク状態監視を停止
-     */
-    fun stopNetworkSensor() {
-        viewModelScope.launch(Dispatchers.Default) {
-            networkSensorJob?.cancelAndJoin()
+                delay(delayTime)
+            }
         }
     }
 
@@ -641,101 +617,32 @@ class CameraViewModel @Inject constructor(
     /** 時刻チェック */
     val timeCheck: LiveData<Boolean> = _timeCheck
 
-    /** 時刻チェック */
-    private var timeCheckJob: Job? = null
-
     /**
      * 時刻チェックを開始
      * @param delayTime 監視間隔
      */
-    fun startTimeCheck(delayTime: Long = 300_000L) {
+    private fun startTimeCheck(delayTime: Long = 300_000L) {
         viewModelScope.launch(Dispatchers.Default) {
-            timeCheckJob = launch {
-                while (isActive) {
-                    Timber.i("時刻チェック start (${getThreadName()})")
-                    _timeCheck.postValue(TimeService.isTimeSync())
-                    Timber.i("時刻チェック end (${getThreadName()})")
+            while (isActive) {
+                Timber.i("時刻チェック start (${getThreadName()})")
+                _timeCheck.postValue(TimeService.isTimeSync())
+                Timber.i("時刻チェック end (${getThreadName()})")
 
-                    delay(delayTime)
-                }
+                delay(delayTime)
             }
         }
     }
 
-    /**
-     * 時刻チェックを停止
-     */
-    fun stopTimeCheck() = viewModelScope.launch(Dispatchers.Default) {
-        timeCheckJob?.cancelAndJoin()
-    }
 
-
-    /** 位置情報 */
-    private lateinit var locationSensor: LocationSensor
-
-    /** 位置情報 */
-    private val _location = MutableLiveData<Location>()
-
-    /** 位置情報 */
-    val location: LiveData<Location> = _location
+    /** 効果音サービス */
+    private var soundService: SoundService? = null
 
     /**
-     * 位置情報を初期化
-     * @param activity Activity
-     * @param owner LifecycleOwner
+     * 効果音サービスを設定
      */
-    fun initLocation(activity: Activity, owner: LifecycleOwner) {
-        locationSensor = LocationSensor(activity)
-        locationSensor.requestLocationPermission()
-
-        locationSensor.location.observe(owner) {
-            _location.postValue(it)
-        }
+    fun setSoundService(soundService: SoundService) {
+        this.soundService = soundService
     }
-
-    /**
-     * 位置情報取得処理を開始
-     * @param intervalTime 位置情報取得間隔
-     */
-    fun startLocation(intervalTime: Long = 300_000L) {
-        locationSensor.start(intervalTime)
-    }
-
-    /**
-     * 位置情報取得処理を停止
-     */
-    fun stopLocation() {
-        locationSensor.stop()
-    }
-
-
-    /**
-     * 認証開始音を再生
-     */
-    private fun playAuthStartSound() {
-        viewModelScope.launch {
-            soundManager.start()
-        }
-    }
-
-    /**
-     * 認証成功音を再生
-     */
-    private fun playAuthSuccessSound() {
-        viewModelScope.launch {
-            soundManager.success()
-        }
-    }
-
-    /**
-     * 認証失敗音を再生
-     */
-    private fun playAuthFailSound() {
-        viewModelScope.launch {
-            soundManager.error()
-        }
-    }
-
 
     /**
      * スレッド名を取得

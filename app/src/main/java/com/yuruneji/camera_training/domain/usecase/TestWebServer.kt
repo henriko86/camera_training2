@@ -7,11 +7,15 @@ import timber.log.Timber
  * @author toru
  * @version 1.0
  */
-class TestWebServer(port: Int, private val callback: Callback) : NanoHTTPD(port) {
+class TestWebServer(
+    port: Int,
+    // private val callback: Callback
+    private val callback: (keyA: String, keyB: String) -> Unit
+) : NanoHTTPD(port) {
 
-    interface Callback {
-        fun onConnect(keyA: String, keyB: String)
-    }
+    // interface Callback {
+    //     fun onConnect(keyA: String, keyB: String)
+    // }
 
     override fun serve(session: IHTTPSession?): Response {
         session?.let {
@@ -38,7 +42,7 @@ class TestWebServer(port: Int, private val callback: Callback) : NanoHTTPD(port)
                     for ((k, v) in session.parameters) {
                         Timber.d("key: $k, value: $v")
                     }
-                    callback.onConnect(
+                    callback(
                         session.parameters["keyA"]?.first() ?: "",
                         session.parameters["keyB"]?.first() ?: ""
                     )

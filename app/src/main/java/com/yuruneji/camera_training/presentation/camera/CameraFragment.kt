@@ -2,27 +2,37 @@ package com.yuruneji.camera_training.presentation.camera
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowInsets
+import android.view.WindowInsetsController
+import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.UiThread
+import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.yuruneji.camera_training.R
 import com.yuruneji.camera_training.common.CommonUtil.getTimeStr
+import com.yuruneji.camera_training.common.LocationService
+import com.yuruneji.camera_training.common.SoundService
 import com.yuruneji.camera_training.data.local.preference.CameraPreferences
 import com.yuruneji.camera_training.data.local.preference.convertModel
 import com.yuruneji.camera_training.databinding.FragmentCameraBinding
 import com.yuruneji.camera_training.domain.model.AppRequestModel
 import com.yuruneji.camera_training.domain.model.AppResponseModel
 import com.yuruneji.camera_training.domain.model.CameraSettingModel
+import com.yuruneji.camera_training.domain.usecase.TestWebServerService
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -56,13 +66,32 @@ class CameraFragment : Fragment() {
             }
         }
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         Timber.i(Throwable().stackTrace[0].methodName)
         super.onCreate(savedInstanceState)
 
+        // 効果音
+        val soundService = SoundService(requireContext())
+        lifecycle.addObserver(soundService)
+        viewModel.setSoundService(soundService)
+
         // 位置情報
-        viewModel.initLocation(requireActivity(), this)
+        val locationService = LocationService(requireActivity()) {
+            // viewModel.setLocation(it)
+            Timber.i("location: ${it.latitude}, ${it.longitude}")
+
+            lifecycleScope.launch {
+                binding.text2.text = getString(R.string.debug_location, it.latitude.toString(), it.longitude.toString(), getTimeStr())
+            }
+        }
+        lifecycle.addObserver(locationService)
+
+        // Webサーバ
+        val webServerService = TestWebServerService { keyA, keyB ->
+            Timber.d("keyA: $keyA, keyB: $keyB")
+        }
+        lifecycle.addObserver(webServerService)
+
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -76,6 +105,7 @@ class CameraFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         Timber.d("onViewCreated()")
 
+        // 設定
         cameraSettingModel = cameraPref.convertModel()
 
         updateCameraSettingView(cameraSettingModel)
@@ -84,13 +114,17 @@ class CameraFragment : Fragment() {
         observeDeviceInfoChanges()
     }
 
+    override fun onStart() {
+        Timber.i(Throwable().stackTrace[0].methodName)
+        super.onStart()
+        // フルスクリーン
+        toggleFullScreen(true)
+    }
+
     override fun onResume() {
         Timber.i(Throwable().stackTrace[0].methodName)
         super.onResume()
         Timber.d("onResume()")
-
-        // フルスクリーン
-        // toggleFullScreen(true)
 
         // リスナーをセットアップ
         setupListeners()
@@ -102,9 +136,13 @@ class CameraFragment : Fragment() {
 
         // リスナーを解除
         stopListeners()
+    }
 
+    override fun onStop() {
+        Timber.i(Throwable().stackTrace[0].methodName)
+        super.onStop()
         // フルスクリーン
-        // toggleFullScreen(false)
+        toggleFullScreen(false)
     }
 
     override fun onDestroyView() {
@@ -114,27 +152,22 @@ class CameraFragment : Fragment() {
     }
 
     private fun setupViewEvent() {
-        // 設定画面表示
-        // binding.root.setOnLongClickListener {
-        //     findNavController().navigate(R.id.action_CameraFragment_to_SettingSignInFragment)
-        //     true
-        // }
 
-        // カード認証したてい
-        // binding.cardAuthBtn.setOnClickListener {
-        //     // val cardNo = "X1234567890"
-        //     viewModel.startCardFaceAuth()
-        // }
+        // 設定画面表示
+        binding.root.setOnLongClickListener {
+            findNavController().navigate(R.id.action_CameraFragment_to_SettingFragment)
+            true
+        }
 
         // 設定
-        binding.settingBtn.setOnClickListener {
-            findNavController().navigate(R.id.action_CameraFragment_to_SettingFragment)
-        }
+        // binding.settingBtn.setOnClickListener {
+        //     findNavController().navigate(R.id.action_CameraFragment_to_SettingFragment)
+        // }
 
         // ログ
-        binding.logBtn.setOnClickListener {
-            findNavController().navigate(R.id.action_CameraFragment_to_LogViewFragment)
-        }
+        // binding.logBtn.setOnClickListener {
+        //     findNavController().navigate(R.id.action_CameraFragment_to_LogViewFragment)
+        // }
 
     }
 
@@ -209,12 +242,6 @@ class CameraFragment : Fragment() {
             }
         }
 
-        // 位置情報
-        viewModel.location.observe(viewLifecycleOwner) {
-            Timber.i("location: ${it.latitude}, ${it.longitude}")
-            binding.text2.text = getString(R.string.debug_location, it.latitude.toString(), it.longitude.toString(), getTimeStr())
-        }
-
         // 時間
         viewModel.timeCheck.observe(viewLifecycleOwner) {
             Timber.i("timeCheck: $it")
@@ -238,41 +265,11 @@ class CameraFragment : Fragment() {
 
         // ログアップロード
         viewModel.startLogUpload(requireContext())
-
-        // Webサーバを起動
-        viewModel.startWebServer()
-
-        // ネットワーク状態
-        viewModel.startNetworkSensor()
-
-        // 位置情報
-        viewModel.startLocation()
-
-        // 時間チェック
-        viewModel.startTimeCheck()
-
-        // IPアドレス
-        // viewModel.getIpAddress(requireContext())
     }
 
     private fun stopListeners() {
         // カメラ
         stopCamera()
-
-        // ログアップロード
-        viewModel.stopLogUpload()
-
-        // Webサーバを停止
-        viewModel.stopWebServer()
-
-        // ネットワーク状態
-        viewModel.stopNetworkSensor()
-
-        // 位置情報
-        viewModel.stopLocation()
-
-        // 時間
-        viewModel.stopTimeCheck()
     }
 
     /**
@@ -376,44 +373,43 @@ class CameraFragment : Fragment() {
         }
     }
 
+    /**
+     * フルスクリーン
+     * @param isFullScreen フルスクリーン表示
+     */
+    private fun toggleFullScreen(isFullScreen: Boolean) {
+        if (isFullScreen) {
+            lifecycleScope.launch {
+                activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
 
-    // /**
-    //  * フルスクリーン
-    //  * @param isFullScreen フルスクリーン表示
-    //  */
-    // private fun toggleFullScreen(isFullScreen: Boolean) {
-    //     if (isFullScreen) {
-    //         lifecycleScope.launch {
-    //             activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
-    //
-    //             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-    //                 activity?.window?.insetsController?.hide(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
-    //                 activity?.window?.insetsController?.systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-    //             } else {
-    //                 val flags =
-    //                     View.SYSTEM_UI_FLAG_LOW_PROFILE or
-    //                             View.SYSTEM_UI_FLAG_FULLSCREEN or
-    //                             View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
-    //                             View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
-    //                             View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
-    //                             View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-    //                 activity?.window?.decorView?.systemUiVisibility = flags
-    //             }
-    //
-    //             (activity as? AppCompatActivity)?.supportActionBar?.hide()
-    //         }
-    //     } else {
-    //         lifecycleScope.launch {
-    //             activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
-    //
-    //             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-    //                 activity?.window?.insetsController?.show(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
-    //             } else {
-    //                 activity?.window?.decorView?.systemUiVisibility = 0
-    //             }
-    //
-    //             (activity as? AppCompatActivity)?.supportActionBar?.show()
-    //         }
-    //     }
-    // }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    activity?.window?.insetsController?.hide(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
+                    activity?.window?.insetsController?.systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+                } else {
+                    val flags =
+                        View.SYSTEM_UI_FLAG_LOW_PROFILE or
+                                View.SYSTEM_UI_FLAG_FULLSCREEN or
+                                View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
+                                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
+                                View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
+                                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                    activity?.window?.decorView?.systemUiVisibility = flags
+                }
+
+                (activity as? AppCompatActivity)?.supportActionBar?.hide()
+            }
+        } else {
+            lifecycleScope.launch {
+                activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    activity?.window?.insetsController?.show(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
+                } else {
+                    activity?.window?.decorView?.systemUiVisibility = 0
+                }
+
+                (activity as? AppCompatActivity)?.supportActionBar?.show()
+            }
+        }
+    }
 }

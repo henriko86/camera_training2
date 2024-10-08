@@ -1,6 +1,7 @@
 package com.yuruneji.camera_training.presentation
 
 import android.os.Bundle
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
@@ -25,7 +26,9 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         Timber.i(Throwable().stackTrace[0].methodName)
         super.onCreate(savedInstanceState)
-        // enableEdgeToEdge()
+
+        enableEdgeToEdge()
+
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 

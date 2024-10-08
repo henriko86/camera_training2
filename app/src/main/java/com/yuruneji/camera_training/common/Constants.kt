@@ -9,6 +9,7 @@ import android.hardware.camera2.CameraCharacteristics
  */
 object Constants {
 
+
     // /** URL */
     // const val BASE_URL = "http://192.168.11.2:8080"
 

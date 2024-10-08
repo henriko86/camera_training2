@@ -7,7 +7,6 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.yuruneji.camera_training.BuildConfig
 import com.yuruneji.camera_training.common.ApiType
 import com.yuruneji.camera_training.common.CipherExtractor
-import com.yuruneji.camera_training.common.SoundManager
 import com.yuruneji.camera_training.data.local.datastore.BaseDataStore
 import com.yuruneji.camera_training.data.local.datastore.LogViewDataStore
 import com.yuruneji.camera_training.data.local.db.AppDatabase
@@ -19,7 +18,7 @@ import com.yuruneji.camera_training.data.repository.LogRepositoryImpl
 import com.yuruneji.camera_training.domain.repository.AppRepository
 import com.yuruneji.camera_training.domain.repository.LogRepository
 import com.yuruneji.camera_training.domain.usecase.LogFile
-import com.yuruneji.camera_training.domain.usecase.NetworkSensor
+import com.yuruneji.camera_training.common.NetworkService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -44,8 +43,8 @@ object Module {
     /** ネットワーク状態 */
     @Provides
     @Singleton
-    fun provideNetworkSensor(@ApplicationContext context: Context): NetworkSensor {
-        return NetworkSensor(context)
+    fun provideNetworkSensor(@ApplicationContext context: Context): NetworkService {
+        return NetworkService(context)
     }
 
 
@@ -80,12 +79,12 @@ object Module {
     }
 
 
-    /** Sound */
-    @Provides
-    @Singleton
-    fun provideSoundManager(@ApplicationContext context: Context): SoundManager {
-        return SoundManager(context)
-    }
+    // /** Sound */
+    // @Provides
+    // @Singleton
+    // fun provideSoundManager(@ApplicationContext context: Context): SoundService {
+    //     return SoundService(context)
+    // }
 
 
     /** DB */
