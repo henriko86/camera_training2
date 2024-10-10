@@ -8,8 +8,13 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.internal.TextWatcherAdapter
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 import com.yuruneji.camera_training.BuildConfig
 import com.yuruneji.camera_training.R
+import com.yuruneji.camera_training.common.TextValidator
+import com.yuruneji.camera_training.common.TextValidatorItem
 import com.yuruneji.camera_training.databinding.FragmentHomeBinding
 import timber.log.Timber
 
@@ -21,6 +26,8 @@ class HomeFragment : Fragment() {
 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         Timber.i(Throwable().stackTrace[0].methodName)
@@ -62,6 +69,21 @@ class HomeFragment : Fragment() {
         Timber.d("xxx=${BuildConfig.API_URL_PRODUCTION}")
         Timber.d("xxx=")
         Timber.d("")
+
+
+        val nameValidatorItem = TextValidatorItem(
+            isEmpty = true,
+            isEmptyMsg = "a入力してください",
+            minLength = 3,
+            minLengthMsg = "b文字数が少ないです",
+            maxLength = 10,
+            maxLengthMsg = "c文字数が多すぎます"
+        )
+        binding.name.addTextChangedListener(object : TextValidator(binding.nameLayout, binding.name, nameValidatorItem) {
+            override fun validate(layout: TextInputLayout, editText: TextInputEditText, text: String?) {
+                //
+            }
+        })
 
 
         // ACTION_INTERNET_CONNECTIVITY

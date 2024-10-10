@@ -1,5 +1,6 @@
 package com.yuruneji.camera_training.common
 
+import android.app.Activity
 import android.graphics.Bitmap
 import android.graphics.Bitmap.Config
 import android.graphics.BitmapFactory
@@ -9,6 +10,12 @@ import android.graphics.Matrix
 import android.graphics.Rect
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
+import android.os.Build
+import android.view.View
+import android.view.WindowManager
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import org.apache.commons.codec.binary.Hex
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -218,6 +225,43 @@ object CommonUtil {
     fun string2AsciiString(str: String, separator: String = ""): String {
         return str.toByteArray(Charsets.US_ASCII).joinToString(separator)
     }
+
+    fun fullscreenFragment(activity: Activity, state: Boolean) {
+        if (state) {
+            activity.window?.addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
+            val flags = View.SYSTEM_UI_FLAG_LOW_PROFILE or
+                    View.SYSTEM_UI_FLAG_FULLSCREEN or
+                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
+                    View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
+                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
+                    View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+            activity.window?.decorView?.systemUiVisibility = flags
+            (activity as? AppCompatActivity)?.supportActionBar?.hide()
+        } else {
+            activity.window?.clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
+            activity.window?.decorView?.systemUiVisibility = 0
+            (activity as? AppCompatActivity)?.supportActionBar?.show()
+        }
+    }
+
+    fun fullscreenToolbarFragment(activity: Activity, state: Boolean) {
+        if (state) {
+            activity.window?.addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
+            val flags = View.SYSTEM_UI_FLAG_LOW_PROFILE or
+                    View.SYSTEM_UI_FLAG_FULLSCREEN or
+                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
+                    View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
+                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
+                    View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+            activity.window?.decorView?.systemUiVisibility = flags
+            // (activity as? AppCompatActivity)?.supportActionBar?.hide()
+        } else {
+            activity.window?.clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
+            activity.window?.decorView?.systemUiVisibility = 0
+            (activity as? AppCompatActivity)?.supportActionBar?.show()
+        }
+    }
+
 }
 
 // data class Prop(

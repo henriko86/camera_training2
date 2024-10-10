@@ -21,6 +21,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.yuruneji.camera_training.R
+import com.yuruneji.camera_training.common.CommonUtil
 import com.yuruneji.camera_training.common.CommonUtil.getTimeStr
 import com.yuruneji.camera_training.common.LocationService
 import com.yuruneji.camera_training.common.SoundService
@@ -118,7 +119,7 @@ class CameraFragment : Fragment() {
         Timber.i(Throwable().stackTrace[0].methodName)
         super.onStart()
         // フルスクリーン
-        toggleFullScreen(true)
+        CommonUtil.fullscreenFragment(requireActivity(), true)
     }
 
     override fun onResume() {
@@ -142,7 +143,7 @@ class CameraFragment : Fragment() {
         Timber.i(Throwable().stackTrace[0].methodName)
         super.onStop()
         // フルスクリーン
-        toggleFullScreen(false)
+        CommonUtil.fullscreenFragment(requireActivity(), false)
     }
 
     override fun onDestroyView() {
@@ -265,6 +266,12 @@ class CameraFragment : Fragment() {
 
         // ログアップロード
         viewModel.startLogUpload(requireContext())
+
+        // 時刻チェック
+        viewModel.startTimeCheck()
+
+        // ネットワーク状態
+        viewModel.startNetworkSensor()
     }
 
     private fun stopListeners() {
@@ -318,7 +325,7 @@ class CameraFragment : Fragment() {
     }
 
     @UiThread
-    fun updateCameraSettingView(cameraSettingState: CameraSettingModel) {
+    private fun updateCameraSettingView(cameraSettingState: CameraSettingModel) {
         Timber.d("updateCameraSettingView() $cameraSettingState")
 
 
@@ -353,7 +360,7 @@ class CameraFragment : Fragment() {
     }
 
     @UiThread
-    fun updateAuthResultView(req: AppRequestModel?, resp: AppResponseModel?, error: Throwable?) {
+    private fun updateAuthResultView(req: AppRequestModel?, resp: AppResponseModel?, error: Throwable?) {
         if (error != null) {
             binding.resultName.text = "Error"
             binding.resultMessage.text = error.message
@@ -365,7 +372,7 @@ class CameraFragment : Fragment() {
     }
 
     @UiThread
-    fun updateNetworkState(state: Boolean) {
+    private fun updateNetworkState(state: Boolean) {
         if (state) {
             binding.iconNetworkState.setImageDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.baseline_wifi_24_on))
         } else {
@@ -373,43 +380,36 @@ class CameraFragment : Fragment() {
         }
     }
 
-    /**
-     * フルスクリーン
-     * @param isFullScreen フルスクリーン表示
-     */
-    private fun toggleFullScreen(isFullScreen: Boolean) {
-        if (isFullScreen) {
-            lifecycleScope.launch {
-                activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
-
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    activity?.window?.insetsController?.hide(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
-                    activity?.window?.insetsController?.systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-                } else {
-                    val flags =
-                        View.SYSTEM_UI_FLAG_LOW_PROFILE or
-                                View.SYSTEM_UI_FLAG_FULLSCREEN or
-                                View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
-                                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
-                                View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
-                                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                    activity?.window?.decorView?.systemUiVisibility = flags
-                }
-
-                (activity as? AppCompatActivity)?.supportActionBar?.hide()
-            }
-        } else {
-            lifecycleScope.launch {
-                activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
-
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    activity?.window?.insetsController?.show(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
-                } else {
-                    activity?.window?.decorView?.systemUiVisibility = 0
-                }
-
-                (activity as? AppCompatActivity)?.supportActionBar?.show()
-            }
-        }
-    }
+    // /**
+    //  * フルスクリーン
+    //  * @param isFullScreen フルスクリーン表示
+    //  */
+    // private fun toggleFullScreen(isFullScreen: Boolean) {
+    //     if (isFullScreen) {
+    //         lifecycleScope.launch {
+    //             activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
+    //
+    //             val flags = View.SYSTEM_UI_FLAG_LOW_PROFILE or
+    //                     View.SYSTEM_UI_FLAG_FULLSCREEN or
+    //                     View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
+    //                     View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
+    //                     View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
+    //                     View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+    //             activity?.window?.decorView?.systemUiVisibility = flags
+    //             (activity as? AppCompatActivity)?.supportActionBar?.hide()
+    //         }
+    //     } else {
+    //         // lifecycleScope.launch {
+    //         //     activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
+    //         //
+    //         //     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+    //         //         activity?.window?.insetsController?.show(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
+    //         //     } else {
+    //         //         activity?.window?.decorView?.systemUiVisibility = 0
+    //         //     }
+    //         //
+    //         //     (activity as? AppCompatActivity)?.supportActionBar?.show()
+    //         // }
+    //     }
+    // }
 }

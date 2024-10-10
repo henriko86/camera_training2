@@ -19,5 +19,8 @@
     <string name="debug_location">緯度:%1$s,経度:%2$s (%3$s)</string>
     <string name="debug_network_offline">ネットワーク状態: オフライン (%1$s)</string>
     <string name="debug_network_online">ネットワーク状態: オンライン (%1$s)</string>
+    <string name="title_activity_fullscreen">FullscreenActivity</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
 
 </resources>
