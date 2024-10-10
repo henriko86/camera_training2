@@ -11,6 +11,9 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.switchmaterial.SwitchMaterial
 import com.yuruneji.camera_training.R
@@ -19,6 +22,7 @@ import com.yuruneji.camera_training.databinding.FragmentLogViewBinding
 import com.yuruneji.camera_training.presentation.log_view.state.LogPeriod
 import com.yuruneji.camera_training.presentation.log_view.state.LogViewState
 import com.yuruneji.camera_training.presentation.log_view.view.LogViewAdapter
+import com.yuruneji.camera_training.presentation.log_view.view.LogViewItem
 import com.yuruneji.camera_training.presentation.view.DatePickerFragment
 import com.yuruneji.camera_training.presentation.view.TimePickerFragment
 import dagger.hilt.android.AndroidEntryPoint
@@ -36,6 +40,8 @@ class LogViewFragment : Fragment(), DatePickerFragment.OnSelectedDateListener, T
     private val viewModel: LogViewViewModel by viewModels()
     private val adapter: LogViewAdapter = LogViewAdapter()
     private var logViewState: LogViewState = LogViewState()
+
+    private var list: MutableList<LogViewItem> = mutableListOf()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -66,6 +72,21 @@ class LogViewFragment : Fragment(), DatePickerFragment.OnSelectedDateListener, T
         val decoration = DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL)
         binding.listview.addItemDecoration(decoration)
         binding.listview.adapter = adapter
+
+        val helper = ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(
+            ItemTouchHelper.UP or ItemTouchHelper.DOWN,
+            ItemTouchHelper.START or ItemTouchHelper.END
+        ) {
+            override fun onMove(recyclerView: RecyclerView, viewHolder: ViewHolder, target: ViewHolder): Boolean {
+                swap(viewHolder.adapterPosition, target.adapterPosition)
+                return true
+            }
+
+            override fun onSwiped(viewHolder: ViewHolder, direction: Int) {
+                remove(viewHolder.adapterPosition)
+            }
+        })
+        helper.attachToRecyclerView(binding.listview)
     }
 
     private fun setupOnCheckedChangeListeners() {
@@ -111,42 +132,6 @@ class LogViewFragment : Fragment(), DatePickerFragment.OnSelectedDateListener, T
         // フローティングボタン
         binding.priorityBtn.setOnClickListener {
             val dialogLayout = LayoutInflater.from(context).inflate(R.layout.dialog_log_view_setting, null)
-
-            // val dateEditText = dialogLayout.findViewById<TextInputEditText>(R.id.date)
-            // dateEditText.setOnClickListener {
-            //     val datePicker = DatePickerFragment()
-            //     datePicker.show(childFragmentManager, "datePicker")
-            // }
-
-            // val timeEditText = dialogLayout.findViewById<TextInputEditText>(R.id.time)
-            // timeEditText.setOnClickListener {
-            //     val timePicker = TimePickerFragment()
-            //     timePicker.show(childFragmentManager, "timePicker")
-            // }
-
-            // val periodList = arrayOf("1日", "半日", "時間")
-            // val periodListAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, periodList)
-
-            // val periodRadioGroup = dialogLayout.findViewById<AutoCompleteTextView>(R.id.period)
-            // periodRadioGroup.setAdapter(periodListAdapter)
-            // periodRadioGroup.setText(periodList[0], false)
-            // periodRadioGroup.addTextChangedListener(object : TextWatcher {
-            //     override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-            //     }
-            //
-            //     override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-            //     }
-            //
-            //     override fun afterTextChanged(s: Editable?) {
-            //         s?.let {
-            //             when (s.toString()) {
-            //                 periodList[0] -> viewModel.setPeriod(LogPeriod.DAY)
-            //                 periodList[1] -> viewModel.setPeriod(LogPeriod.HALF_DAY)
-            //                 periodList[2] -> viewModel.setPeriod(LogPeriod.HOUR)
-            //             }
-            //         }
-            //     }
-            // })
 
             val verboseSwitch = dialogLayout.findViewById<SwitchMaterial>(R.id.switch_verbose)
             verboseSwitch.setOnCheckedChangeListener { _, isChecked ->
@@ -203,7 +188,8 @@ class LogViewFragment : Fragment(), DatePickerFragment.OnSelectedDateListener, T
         // 検索結果のObserve
         viewModel.selectData().observe(viewLifecycleOwner) { someEntity ->
             someEntity?.let {
-                adapter.submitList(someEntity.map { it.convert() })
+                list = someEntity.map { it.convert() }.toMutableList()
+                adapter.submitList(list)
             }
         }
     }
@@ -222,5 +208,15 @@ class LogViewFragment : Fragment(), DatePickerFragment.OnSelectedDateListener, T
             // binding.time.text = Editable.Factory.getInstance().newEditable(time.format(DateTimeFormatter.ofPattern("HH:mm")))
             // viewModel.setTime(time)
         }
+    }
+
+    fun swap(from: Int, to: Int) {
+        list.add(to, list.removeAt(from))
+        adapter.submitList(list.toList())
+    }
+
+    fun remove(target: Int) {
+        list.removeAt(target)
+        adapter.submitList(list.toList())
     }
 }

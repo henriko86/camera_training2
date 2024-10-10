@@ -56,4 +56,11 @@
             android:id="@+id/action_LogViewFragment_to_HomeFragment"
             app:destination="@+id/HomeFragment" />
     </fragment>
+
+    <fragment
+    android:id="@+id/MyFragment"
+    android:name="com.yuruneji.camera_training.presentation.xxx2.MyFragment"
+    android:label="MyFragment"
+    tools:layout="@layout/fragment_my"/>
+
 </navigation>

@@ -46,7 +46,7 @@ abstract class BasePreferences(
     fun setEncString(key: String, value: String) {
         encEditor.apply {
             putString(key, value)
-            commit()
+            apply()
         }
     }
 
@@ -57,7 +57,7 @@ abstract class BasePreferences(
     fun setString(key: String, value: String) {
         editor.apply {
             putString(key, value)
-            commit()
+            apply()
         }
     }
 
@@ -68,7 +68,7 @@ abstract class BasePreferences(
     fun setInt(key: String, value: Int) {
         editor.apply {
             putInt(key, value)
-            commit()
+            apply()
         }
     }
 
@@ -79,7 +79,7 @@ abstract class BasePreferences(
     fun setLong(key: String, value: Long) {
         editor.apply {
             putLong(key, value)
-            commit()
+            apply()
         }
     }
 
@@ -90,7 +90,7 @@ abstract class BasePreferences(
     fun setFloat(key: String, value: Float) {
         editor.apply {
             putFloat(key, value)
-            commit()
+            apply()
         }
     }
 
@@ -101,7 +101,7 @@ abstract class BasePreferences(
     fun setBoolean(key: String, value: Boolean) {
         editor.apply {
             putBoolean(key, value)
-            commit()
+            apply()
         }
     }
 
@@ -112,7 +112,7 @@ abstract class BasePreferences(
     fun setStringSet(key: String, value: Set<String>) {
         editor.apply {
             putStringSet(key, value)
-            commit()
+            apply()
         }
     }
 }

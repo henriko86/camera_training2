@@ -37,35 +37,32 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-
-        <Button
-            android:id="@+id/setting_btn"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/status_message_content"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="16dp"
-            android:text="設定"
-            android:visibility="gone"
-            app:layout_constraintBottom_toTopOf="@+id/log_btn"
-            app:layout_constraintStart_toStartOf="parent" />
+            android:background="@drawable/view_result_bg"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
-        <Button
-            android:id="@+id/log_btn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="16dp"
-            android:text="ログ"
-            android:visibility="gone"
-            app:layout_constraintBottom_toTopOf="@+id/result_name_content"
-            app:layout_constraintStart_toStartOf="parent" />
+            <TextView
+                android:id="@+id/status_message"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="32dp"
+                android:paddingVertical="8dp"
+                android:text="status_message"
+                android:textColor="@color/white"
+                android:textSize="24dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
-        <ImageView
-            android:id="@+id/result_face_image"
-            android:layout_width="50dp"
-            android:layout_height="60dp"
-            android:layout_margin="16dp"
-            app:layout_constraintBottom_toTopOf="@+id/result_name_content"
-            app:layout_constraintEnd_toEndOf="parent" />
 
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/result_name_content"
@@ -105,14 +102,25 @@
                 app:layout_constraintTop_toBottomOf="@+id/result_name" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
+
+        <com.google.android.material.progressindicator.LinearProgressIndicator
+            android:id="@+id/auth_wait_progressbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:alpha="0.8"
+            android:indeterminate="true"
+            android:visibility="invisible"
+            app:layout_constraintBottom_toTopOf="@+id/footer_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/footer_content"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="8dp"
-            android:layout_marginVertical="4dp"
             android:background="@drawable/view_footer_bg"
-            app:layout_constraintBottom_toTopOf="@+id/auth_wait_progressbar"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent">
 
@@ -166,17 +174,7 @@
             </LinearLayout>
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <com.google.android.material.progressindicator.LinearProgressIndicator
-            android:id="@+id/auth_wait_progressbar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:indeterminate="true"
-            android:visibility="invisible"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
-
+        <!-- デバッグ -->
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -184,7 +182,7 @@
             android:layout_marginTop="8dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintTop_toBottomOf="@+id/status_message_content">
 
             <LinearLayout
                 android:layout_width="wrap_content"

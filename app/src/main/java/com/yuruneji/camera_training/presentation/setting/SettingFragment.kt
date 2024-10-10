@@ -1,5 +1,6 @@
 package com.yuruneji.camera_training.presentation.setting
 
+import android.R
 import android.os.Bundle
 import android.text.Editable
 import android.view.LayoutInflater
@@ -11,8 +12,10 @@ import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.snackbar.Snackbar
 import com.yuruneji.camera_training.common.ApiType
 import com.yuruneji.camera_training.common.AuthMethod
+import com.yuruneji.camera_training.common.CommonUtil
 import com.yuruneji.camera_training.common.LensFacing
 import com.yuruneji.camera_training.common.MinFaceSize
 import com.yuruneji.camera_training.common.MultiAuthType
@@ -25,6 +28,7 @@ import timber.log.Timber
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
+
 
 @AndroidEntryPoint
 class SettingFragment : Fragment(), DatePickerFragment.OnSelectedDateListener, TimePickerFragment.OnSelectedTimeListener {
@@ -44,7 +48,6 @@ class SettingFragment : Fragment(), DatePickerFragment.OnSelectedDateListener, T
     ): View {
         Timber.i(Throwable().stackTrace[0].methodName)
         _binding = FragmentSettingBinding.inflate(inflater, container, false)
-        binding.viewModel = viewModel
         return binding.root
     }
 
@@ -52,21 +55,47 @@ class SettingFragment : Fragment(), DatePickerFragment.OnSelectedDateListener, T
         Timber.i(Throwable().stackTrace[0].methodName)
         super.onViewCreated(view, savedInstanceState)
 
+        // val toolbar: Toolbar = binding.toolbarParent.toolbar
+        // toolbar.title = "設定"
+        // val toolbarTitle = binding.toolbarParent.toolbarTitle
+        // toolbarTitle.text = "設定"
 
+        // val activity = requireActivity() as AppCompatActivity
+        // activity.setSupportActionBar(toolbar)
+        // activity.supportActionBar?.setDisplayShowHomeEnabled(true)
+        // activity.supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        // activity.supportActionBar?.show()
+
+        CommonUtil.fullscreenToolbarFragment(requireActivity(), true)
         // PreferenceManager.getDefaultSharedPreferences(requireContext()).
         // requireContext().deleteSharedPreferences(CameraPreferences.PREF_NAME)
 
 
+        // val contextView = findViewById<View>(R.id.context_view)
+        binding.snackbarBtn.setOnClickListener {
+            Snackbar.make(binding.root, "xxxxx", Snackbar.LENGTH_LONG)
+                .setAction("Action") {
+                    Timber.d("action")
+                }
+                .show()
+        }
+
+
+        // val decoration = DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL)
+        // binding.listview.addItemDecoration(decoration)
+
+
         val lensFacingList = LensFacing.valueList()
-        val lensFacingAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, lensFacingList)
+        val lensFacingAdapter = ArrayAdapter(requireContext(), R.layout.simple_spinner_dropdown_item, lensFacingList)
         binding.lensFacing.setAdapter(lensFacingAdapter)
+        // binding.lensFacing.additem
         binding.lensFacing.addTextChangedListener {
             viewModel.updateLensFacing(LensFacing.toNo(it.toString()))
         }
 
 
         val apiTypeList = ApiType.valueList()
-        val apiTypeAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, apiTypeList)
+        val apiTypeAdapter = ArrayAdapter(requireContext(), R.layout.simple_spinner_dropdown_item, apiTypeList)
         binding.apiType.setAdapter(apiTypeAdapter)
         binding.apiType.addTextChangedListener {
             viewModel.updateApiType(ApiType.toNo(it.toString()))
@@ -74,7 +103,7 @@ class SettingFragment : Fragment(), DatePickerFragment.OnSelectedDateListener, T
 
 
         val authMethodList = AuthMethod.valueList()
-        val authMethodAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, authMethodList)
+        val authMethodAdapter = ArrayAdapter(requireContext(), R.layout.simple_spinner_dropdown_item, authMethodList)
         binding.authMethod.setAdapter(authMethodAdapter)
         binding.authMethod.addTextChangedListener {
             viewModel.updateAuthMethod(AuthMethod.toNo(it.toString()))
@@ -83,7 +112,7 @@ class SettingFragment : Fragment(), DatePickerFragment.OnSelectedDateListener, T
 
 
         val multiAuthTypeList = MultiAuthType.valueList()
-        val multiAuthTypeAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, multiAuthTypeList)
+        val multiAuthTypeAdapter = ArrayAdapter(requireContext(), R.layout.simple_spinner_dropdown_item, multiAuthTypeList)
         binding.multiAuthType.setAdapter(multiAuthTypeAdapter)
         binding.multiAuthType.addTextChangedListener {
             viewModel.updateMultiAuthType(MultiAuthType.toNo(it.toString()))
@@ -153,7 +182,7 @@ class SettingFragment : Fragment(), DatePickerFragment.OnSelectedDateListener, T
 
 
         val minFaceSizeList = MinFaceSize.valueList()
-        val minFaceSizeAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, minFaceSizeList)
+        val minFaceSizeAdapter = ArrayAdapter(requireContext(), R.layout.simple_spinner_dropdown_item, minFaceSizeList)
         binding.minFaceSize.setAdapter(minFaceSizeAdapter)
         binding.minFaceSize.addTextChangedListener {
             viewModel.updateMinFaceSize(MinFaceSize.toSize(it.toString()))
@@ -211,5 +240,4 @@ class SettingFragment : Fragment(), DatePickerFragment.OnSelectedDateListener, T
             binding.qrAuthSwitch.isEnabled = true
         }
     }
-
 }

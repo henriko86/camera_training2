@@ -68,17 +68,6 @@ class CameraViewModel @Inject constructor(
     private val logUploadUseCase: LogUploadUseCase,
 ) : ViewModel() {
 
-    companion object {
-        //
-    }
-
-    init {
-        // 時刻チェック
-        startTimeCheck()
-
-        // ネットワーク状態
-        startNetworkSensor()
-    }
 
     /** 顔枠表示 */
     private var drawFaceView: DrawRectView? = null
@@ -536,7 +525,7 @@ class CameraViewModel @Inject constructor(
 
                 logUpload(fileName, logFile)
 
-                delay(600_000)
+                delay(60_000)
             }
         }
     }
@@ -581,7 +570,7 @@ class CameraViewModel @Inject constructor(
      * ネットワーク状態監視を開始
      * @param delayTime 監視間隔
      */
-    private fun startNetworkSensor(delayTime: Long = 10_000L) {
+     fun startNetworkSensor(delayTime: Long = 10_000L) {
         viewModelScope.launch(Dispatchers.Default) {
             while (isActive) {
                 val result = networkSensor.checkNetworkAvailable()
@@ -621,7 +610,7 @@ class CameraViewModel @Inject constructor(
      * 時刻チェックを開始
      * @param delayTime 監視間隔
      */
-    private fun startTimeCheck(delayTime: Long = 300_000L) {
+    fun startTimeCheck(delayTime: Long = 300_000L) {
         viewModelScope.launch(Dispatchers.Default) {
             while (isActive) {
                 Timber.i("時刻チェック start (${getThreadName()})")
