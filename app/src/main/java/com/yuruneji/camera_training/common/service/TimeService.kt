@@ -1,4 +1,4 @@
-package com.yuruneji.camera_training.common
+package com.yuruneji.camera_training.common.service
 
 import org.apache.commons.net.ntp.NTPUDPClient
 import timber.log.Timber

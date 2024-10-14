@@ -4,8 +4,7 @@ import android.content.Context
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.util.Base64
-import com.yuruneji.camera_training.data.local.preference.BasePreferences
-import com.yuruneji.camera_training.data.local.preference.CameraPreferences
+import com.yuruneji.camera_training.data.local.preference.CipherPreferences
 import org.apache.commons.lang3.RandomStringUtils
 import timber.log.Timber
 import java.io.ByteArrayInputStream
@@ -149,11 +148,11 @@ class CipherExtractor @Inject constructor(
      * IVを取得
      */
     private fun getIv(context: Context): String {
-        val basePref = CameraPreferences(context)
-        var iv = basePref.getEncString(PREF_IV_KEY, "")
+        val pref = CipherPreferences(context)
+        var iv = pref.iv
         if (iv.isEmpty()) {
             iv = RandomStringUtils.randomAlphabetic(16)
-            basePref.setEncString(PREF_IV_KEY, iv)
+            pref.iv = iv
         }
         return iv
     }

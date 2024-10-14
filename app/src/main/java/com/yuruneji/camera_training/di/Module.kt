@@ -11,14 +11,15 @@ import com.yuruneji.camera_training.data.local.datastore.BaseDataStore
 import com.yuruneji.camera_training.data.local.datastore.LogViewDataStore
 import com.yuruneji.camera_training.data.local.db.AppDatabase
 import com.yuruneji.camera_training.data.local.db.LogDao
-import com.yuruneji.camera_training.data.local.preference.CameraPreferences
 import com.yuruneji.camera_training.data.remote.AppService
 import com.yuruneji.camera_training.data.repository.AppRepositoryImpl
 import com.yuruneji.camera_training.data.repository.LogRepositoryImpl
 import com.yuruneji.camera_training.domain.repository.AppRepository
 import com.yuruneji.camera_training.domain.repository.LogRepository
 import com.yuruneji.camera_training.domain.usecase.LogFile
-import com.yuruneji.camera_training.common.NetworkService
+import com.yuruneji.camera_training.common.service.NetworkService
+import com.yuruneji.camera_training.data.local.preference.AppPreferences
+import com.yuruneji.camera_training.data.local.preference.BasePreferences
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -56,15 +57,15 @@ object Module {
 
 
     /** 設定 */
-    // @Provides
-    // @Singleton
-    // fun provideBasePreferences(@ApplicationContext context: Context): BasePreferences =
-    //     BasePreferences(context)
-
     @Provides
     @Singleton
-    fun provideCameraPreferences(@ApplicationContext context: Context): CameraPreferences =
-        CameraPreferences(context)
+    fun provideAppPreferences(@ApplicationContext context: Context): AppPreferences =
+        AppPreferences(context)
+
+    // @Provides
+    // @Singleton
+    // fun provideCameraPreferences(@ApplicationContext context: Context): CameraPreferences =
+    //     CameraPreferences(context)
 
     @Provides
     @Singleton
@@ -79,12 +80,6 @@ object Module {
     }
 
 
-    // /** Sound */
-    // @Provides
-    // @Singleton
-    // fun provideSoundManager(@ApplicationContext context: Context): SoundService {
-    //     return SoundService(context)
-    // }
 
 
     /** DB */
@@ -136,8 +131,8 @@ object ViewModelModule {
             .build()
 
     @Provides
-    fun provideAppService(okHttpClient: OkHttpClient, moshi: Moshi, cameraPref: CameraPreferences): AppService {
-        val url = when (cameraPref.apiType) {
+    fun provideAppService(okHttpClient: OkHttpClient, moshi: Moshi, pref: AppPreferences): AppService {
+        val url = when (pref.apiType) {
             ApiType.DEVELOP.no -> BuildConfig.API_URL_DEVELOP
             ApiType.STAGING.no -> BuildConfig.API_URL_STAGING
             ApiType.PRODUCTION.no -> BuildConfig.API_URL_PRODUCTION

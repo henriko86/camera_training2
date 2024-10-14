@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/CameraFragment">
+    app:startDestination="@id/SettingBaseFragment">
 
     <fragment
         android:id="@+id/HomeFragment"
@@ -58,9 +58,8 @@
     </fragment>
 
     <fragment
-    android:id="@+id/MyFragment"
-    android:name="com.yuruneji.camera_training.presentation.xxx2.MyFragment"
-    android:label="MyFragment"
-    tools:layout="@layout/fragment_my"/>
+        android:id="@+id/SettingBaseFragment"
+        android:name="com.yuruneji.camera_training.presentation.setting_base.SettingBaseFragment"
+        tools:layout="@layout/fragment_setting_base" />
 
 </navigation>

@@ -1,4 +1,4 @@
-package com.yuruneji.camera_training.common
+package com.yuruneji.camera_training.common.service
 
 import android.content.Context
 import android.media.AudioAttributes

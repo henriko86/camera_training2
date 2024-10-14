@@ -2,6 +2,7 @@ package com.yuruneji.camera_training
 
 import android.app.Application
 import android.content.Context
+import androidx.lifecycle.ViewModelProvider.NewInstanceFactory.Companion.instance
 import com.yuruneji.camera_training.domain.usecase.LogFile
 import dagger.hilt.android.HiltAndroidApp
 import timber.log.Timber
@@ -24,6 +25,22 @@ class App : Application() {
         Timber.plant(LogTree(context = this, logFile = logFile))
     }
 
+    init {
+        instance = this
+    }
+
+    companion object {
+        var instance: App? = null
+        fun applicationContext(): Context {
+            return instance!!.applicationContext
+        }
+    }
+
+    /**
+     * LogTree
+     * @param context
+     * @param logFile
+     */
     class LogTree(private val context: Context, private val logFile: LogFile) : Timber.DebugTree() {
         override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
             super.log(priority, tag, message, t)

@@ -75,15 +75,16 @@
     <style name="MyTheme" parent="AppTheme">
         <item name="android:dropDownListViewStyle">@style/MyListViewStyle</item>
     </style>
+
     <style name="MyListViewStyle" parent="@android:style/Widget.ListView">
         <item name="android:divider">#F00</item>
         <item name="android:dividerHeight">1px</item>
     </style>
 
-<!--    <style name="Theme.App" parent="Theme.MaterialComponents.*">-->
-<!--        ...-->
-<!--        <item name="materialDividerStyle">@style/Widget.App.MaterialDivider</item>-->
-<!--    </style>-->
+    <!--    <style name="Theme.App" parent="Theme.MaterialComponents.*">-->
+    <!--        ...-->
+    <!--        <item name="materialDividerStyle">@style/Widget.App.MaterialDivider</item>-->
+    <!--    </style>-->
 
     <style name="Widget.App.MaterialDivider" parent="Widget.MaterialComponents.MaterialDivider">
         <item name="materialThemeOverlay">@style/ThemeOverlay.App.MaterialDivider</item>

@@ -1,4 +1,4 @@
-package com.yuruneji.camera_training.common
+package com.yuruneji.camera_training.common.service
 
 import android.Manifest
 import android.app.Activity

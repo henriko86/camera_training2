@@ -16,8 +16,12 @@ import timber.log.Timber
  * @version 1.0
  */
 class QrCodeAnalyzer(
-    private val onBarCodeDetected: (Int, Int, List<QrItemModel>) -> Unit
+    private val callback: Callback
 ) : ImageAnalysis.Analyzer {
+
+    interface Callback {
+        fun onQrCodeDetect(list: List<QrItemModel>)
+    }
 
     private var isShutdown = false
 
@@ -40,9 +44,6 @@ class QrCodeAnalyzer(
             scanner.process(image)
                 .addOnSuccessListener { barCodes ->
                     if (barCodes.isNotEmpty()) {
-                        // val rotation = image.imageInfo.rotationDegrees
-                        // val bmp: Bitmap = CommonUtil.flipBitmap(image.toBitmap(), rotation)
-
                         val qrList = mutableListOf<QrItemModel>()
                         for (barCode in barCodes) {
                             val rect = barCode.boundingBox
@@ -51,9 +52,9 @@ class QrCodeAnalyzer(
                             }
                         }
 
-                        onBarCodeDetected(imageProxy.width, imageProxy.height, qrList)
+                        callback.onQrCodeDetect(qrList)
                     } else {
-                        onBarCodeDetected(0, 0, mutableListOf())
+                        callback.onQrCodeDetect(mutableListOf())
                     }
                 }
                 .addOnFailureListener {

@@ -3,18 +3,18 @@ package com.yuruneji.camera_training.presentation.setting
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.yuruneji.camera_training.data.local.preference.CameraPreferences
+import com.yuruneji.camera_training.data.local.preference.AppPreferences
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @HiltViewModel
 class SettingViewModel @Inject constructor(
-    private val cameraPref: CameraPreferences
+    private val pref: AppPreferences
 ) : ViewModel() {
 
 
     /** 使用カメラ */
-    private val _lensFacing = MutableLiveData(cameraPref.lensFacing)
+    private val _lensFacing = MutableLiveData(pref.lensFacing)
 
     /** 使用カメラ */
     val lensFacing: LiveData<Int> = _lensFacing
@@ -23,11 +23,11 @@ class SettingViewModel @Inject constructor(
      * 使用カメラ
      */
     fun updateLensFacing(value: Int) {
-        cameraPref.lensFacing = value
+        pref.lensFacing = value
     }
 
     /** APIタイプ */
-    private val _apiType = MutableLiveData(cameraPref.apiType)
+    private val _apiType = MutableLiveData(pref.apiType)
 
     /** APIタイプ */
     val apiType: LiveData<Int> = _apiType
@@ -36,11 +36,11 @@ class SettingViewModel @Inject constructor(
      * APIタイプ
      */
     fun updateApiType(value: Int) {
-        cameraPref.apiType = value
+        pref.apiType = value
     }
 
     /** 認証方法 単要素認証,多要素認証 */
-    private val _authMethod = MutableLiveData(cameraPref.authMethod)
+    private val _authMethod = MutableLiveData(pref.authMethod)
 
     /** 認証方法 単要素認証,多要素認証 */
     val authMethod: LiveData<Int> = _authMethod
@@ -49,11 +49,11 @@ class SettingViewModel @Inject constructor(
      * 認証方法 単要素認証,多要素認証
      */
     fun updateAuthMethod(value: Int) {
-        cameraPref.authMethod = value
+        pref.authMethod = value
     }
 
     /** 多要素認証 カード＆顔認証,QRコード＆顔認証 */
-    private val _multiAuthType = MutableLiveData(cameraPref.multiAuthType)
+    private val _multiAuthType = MutableLiveData(pref.multiAuthType)
 
     /** 多要素認証 カード＆顔認証,QRコード＆顔認証 */
     val multiAuthType: LiveData<Int> = _multiAuthType
@@ -62,11 +62,11 @@ class SettingViewModel @Inject constructor(
      * 多要素認証 カード＆顔認証,QRコード＆顔認証
      */
     fun updateMultiAuthType(value: Int) {
-        cameraPref.multiAuthType = value
+        pref.multiAuthType = value
     }
 
     /** 顔認証 */
-    private val _faceAuth = MutableLiveData(cameraPref.faceAuth)
+    private val _faceAuth = MutableLiveData(pref.faceAuth)
 
     /** 顔認証 */
     val faceAuth: LiveData<Boolean> = _faceAuth
@@ -75,11 +75,11 @@ class SettingViewModel @Inject constructor(
      * 顔認証
      */
     fun updateFaceAuth(value: Boolean) {
-        cameraPref.faceAuth = value
+        pref.faceAuth = value
     }
 
     /** カード認証 */
-    private val _cardAuth = MutableLiveData(cameraPref.cardAuth)
+    private val _cardAuth = MutableLiveData(pref.cardAuth)
 
     /** カード認証 */
     val cardAuth: LiveData<Boolean> = _cardAuth
@@ -88,11 +88,11 @@ class SettingViewModel @Inject constructor(
      * カード認証
      */
     fun updateCardAuth(value: Boolean) {
-        cameraPref.cardAuth = value
+        pref.cardAuth = value
     }
 
     /** QRコード認証 */
-    private val _qrAuth = MutableLiveData(cameraPref.qrAuth)
+    private val _qrAuth = MutableLiveData(pref.qrAuth)
 
     /** QRコード認証 */
     val qrAuth: LiveData<Boolean> = _qrAuth
@@ -101,11 +101,11 @@ class SettingViewModel @Inject constructor(
      * QRコード認証
      */
     fun updateQrAuth(value: Boolean) {
-        cameraPref.qrAuth = value
+        pref.qrAuth = value
     }
 
     /** 最小顔サイズ */
-    private val _minFaceSize = MutableLiveData(cameraPref.minFaceSize)
+    private val _minFaceSize = MutableLiveData(pref.minFaceSize)
 
     /** 最小顔サイズ */
     val minFaceSize: LiveData<Float> = _minFaceSize
@@ -114,8 +114,6 @@ class SettingViewModel @Inject constructor(
      * 最小顔サイズを更新
      */
     fun updateMinFaceSize(value: Float) {
-        cameraPref.minFaceSize = value
+        pref.minFaceSize = value
     }
-
-
 }

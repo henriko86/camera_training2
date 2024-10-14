@@ -1,7 +1,6 @@
 package com.yuruneji.camera_training.presentation
 
 import android.os.Bundle
-import android.view.View
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
@@ -51,6 +50,9 @@ class MainActivity : AppCompatActivity() {
         Timber.d("encryptedText=$encryptedText")
         Timber.d("decryptedText=$decryptedText")
         Timber.d("")
+
+
+        // window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 
         // fullscreen()
     }

@@ -1,14 +1,11 @@
 package com.yuruneji.camera_training.presentation.camera
 
 import android.content.Context
-import android.graphics.Matrix
-import android.graphics.PixelFormat
-import android.view.SurfaceHolder
-import android.view.SurfaceView
-import androidx.camera.core.Camera
+import android.graphics.Rect
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
+import androidx.camera.core.UseCaseGroup
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
@@ -17,16 +14,17 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.yuruneji.camera_training.App
 import com.yuruneji.camera_training.common.AuthMethod
-import com.yuruneji.camera_training.common.AuthResponse
-import com.yuruneji.camera_training.common.Constants
-import com.yuruneji.camera_training.common.LogUploadResponse
 import com.yuruneji.camera_training.common.MultiAuthType
-import com.yuruneji.camera_training.common.NetworkService
-import com.yuruneji.camera_training.common.SoundService
-import com.yuruneji.camera_training.common.TimeService
+import com.yuruneji.camera_training.common.response.AuthResponse
+import com.yuruneji.camera_training.common.response.LogUploadResponse
+import com.yuruneji.camera_training.common.service.NetworkService
+import com.yuruneji.camera_training.common.service.SoundService
+import com.yuruneji.camera_training.common.service.TimeService
 import com.yuruneji.camera_training.common.toByteArray
-import com.yuruneji.camera_training.data.local.preference.CameraPreferences
+import com.yuruneji.camera_training.data.local.preference.AppPreferences
+import com.yuruneji.camera_training.data.local.preference.convert
 import com.yuruneji.camera_training.domain.model.AppRequestModel
 import com.yuruneji.camera_training.domain.model.FaceItemModel
 import com.yuruneji.camera_training.domain.model.QrItemModel
@@ -36,12 +34,14 @@ import com.yuruneji.camera_training.domain.usecase.FaceAuthUseCase
 import com.yuruneji.camera_training.domain.usecase.LogUploadUseCase
 import com.yuruneji.camera_training.domain.usecase.QrCodeAnalyzer
 import com.yuruneji.camera_training.presentation.camera.state.AuthState
-import com.yuruneji.camera_training.presentation.camera.view.DrawRectView
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.isActive
@@ -61,75 +61,20 @@ import javax.inject.Inject
 
 @HiltViewModel
 class CameraViewModel @Inject constructor(
-    private val cameraPref: CameraPreferences,
+    // private val cameraPref: CameraPreferences,
     private val networkSensor: NetworkService,
     private val faceAuthUseCase: FaceAuthUseCase,
     private val cardAuthUseCase: CardAuthUseCase,
     private val logUploadUseCase: LogUploadUseCase,
-) : ViewModel() {
+) : ViewModel(), FaceAnalyzer.Callback, QrCodeAnalyzer.Callback {
 
 
-    /** 顔枠表示 */
-    private var drawFaceView: DrawRectView? = null
+    private val _drawFaceView = MutableStateFlow<List<Rect>>(mutableListOf())
+    val drawFaceView: StateFlow<List<Rect>> = _drawFaceView.asStateFlow()
 
-    /**
-     * 顔枠表示を初期化
-     * @param context Context
-     * @param sv      SurfaceView
-     * @param matrix  プレビューMatrix
-     * @param width   プレビュー幅
-     * @param height  プレビュー高さ
-     */
-    fun initDrawFaceView(context: Context, sv: SurfaceView, matrix: Matrix, width: Int, height: Int) {
-        sv.holder.addCallback(surfaceHolderCallback)
-        sv.holder.setFormat(PixelFormat.TRANSLUCENT)
-        sv.setZOrderOnTop(true)
+    private val _drawQrView = MutableStateFlow<List<Rect>>(mutableListOf())
+    val drawQrView: StateFlow<List<Rect>> = _drawQrView.asStateFlow()
 
-        drawFaceView = DrawRectView(context, sv, matrix, width, height)
-    }
-
-    /**
-     * 顔枠表示
-     * @param width        画像幅
-     * @param height       画像高さ
-     * @param faceItemList 顔情報
-     */
-    private fun drawFace(width: Int, height: Int, faceItemList: List<FaceItemModel>) {
-        drawFaceView?.draw(width, height, faceItemList.map { it.faceRect })
-    }
-
-    /** QR枠表示 */
-    private var drawQrView: DrawRectView? = null
-
-    /**
-     * QR枠表示を初期化
-     * @param context Context
-     * @param sv      SurfaceView
-     * @param matrix  プレビューMatrix
-     * @param width   プレビュー幅
-     * @param height  プレビュー高さ
-     */
-    fun initDrawQrView(context: Context, sv: SurfaceView, matrix: Matrix, width: Int, height: Int) {
-        sv.holder.addCallback(surfaceHolderCallback)
-        sv.holder.setFormat(PixelFormat.TRANSLUCENT)
-        sv.setZOrderOnTop(true)
-
-        drawQrView = DrawRectView(context, sv, matrix, width, height)
-    }
-
-    /**
-     * QR枠表示
-     * @param width      画像幅
-     * @param height     画像高さ
-     * @param qrItemList QR情報
-     */
-    private fun drawQr(width: Int, height: Int, qrItemList: List<QrItemModel>) {
-        drawQrView?.draw(width, height, qrItemList.map { it.rect })
-    }
-
-
-    /** Camera */
-    private var camera: Camera? = null
 
     /** 顔解析 */
     private var faceAnalyzer: FaceAnalyzer? = null
@@ -137,39 +82,15 @@ class CameraViewModel @Inject constructor(
     /** QRコード解析 */
     private var qrCodeAnalyzer: QrCodeAnalyzer? = null
 
-    /** SurfaceHolder Callback */
-    private val surfaceHolderCallback = object : SurfaceHolder.Callback {
-        override fun surfaceCreated(holder: SurfaceHolder) {
-            Timber.i("surfaceCreated()")
-        }
-
-        override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
-            Timber.i("surfaceChanged()")
-        }
-
-        override fun surfaceDestroyed(holder: SurfaceHolder) {
-            Timber.i("surfaceDestroyed()")
-        }
-    }
-
-
-    // private val _cameraSettingModel = MutableLiveData<CameraSettingModel>()
-    // val cameraSettingModel: LiveData<CameraSettingModel> = _cameraSettingModel
-
-    private var singleAuthFlag = cameraPref.authMethod == AuthMethod.SINGLE.no
-
-    fun isMultiCardFaceAuth() = cameraPref.multiAuthType == MultiAuthType.CARD_FACE.no
-    fun isMultiQrFaceAuth() = cameraPref.multiAuthType == MultiAuthType.QR_FACE.no
 
     /** 顔認証実行有無 */
-    private val isFaceAuth = AtomicBoolean(false)
+    private val isFaceAuthState = AtomicBoolean(false)
 
     /** カード認証実行有無 */
-    private val isCardAuth = AtomicBoolean(false)
+    private val isCardAuthState = AtomicBoolean(false)
 
     /** QRコード認証実行有無 */
-    private val isQrAuth = AtomicBoolean(false)
-
+    private val isQrAuthState = AtomicBoolean(false)
 
     /**
      * カメラを開始
@@ -185,40 +106,54 @@ class CameraViewModel @Inject constructor(
         Timber.i(Throwable().stackTrace[0].methodName)
 
 
-        // _cameraSettingState.postValue(cameraPref.convertCameraSettingState())
+        val setting = AppPreferences(App.applicationContext()).convert()
+
+        val singleAuthFlag = setting.authMethod == AuthMethod.SINGLE.no
+        val isMultiCardFaceAuth = setting.multiAuthType == MultiAuthType.CARD_FACE.no
+        val isMultiQrFaceAuth = setting.multiAuthType == MultiAuthType.QR_FACE.no
+
+        var isFaceAuth = false
+        var isCardAuth = false
+        var isQrAuth = false
 
         if (singleAuthFlag) { // 単要素認証
-            if (cameraPref.faceAuth) { // 顔認証
-                isFaceAuth.set(true)
+            if (setting.faceAuth) { // 顔認証
+                isFaceAuth = true
             }
-            if (cameraPref.cardAuth) { // カード認証
-                isCardAuth.set(true)
+            if (setting.cardAuth) { // カード認証
+                isCardAuth = true
             }
-            if (cameraPref.qrAuth) { // QRコード認証
-                isQrAuth.set(true)
+            if (setting.qrAuth) { // QRコード認証
+                isQrAuth = true
             }
         } else { // 多要素認証
-            if (isMultiCardFaceAuth()) {
-                isCardAuth.set(true)
+            if (isMultiCardFaceAuth) {
+                isCardAuth = true
+                isFaceAuth = true
+                isCardAuthState.set(true)
             }
-            if (isMultiQrFaceAuth()) {
-                isQrAuth.set(true)
+            if (isMultiQrFaceAuth) {
+                isQrAuth = true
+                isFaceAuth = true
+                isQrAuthState.set(true)
             }
         }
 
 
         // 顔認証
-        val faceAnalyzer = FaceAnalyzer { width, height, faceItem ->
-            faceAnalyze(width, height, faceItem)
-        }
-        val faceImageAnalysis = ImageAnalysis.Builder().setOutputImageRotationEnabled(true).build()
+        val faceAnalyzer = FaceAnalyzer(this)
+        val faceImageAnalysis = ImageAnalysis.Builder()
+            .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+            .setOutputImageRotationEnabled(true)
+            .build()
         faceImageAnalysis.setAnalyzer(Executors.newSingleThreadExecutor(), faceAnalyzer)
 
         // QRコード認証
-        val barCodeScanner = QrCodeAnalyzer { width, height, qrItem ->
-            qrAnalyze(width, height, qrItem)
-        }
-        val qrImageAnalysis = ImageAnalysis.Builder().setOutputImageRotationEnabled(true).build()
+        val barCodeScanner = QrCodeAnalyzer(this)
+        val qrImageAnalysis = ImageAnalysis.Builder()
+            .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+            .setOutputImageRotationEnabled(true)
+            .build()
         qrImageAnalysis.setAnalyzer(Executors.newSingleThreadExecutor(), barCodeScanner)
 
 
@@ -228,11 +163,18 @@ class CameraViewModel @Inject constructor(
             val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
             cameraProvider.unbindAll()
 
-            // PreviewのUseCase
             val preview = Preview.Builder().build().also {
                 it.surfaceProvider = previewView.surfaceProvider
             }
-            cameraProvider.unbind(preview)
+
+            val useCaseGroupBuilder = UseCaseGroup.Builder().addUseCase(preview)
+            if (isFaceAuth) {
+                useCaseGroupBuilder.addUseCase(faceImageAnalysis)
+            }
+            if (isQrAuth) {
+                useCaseGroupBuilder.addUseCase(qrImageAnalysis)
+            }
+            val useCaseGroup = useCaseGroupBuilder.build()
 
             // カメラを設定
             val cameraSelector = CameraSelector.Builder()
@@ -243,12 +185,13 @@ class CameraViewModel @Inject constructor(
                 // バインドされているカメラを解除
                 cameraProvider.unbindAll()
                 // カメラをライフサイクルにバインド
-                camera = cameraProvider.bindToLifecycle(
+                cameraProvider.bindToLifecycle(
                     owner,
                     cameraSelector,
-                    preview,
-                    faceImageAnalysis,
-                    qrImageAnalysis
+                    // preview,
+                    // faceImageAnalysis,
+                    // qrImageAnalysis,
+                    useCaseGroup
                 )
             } catch (exc: Exception) {
                 Timber.e(exc, "Use case binding failed")
@@ -265,6 +208,13 @@ class CameraViewModel @Inject constructor(
         qrCodeAnalyzer?.close()
     }
 
+    override fun onFaceDetect(list: List<FaceItemModel>) {
+        faceAnalyze(list)
+    }
+
+    override fun onQrCodeDetect(list: List<QrItemModel>) {
+        qrAnalyze(list)
+    }
 
     /** 認証Job */
     private var authJob: Job? = null
@@ -280,17 +230,15 @@ class CameraViewModel @Inject constructor(
 
     /**
      * 顔認証
-     * @param width
-     * @param height
-     * @param itemList
+     * @param list
      */
-    private fun faceAnalyze(width: Int, height: Int, itemList: List<FaceItemModel>) {
-        if (isFaceAuth.get()) {
-            viewModelScope.launch(Dispatchers.Default) {
-                drawFace(width, height, itemList)
+    private fun faceAnalyze(list: List<FaceItemModel>) {
+        viewModelScope.launch(Dispatchers.Default) {
+            _drawFaceView.value = list.map { it.faceRect }
 
-                if (itemList.isNotEmpty()) {
-                    faceAuth(itemList.first())
+            if (isFaceAuthState.get()) {
+                if (list.isNotEmpty()) {
+                    faceAuth(list.first())
                 }
             }
         }
@@ -298,15 +246,13 @@ class CameraViewModel @Inject constructor(
 
     /**
      * QRコード認証
-     * @param width
-     * @param height
      * @param itemList
      */
-    private fun qrAnalyze(width: Int, height: Int, itemList: List<QrItemModel>) {
-        if (isQrAuth.get()) {
-            viewModelScope.launch(Dispatchers.Default) {
-                drawQr(width, height, itemList)
+    private fun qrAnalyze(itemList: List<QrItemModel>) {
+        viewModelScope.launch(Dispatchers.Default) {
+            _drawQrView.value = itemList.map { it.rect }
 
+            if (isQrAuthState.get()) {
                 if (itemList.isNotEmpty()) {
                     itemList.first().barcode.rawValue?.let {
                         cardAuth(it)
@@ -423,16 +369,22 @@ class CameraViewModel @Inject constructor(
     private fun cardAuth(authCode: String) {
         viewModelScope.launch(Dispatchers.IO) {
             if (authFlag.getAndSet(true)) {
-                return@launch
+                // return@launch
             }
 
-            Timber.d("  カード認証 start")
+            Timber.d("  カード認証 start isActive=${authJob?.isActive} isCompleted=${authJob?.isCompleted}")
 
             val model = AppRequestModel(
                 card = authCode
             )
 
+
+            if (authJob?.isActive == true) {
+                return@launch
+            }
+
             soundService?.playAuthStart()
+
 
             authJob = cardAuthUseCase(model).onEach { result ->
                 when (result) {
@@ -570,7 +522,7 @@ class CameraViewModel @Inject constructor(
      * ネットワーク状態監視を開始
      * @param delayTime 監視間隔
      */
-     fun startNetworkSensor(delayTime: Long = 10_000L) {
+    fun startNetworkSensor(delayTime: Long = 10_000L) {
         viewModelScope.launch(Dispatchers.Default) {
             while (isActive) {
                 val result = networkSensor.checkNetworkAvailable()

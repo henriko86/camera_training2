@@ -15,7 +15,6 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.Snackbar
 import com.yuruneji.camera_training.common.ApiType
 import com.yuruneji.camera_training.common.AuthMethod
-import com.yuruneji.camera_training.common.CommonUtil
 import com.yuruneji.camera_training.common.LensFacing
 import com.yuruneji.camera_training.common.MinFaceSize
 import com.yuruneji.camera_training.common.MultiAuthType
@@ -28,7 +27,6 @@ import timber.log.Timber
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
-
 
 @AndroidEntryPoint
 class SettingFragment : Fragment(), DatePickerFragment.OnSelectedDateListener, TimePickerFragment.OnSelectedTimeListener {
@@ -66,7 +64,7 @@ class SettingFragment : Fragment(), DatePickerFragment.OnSelectedDateListener, T
         // activity.supportActionBar?.setDisplayHomeAsUpEnabled(true)
         // activity.supportActionBar?.show()
 
-        CommonUtil.fullscreenToolbarFragment(requireActivity(), true)
+        // CommonUtil.fullscreenToolbarFragment(requireActivity(), true)
         // PreferenceManager.getDefaultSharedPreferences(requireContext()).
         // requireContext().deleteSharedPreferences(CameraPreferences.PREF_NAME)
 
