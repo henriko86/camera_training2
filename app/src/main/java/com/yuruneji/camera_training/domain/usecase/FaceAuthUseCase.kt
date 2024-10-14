@@ -1,6 +1,6 @@
 package com.yuruneji.camera_training.domain.usecase
 
-import com.yuruneji.camera_training.common.AuthResponse
+import com.yuruneji.camera_training.common.response.AuthResponse
 import com.yuruneji.camera_training.data.remote.toConvert
 import com.yuruneji.camera_training.domain.model.AppRequestModel
 import com.yuruneji.camera_training.domain.model.AppResponseModel

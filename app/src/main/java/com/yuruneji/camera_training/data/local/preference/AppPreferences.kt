@@ -1,15 +1,19 @@
 package com.yuruneji.camera_training.data.local.preference
 
 import android.content.Context
-import com.yuruneji.camera_training.data.local.preference.CameraPreferences.Companion
 
 /**
  * @author toru
  * @version 1.0
  */
-class AppPreferences(context: Context) : BasePreferences(context, CameraPreferences.PREF_NAME) {
+class AppPreferences(context: Context) : BasePreferences(context, PREF_NAME, PREF_ENCRYPT_NAME) {
     companion object {
+        /** 設定ファイル名 */
         const val PREF_NAME = "app_preferences"
+
+        /** 設定ファイル名 */
+        const val PREF_ENCRYPT_NAME = "app_encrypt_preferences"
+
 
         /** 使用カメラ */
         private const val LENS_FACING = "lens_facing"
@@ -57,6 +61,7 @@ class AppPreferences(context: Context) : BasePreferences(context, CameraPreferen
         get() = getInt(AUTH_METHOD, 0)
         set(value) = setInt(AUTH_METHOD, value)
 
+
     /**
      * 多要素認証 [カード＆顔認証,QRコード＆顔認証]
      */
@@ -92,4 +97,31 @@ class AppPreferences(context: Context) : BasePreferences(context, CameraPreferen
         get() = getFloat(MIN_FACE_SIZE, 0.15f)
         set(value) = setFloat(MIN_FACE_SIZE, value)
 
+}
+
+/**
+ * AppPreferencesをAppSettingModelに変換
+ */
+fun AppPreferences.convert(): AppSettingModel {
+    return AppSettingModel(
+        lensFacing = lensFacing,
+        apiType = apiType,
+        authMethod = authMethod,
+        multiAuthType = multiAuthType,
+        faceAuth = faceAuth,
+        cardAuth = cardAuth,
+        qrAuth = qrAuth,
+        minFaceSize = minFaceSize
+    )
+}
+
+fun AppPreferences.import(model: AppSettingModel) {
+    lensFacing = model.lensFacing
+    apiType = model.apiType
+    authMethod = model.authMethod
+    multiAuthType = model.multiAuthType
+    faceAuth = model.faceAuth
+    cardAuth = model.cardAuth
+    qrAuth = model.qrAuth
+    minFaceSize = model.minFaceSize
 }

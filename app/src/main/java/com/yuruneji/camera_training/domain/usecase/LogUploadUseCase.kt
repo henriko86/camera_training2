@@ -1,6 +1,6 @@
 package com.yuruneji.camera_training.domain.usecase
 
-import com.yuruneji.camera_training.common.LogUploadResponse
+import com.yuruneji.camera_training.common.response.LogUploadResponse
 import com.yuruneji.camera_training.data.remote.AppResponse
 import com.yuruneji.camera_training.domain.repository.AppRepository
 import kotlinx.coroutines.flow.Flow

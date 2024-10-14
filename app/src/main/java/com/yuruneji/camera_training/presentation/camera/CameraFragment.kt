@@ -2,40 +2,40 @@ package com.yuruneji.camera_training.presentation.camera
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.os.Build
+import android.hardware.camera2.CameraCharacteristics
 import android.os.Bundle
+import android.util.Size
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowInsets
-import android.view.WindowInsetsController
-import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.UiThread
-import androidx.appcompat.app.AppCompatActivity
-import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.yuruneji.camera_training.R
+import com.yuruneji.camera_training.common.AuthMethod
 import com.yuruneji.camera_training.common.CommonUtil
 import com.yuruneji.camera_training.common.CommonUtil.getTimeStr
-import com.yuruneji.camera_training.common.LocationService
-import com.yuruneji.camera_training.common.SoundService
-import com.yuruneji.camera_training.data.local.preference.CameraPreferences
-import com.yuruneji.camera_training.data.local.preference.convertModel
+import com.yuruneji.camera_training.common.MultiAuthType
+import com.yuruneji.camera_training.common.service.LocationService
+import com.yuruneji.camera_training.common.service.SoundService
+import com.yuruneji.camera_training.data.local.preference.AppPreferences
+import com.yuruneji.camera_training.data.local.preference.convert
 import com.yuruneji.camera_training.databinding.FragmentCameraBinding
 import com.yuruneji.camera_training.domain.model.AppRequestModel
 import com.yuruneji.camera_training.domain.model.AppResponseModel
-import com.yuruneji.camera_training.domain.model.CameraSettingModel
+import com.yuruneji.camera_training.data.local.preference.AppSettingModel
 import com.yuruneji.camera_training.domain.usecase.TestWebServerService
+import com.yuruneji.camera_training.presentation.camera.view.DrawRectView
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class CameraFragment : Fragment() {
@@ -51,21 +51,23 @@ class CameraFragment : Fragment() {
     private val binding get() = _binding!!
     private val viewModel: CameraViewModel by viewModels()
 
-    @Inject
-    lateinit var cameraPref: CameraPreferences
+    /** 顔枠表示 */
+    private lateinit var drawFaceView: DrawRectView
 
-    private lateinit var cameraSettingModel: CameraSettingModel
+    /** QR枠表示 */
+    private lateinit var drawQrView: DrawRectView
 
+    /** 設定 */
+    private var setting: AppSettingModel = AppSettingModel()
 
     /** 権限リクエスト */
-    private val permissionRequest =
-        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
-            if (allPermissionsGranted()) {
-                startCamera()
-            } else {
-                Toast.makeText(activity, "Permissions not granted by the user.", Toast.LENGTH_SHORT).show()
-            }
+    private val permissionRequest = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
+        if (allPermissionsGranted()) {
+            startCamera()
+        } else {
+            Toast.makeText(activity, "Permissions not granted by the user.", Toast.LENGTH_SHORT).show()
         }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         Timber.i(Throwable().stackTrace[0].methodName)
@@ -98,6 +100,22 @@ class CameraFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         Timber.i(Throwable().stackTrace[0].methodName)
         _binding = FragmentCameraBinding.inflate(inflater, container, false)
+
+        val windowSize = CommonUtil.getWindowSize()
+        val cameraImageSize = if (windowSize.width > windowSize.height) {
+            Size(640, 480)
+        } else {
+            Size(480, 640)
+        }
+
+        drawFaceView = DrawRectView(requireContext())
+        drawFaceView.setImageSize(cameraImageSize.width, cameraImageSize.height)
+        binding.root.addView(drawFaceView)
+
+        drawQrView = DrawRectView(requireContext())
+        drawQrView.setImageSize(cameraImageSize.width, cameraImageSize.height)
+        binding.root.addView(drawQrView)
+
         return binding.root
     }
 
@@ -107,9 +125,10 @@ class CameraFragment : Fragment() {
         Timber.d("onViewCreated()")
 
         // 設定
-        cameraSettingModel = cameraPref.convertModel()
+        setting = AppPreferences(requireContext()).convert()
+        Timber.d(setting.toString())
 
-        updateCameraSettingView(cameraSettingModel)
+        updateCameraSettingView(setting)
         setupViewEvent()
         observeAuthStateChanges()
         observeDeviceInfoChanges()
@@ -153,26 +172,31 @@ class CameraFragment : Fragment() {
     }
 
     private fun setupViewEvent() {
-
         // 設定画面表示
         binding.root.setOnLongClickListener {
             findNavController().navigate(R.id.action_CameraFragment_to_SettingFragment)
             true
         }
-
-        // 設定
-        // binding.settingBtn.setOnClickListener {
-        //     findNavController().navigate(R.id.action_CameraFragment_to_SettingFragment)
-        // }
-
-        // ログ
-        // binding.logBtn.setOnClickListener {
-        //     findNavController().navigate(R.id.action_CameraFragment_to_LogViewFragment)
-        // }
-
     }
 
     private fun observeAuthStateChanges() {
+
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.drawFaceView.collect { list ->
+                    drawFaceView.draw(list)
+                }
+            }
+        }
+
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.drawQrView.collect { list ->
+                    drawQrView.draw(list)
+                }
+            }
+        }
+
 
         // 認証待ちプログレスバー
         viewModel.authWaitProgressbar.observe(viewLifecycleOwner) {
@@ -292,15 +316,37 @@ class CameraFragment : Fragment() {
     private fun startCamera() {
         Timber.i(Throwable().stackTrace[0].methodName)
 
-        // プレビューが開始
-        binding.previewView.previewStreamState.observe(viewLifecycleOwner) { streamState ->
-            streamState?.let {
-                when (streamState) {
-                    PreviewView.StreamState.STREAMING -> setupPreviewView()
-                    PreviewView.StreamState.IDLE -> {}
-                }
-            }
+        val cameraManager = requireContext().getSystemService(android.content.Context.CAMERA_SERVICE) as android.hardware.camera2.CameraManager
+        val cameraID = CommonUtil.getCameraID()
+
+        val sizeList = cameraManager.getCameraCharacteristics(cameraID.front)
+            .get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
+            ?.getOutputSizes(android.graphics.ImageFormat.JPEG)
+        sizeList?.forEach {
+            Timber.i("size: ${it.width}x${it.height}")
         }
+
+        // プレビューが開始
+        // binding.previewView.previewStreamState.observe(viewLifecycleOwner) { streamState ->
+        //     streamState?.let {
+        //         when (streamState) {
+        //             PreviewView.StreamState.STREAMING -> {
+        //                 val matrix = binding.previewView.matrix
+        //                 val width = binding.previewView.width
+        //                 val height = binding.previewView.height
+        //
+        //                 // drawFaceView.setPreviewInfo(matrix, width, height)
+        //                 // drawFaceView.setImageFlipped(true)
+        //
+        //                 // drawQrView.setPreviewInfo(matrix, width, height)
+        //                 // drawQrView.setImageFlipped(true)
+        //             }
+        //
+        //             PreviewView.StreamState.IDLE -> {}
+        //         }
+        //     }
+        // }
+
 
         viewModel.startCamera(requireContext(), viewLifecycleOwner, binding.previewView)
     }
@@ -313,50 +359,73 @@ class CameraFragment : Fragment() {
         viewModel.stopCamera()
     }
 
-    /**
-     * プレビュー表示のセットアップ
-     */
-    private fun setupPreviewView() {
-        val matrix = binding.previewView.matrix
-        val width = binding.previewView.width
-        val height = binding.previewView.height
-        viewModel.initDrawFaceView(requireContext(), binding.svFace, matrix, width, height)
-        viewModel.initDrawQrView(requireContext(), binding.svQr, matrix, width, height)
-    }
-
     @UiThread
-    private fun updateCameraSettingView(cameraSettingState: CameraSettingModel) {
-        Timber.d("updateCameraSettingView() $cameraSettingState")
+    private fun updateCameraSettingView(setting: AppSettingModel) {
+        Timber.d("updateCameraSettingView() $setting")
 
+        // 状態
+        binding.statusMessage.text = ""
 
         // 認証結果
         binding.resultName.visibility = View.GONE
         binding.resultMessage.visibility = View.GONE
 
 
-        // 顔認証
-        if (cameraSettingState.faceAuth) {
-            binding.iconFaceAuthState.setImageDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.baseline_person_24_on))
-            binding.iconFaceAuthState.visibility = View.VISIBLE
+        val singleAuthFlag = setting.authMethod == AuthMethod.SINGLE.no
+        val isMultiCardFaceAuth = setting.multiAuthType == MultiAuthType.CARD_FACE.no
+        val isMultiQrFaceAuth = setting.multiAuthType == MultiAuthType.QR_FACE.no
+
+        if (singleAuthFlag) {
+            // 顔認証
+            if (setting.faceAuth) {
+                binding.iconFaceAuthState.setImageDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.baseline_person_24_on))
+                binding.iconFaceAuthState.visibility = View.VISIBLE
+            } else {
+                binding.iconFaceAuthState.visibility = View.GONE
+            }
+
+            // カード認証
+            if (setting.cardAuth) {
+                binding.iconCardAuthState.setImageDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.baseline_credit_card_24_on))
+                binding.iconCardAuthState.visibility = View.VISIBLE
+            } else {
+                binding.iconCardAuthState.visibility = View.GONE
+            }
+
+            // QRコード認証
+            if (setting.qrAuth) {
+                binding.iconQrAuthState.setImageDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.baseline_qr_code_24_on))
+                binding.iconQrAuthState.visibility = View.VISIBLE
+            } else {
+                binding.iconQrAuthState.visibility = View.GONE
+            }
         } else {
-            binding.iconFaceAuthState.visibility = View.GONE
+            if (isMultiCardFaceAuth) {
+                binding.statusMessage.text = "①カード認証"
+
+                binding.iconFaceAuthState.setImageDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.baseline_person_24_on))
+                binding.iconFaceAuthState.visibility = View.VISIBLE
+
+                binding.iconCardAuthState.setImageDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.baseline_credit_card_24_on))
+                binding.iconCardAuthState.visibility = View.VISIBLE
+
+                binding.iconQrAuthState.visibility = View.GONE
+            }
+
+            if (isMultiQrFaceAuth) {
+                binding.statusMessage.text = "①QRコード認証"
+
+                binding.iconFaceAuthState.setImageDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.baseline_person_24_on))
+                binding.iconFaceAuthState.visibility = View.VISIBLE
+
+                binding.iconCardAuthState.visibility = View.GONE
+
+                binding.iconQrAuthState.setImageDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.baseline_qr_code_24_on))
+                binding.iconQrAuthState.visibility = View.VISIBLE
+            }
+
         }
 
-        // カード認証
-        if (cameraSettingState.cardAuth) {
-            binding.iconCardAuthState.setImageDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.baseline_credit_card_24_on))
-            binding.iconCardAuthState.visibility = View.VISIBLE
-        } else {
-            binding.iconCardAuthState.visibility = View.GONE
-        }
-
-        // QRコード認証
-        if (cameraSettingState.qrAuth) {
-            binding.iconQrAuthState.setImageDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.baseline_qr_code_24_on))
-            binding.iconQrAuthState.visibility = View.VISIBLE
-        } else {
-            binding.iconQrAuthState.visibility = View.GONE
-        }
     }
 
     @UiThread
@@ -379,37 +448,4 @@ class CameraFragment : Fragment() {
             binding.iconNetworkState.setImageDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.baseline_wifi_24_off))
         }
     }
-
-    // /**
-    //  * フルスクリーン
-    //  * @param isFullScreen フルスクリーン表示
-    //  */
-    // private fun toggleFullScreen(isFullScreen: Boolean) {
-    //     if (isFullScreen) {
-    //         lifecycleScope.launch {
-    //             activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
-    //
-    //             val flags = View.SYSTEM_UI_FLAG_LOW_PROFILE or
-    //                     View.SYSTEM_UI_FLAG_FULLSCREEN or
-    //                     View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
-    //                     View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
-    //                     View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
-    //                     View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-    //             activity?.window?.decorView?.systemUiVisibility = flags
-    //             (activity as? AppCompatActivity)?.supportActionBar?.hide()
-    //         }
-    //     } else {
-    //         // lifecycleScope.launch {
-    //         //     activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
-    //         //
-    //         //     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-    //         //         activity?.window?.insetsController?.show(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
-    //         //     } else {
-    //         //         activity?.window?.decorView?.systemUiVisibility = 0
-    //         //     }
-    //         //
-    //         //     (activity as? AppCompatActivity)?.supportActionBar?.show()
-    //         // }
-    //     }
-    // }
 }

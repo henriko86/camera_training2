@@ -1,4 +1,4 @@
-package com.yuruneji.camera_training.common
+package com.yuruneji.camera_training.common.response
 
 /**
  * 通信レスポンス

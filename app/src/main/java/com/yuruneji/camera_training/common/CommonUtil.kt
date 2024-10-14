@@ -7,15 +7,21 @@ import android.graphics.BitmapFactory
 import android.graphics.BitmapRegionDecoder
 import android.graphics.Canvas
 import android.graphics.Matrix
+import android.graphics.Point
 import android.graphics.Rect
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
+import android.hardware.camera2.CameraCharacteristics
 import android.os.Build
+import android.os.Build.VERSION_CODES
+import android.util.Size
 import android.view.View
 import android.view.WindowManager
+import android.view.WindowMetrics
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.launch
+import androidx.core.content.ContentProviderCompat.requireContext
+import androidx.core.content.ContextCompat.getSystemService
+import com.yuruneji.camera_training.App
 import org.apache.commons.codec.binary.Hex
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -33,6 +39,46 @@ import kotlin.experimental.inv
  * @version 1.0
  */
 object CommonUtil {
+
+
+    /**
+     * カメラIDを取得
+     */
+    fun getCameraID(): CameraID {
+        val cameraManager = App.applicationContext().getSystemService(android.content.Context.CAMERA_SERVICE) as android.hardware.camera2.CameraManager
+        val cameraID = CameraID()
+        cameraManager.cameraIdList.forEach { _ ->
+            val backCameraId = cameraManager.cameraIdList.first { cameraManager.getCameraCharacteristics(it).get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_BACK }
+            val frontCameraId = cameraManager.cameraIdList.first { cameraManager.getCameraCharacteristics(it).get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_FRONT }
+            cameraID.back = backCameraId
+            cameraID.front = frontCameraId
+        }
+        return cameraID
+    }
+
+
+    /**
+     * 画面サイズを取得
+     * @return 画面サイズ
+     */
+    fun getWindowSize(): Size {
+        val windowManager = App.applicationContext().getSystemService(android.content.Context.WINDOW_SERVICE) as WindowManager
+        val size: Size
+        if (Build.VERSION.SDK_INT <= VERSION_CODES.R) {
+            val point = Point()
+            windowManager.defaultDisplay.getRealSize(point)
+            val width = point.x
+            val height = point.y
+            size = Size(width, height)
+        } else {
+            val wm: WindowMetrics = windowManager.currentWindowMetrics
+            val width = wm.bounds.width()
+            val height = wm.bounds.height()
+            size = Size(width, height)
+        }
+        return size
+    }
+
     fun drawableToBitmap(drawable: Drawable?): Bitmap {
         if (drawable == null) return Bitmap.createBitmap(1, 1, Config.ARGB_8888)
 
@@ -246,7 +292,7 @@ object CommonUtil {
 
     fun fullscreenToolbarFragment(activity: Activity, state: Boolean) {
         if (state) {
-            activity.window?.addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
+            // activity.window?.addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
             val flags = View.SYSTEM_UI_FLAG_LOW_PROFILE or
                     View.SYSTEM_UI_FLAG_FULLSCREEN or
                     View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
