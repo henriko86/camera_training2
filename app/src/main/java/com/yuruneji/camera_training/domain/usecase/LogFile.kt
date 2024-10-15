@@ -1,7 +1,6 @@
 package com.yuruneji.camera_training.domain.usecase
 
 import android.content.Context
-import android.util.Log
 import com.yuruneji.camera_training.data.local.db.LogDao
 import com.yuruneji.camera_training.data.local.db.LogEntity
 import java.io.BufferedWriter
@@ -27,6 +26,8 @@ class LogFile @Inject constructor(
     companion object {
         private val executor: ExecutorService = Executors.newSingleThreadExecutor()
         const val LOG_EXPIRED_DAY = 13
+        private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")
+        private val fileNameFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
     }
 
     fun postLog(context: Context, priority: Int, tag: String?, message: String, t: Throwable?) {
@@ -45,9 +46,9 @@ class LogFile @Inject constructor(
         t: Throwable?,
         date: LocalDateTime = LocalDateTime.now()
     ): String {
-        val dateStr = date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS"))
-        val stackTraceStr = Log.getStackTraceString(t)
-        return "$dateStr\t$priority\t$tag\t$message\t${stackTraceStr}"
+        val dateStr = date.format(formatter)
+        // val stackTraceStr = Log.getStackTraceString(t)
+        return "$dateStr\t$priority\t$tag\t$message"
     }
 
     private fun insertTable(priority: Int, tag: String?, message: String, t: Throwable?) {
@@ -56,15 +57,14 @@ class LogFile @Inject constructor(
                 date = LocalDateTime.now(),
                 priority = priority,
                 tag = tag,
-                message = message,
-                throwable = Log.getStackTraceString(t)
+                message = message
             )
         )
     }
 
     private fun flush(context: Context, log: String) {
         val today = LocalDateTime.now()
-        val fileName = "${today.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))}.log"
+        val fileName = "${today.format(fileNameFormatter)}.log"
         val file = File(context.filesDir, fileName)
 
         // まだ当日分のファイルが作成されていなかったら

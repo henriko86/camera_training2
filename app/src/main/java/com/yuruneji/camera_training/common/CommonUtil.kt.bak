@@ -51,6 +51,7 @@ object CommonUtil {
         return cameraID
     }
 
+
     /**
      * 画面サイズを取得
      * @return 画面サイズ
@@ -154,67 +155,67 @@ object CommonUtil {
         return null
     }
 
-    // fun getDataChecksum(seqNo: Byte, cmd: Byte, dataList: List<Byte>): String {
-    //     val list = ArrayList<Byte>()
-    //     list.add(seqNo)
-    //     list.add(cmd)
-    //
-    //     val dataSizeHex = dataList.size.toString(16)
-    //     val dataSizeAscii = dataSizeHex.toByteArray(Charsets.US_ASCII);
-    //     list.addAll(dataSizeAscii.toList())
-    //     list.addAll(dataList)
-    //
-    //     return getDataChecksum(list)
-    // }
-    //
-    // fun getDataChecksum(list: List<Byte>): String {
-    //     val sum = byteHexIntSum(list)
-    //
-    //     val hexSum1 = ("0000" + sum.toString(16))
-    //     val hexSum2 = hexSum1.substring(hexSum1.length - 4)
-    //
-    //     val sec2byte = Hex.decodeHex(hexSum2.toCharArray())
-    //     val b = sec2byte[sec2byte.size - 1]
-    //
-    //     return String.format("%02x", (b.inv()) + 1).uppercase(Locale.ROOT)
-    // }
-    //
-    // fun getChecksum(list: List<Byte>, def: String = ""): String {
-    //     try {
-    //         return ascii2String(list, def)
-    //     } catch (e: Exception) {
-    //         return def
-    //     }
-    // }
+    fun getDataChecksum(seqNo: Byte, cmd: Byte, dataList: List<Byte>): String {
+        val list = ArrayList<Byte>()
+        list.add(seqNo)
+        list.add(cmd)
+
+        val dataSizeHex = dataList.size.toString(16)
+        val dataSizeAscii = dataSizeHex.toByteArray(Charsets.US_ASCII);
+        list.addAll(dataSizeAscii.toList())
+        list.addAll(dataList)
+
+        return getDataChecksum(list)
+    }
+
+    fun getDataChecksum(list: List<Byte>): String {
+        val sum = byteHexIntSum(list)
+
+        val hexSum1 = ("0000" + sum.toString(16))
+        val hexSum2 = hexSum1.substring(hexSum1.length - 4)
+
+        val sec2byte = Hex.decodeHex(hexSum2.toCharArray())
+        val b = sec2byte[sec2byte.size - 1]
+
+        return String.format("%02x", (b.inv()) + 1).uppercase(Locale.ROOT)
+    }
+
+    fun getChecksum(list: List<Byte>, def: String = ""): String {
+        try {
+            return ascii2String(list, def)
+        } catch (e: Exception) {
+            return def
+        }
+    }
 
 
-    // private const val DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss"
-    // private const val DATE_FORMAT = "yyyy-MM-dd"
-    // private const val TIME_FORMAT = "HH:mm:ss"
-    //
-    // fun getDateTimeStr(pattern: String = DATE_TIME_FORMAT): String {
-    //     return getDateTimeStr(LocalDateTime.now(), pattern)
-    // }
-    //
-    // fun getDateTimeStr(dateTime: LocalDateTime, pattern: String = DATE_TIME_FORMAT): String {
-    //     return DateTimeFormatter.ofPattern(pattern).format(dateTime)
-    // }
-    //
-    // fun getDateStr(pattern: String = DATE_FORMAT): String {
-    //     return getDateStr(LocalDate.now(), pattern)
-    // }
-    //
-    // fun getDateStr(date: LocalDate, pattern: String = DATE_FORMAT): String {
-    //     return DateTimeFormatter.ofPattern(pattern).format(date)
-    // }
-    //
-    // fun getTimeStr(pattern: String = TIME_FORMAT): String {
-    //     return getTimeStr(LocalTime.now(), pattern)
-    // }
-    //
-    // fun getTimeStr(time: LocalTime, pattern: String = TIME_FORMAT): String {
-    //     return DateTimeFormatter.ofPattern(pattern).format(time)
-    // }
+    private const val DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss"
+    private const val DATE_FORMAT = "yyyy-MM-dd"
+    private const val TIME_FORMAT = "HH:mm:ss"
+
+    fun getDateTimeStr(pattern: String = DATE_TIME_FORMAT): String {
+        return getDateTimeStr(LocalDateTime.now(), pattern)
+    }
+
+    fun getDateTimeStr(dateTime: LocalDateTime, pattern: String = DATE_TIME_FORMAT): String {
+        return DateTimeFormatter.ofPattern(pattern).format(dateTime)
+    }
+
+    fun getDateStr(pattern: String = DATE_FORMAT): String {
+        return getDateStr(LocalDate.now(), pattern)
+    }
+
+    fun getDateStr(date: LocalDate, pattern: String = DATE_FORMAT): String {
+        return DateTimeFormatter.ofPattern(pattern).format(date)
+    }
+
+    fun getTimeStr(pattern: String = TIME_FORMAT): String {
+        return getTimeStr(LocalTime.now(), pattern)
+    }
+
+    fun getTimeStr(time: LocalTime, pattern: String = TIME_FORMAT): String {
+        return DateTimeFormatter.ofPattern(pattern).format(time)
+    }
 
 
     fun byteHexIntSum(list: List<Byte>): Int {

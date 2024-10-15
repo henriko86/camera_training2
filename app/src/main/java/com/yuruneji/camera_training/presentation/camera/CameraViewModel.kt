@@ -66,7 +66,7 @@ class CameraViewModel @Inject constructor(
     private val faceAuthUseCase: FaceAuthUseCase,
     private val cardAuthUseCase: CardAuthUseCase,
     private val logUploadUseCase: LogUploadUseCase,
-) : ViewModel(), FaceAnalyzer.Callback, QrCodeAnalyzer.Callback {
+) : ViewModel() {
 
 
     private val _drawFaceView = MutableStateFlow<List<Rect>>(mutableListOf())
@@ -141,7 +141,9 @@ class CameraViewModel @Inject constructor(
 
 
         // 顔認証
-        val faceAnalyzer = FaceAnalyzer(this)
+        val faceAnalyzer = FaceAnalyzer(){
+            faceAnalyze(it)
+        }
         val faceImageAnalysis = ImageAnalysis.Builder()
             .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
             .setOutputImageRotationEnabled(true)
@@ -149,7 +151,9 @@ class CameraViewModel @Inject constructor(
         faceImageAnalysis.setAnalyzer(Executors.newSingleThreadExecutor(), faceAnalyzer)
 
         // QRコード認証
-        val barCodeScanner = QrCodeAnalyzer(this)
+        val barCodeScanner = QrCodeAnalyzer(){
+            qrAnalyze(it)
+        }
         val qrImageAnalysis = ImageAnalysis.Builder()
             .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
             .setOutputImageRotationEnabled(true)
@@ -208,13 +212,13 @@ class CameraViewModel @Inject constructor(
         qrCodeAnalyzer?.close()
     }
 
-    override fun onFaceDetect(list: List<FaceItemModel>) {
-        faceAnalyze(list)
-    }
-
-    override fun onQrCodeDetect(list: List<QrItemModel>) {
-        qrAnalyze(list)
-    }
+    // override fun onFaceDetect(list: List<FaceItemModel>) {
+    //     faceAnalyze(list)
+    // }
+    //
+    // override fun onQrCodeDetect(list: List<QrItemModel>) {
+    //     qrAnalyze(list)
+    // }
 
     /** 認証Job */
     private var authJob: Job? = null
