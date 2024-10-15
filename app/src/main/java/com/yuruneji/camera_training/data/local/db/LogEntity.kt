@@ -17,8 +17,7 @@ data class LogEntity(
     val date: LocalDateTime,
     val priority: Int,
     val tag: String?,
-    val message: String,
-    val throwable: String?
+    val message: String
 )
 
 fun LogEntity.convert(): LogViewItem {

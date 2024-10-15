@@ -8,9 +8,11 @@ import android.util.Size
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.UiThread
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -21,16 +23,15 @@ import androidx.navigation.fragment.findNavController
 import com.yuruneji.camera_training.R
 import com.yuruneji.camera_training.common.AuthMethod
 import com.yuruneji.camera_training.common.CommonUtil
-import com.yuruneji.camera_training.common.CommonUtil.getTimeStr
 import com.yuruneji.camera_training.common.MultiAuthType
 import com.yuruneji.camera_training.common.service.LocationService
 import com.yuruneji.camera_training.common.service.SoundService
 import com.yuruneji.camera_training.data.local.preference.AppPreferences
+import com.yuruneji.camera_training.data.local.preference.AppSettingModel
 import com.yuruneji.camera_training.data.local.preference.convert
 import com.yuruneji.camera_training.databinding.FragmentCameraBinding
 import com.yuruneji.camera_training.domain.model.AppRequestModel
 import com.yuruneji.camera_training.domain.model.AppResponseModel
-import com.yuruneji.camera_training.data.local.preference.AppSettingModel
 import com.yuruneji.camera_training.domain.usecase.TestWebServerService
 import com.yuruneji.camera_training.presentation.camera.view.DrawRectView
 import dagger.hilt.android.AndroidEntryPoint
@@ -84,7 +85,7 @@ class CameraFragment : Fragment() {
             Timber.i("location: ${it.latitude}, ${it.longitude}")
 
             lifecycleScope.launch {
-                binding.text2.text = getString(R.string.debug_location, it.latitude.toString(), it.longitude.toString(), getTimeStr())
+                binding.text2.text = getString(R.string.debug_location, it.latitude.toString(), it.longitude.toString(), "")
             }
         }
         lifecycle.addObserver(locationService)
@@ -138,7 +139,7 @@ class CameraFragment : Fragment() {
         Timber.i(Throwable().stackTrace[0].methodName)
         super.onStart()
         // フルスクリーン
-        CommonUtil.fullscreenFragment(requireActivity(), true)
+        fullscreen(true)
     }
 
     override fun onResume() {
@@ -162,7 +163,7 @@ class CameraFragment : Fragment() {
         Timber.i(Throwable().stackTrace[0].methodName)
         super.onStop()
         // フルスクリーン
-        CommonUtil.fullscreenFragment(requireActivity(), false)
+        fullscreen(false)
     }
 
     override fun onDestroyView() {
@@ -251,7 +252,7 @@ class CameraFragment : Fragment() {
             Timber.d("networkState: $it ${Thread.currentThread().name}")
             when (it) {
                 true -> {
-                    binding.text1.text = getString(R.string.debug_network_online, getTimeStr())
+                    binding.text1.text = getString(R.string.debug_network_online, "")
                     // IPアドレス
                     viewModel.getIpAddress()
 
@@ -259,7 +260,7 @@ class CameraFragment : Fragment() {
                 }
 
                 false -> {
-                    binding.text1.text = getString(R.string.debug_network_offline, getTimeStr())
+                    binding.text1.text = getString(R.string.debug_network_offline, "")
                     binding.text4.text = ""
 
                     updateNetworkState(it)
@@ -270,13 +271,13 @@ class CameraFragment : Fragment() {
         // 時間
         viewModel.timeCheck.observe(viewLifecycleOwner) {
             Timber.i("timeCheck: $it")
-            binding.text3.text = getString(R.string.debug_time_check, it.toString(), getTimeStr())
+            binding.text3.text = getString(R.string.debug_time_check, it.toString(), "")
         }
 
         // IPアドレス
         viewModel.ipAddress.observe(viewLifecycleOwner) {
             Timber.i("IP Address: $it")
-            binding.text4.text = getString(R.string.debug_ip_address, it, getTimeStr())
+            binding.text4.text = getString(R.string.debug_ip_address, it, "")
         }
     }
 
@@ -446,6 +447,27 @@ class CameraFragment : Fragment() {
             binding.iconNetworkState.setImageDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.baseline_wifi_24_on))
         } else {
             binding.iconNetworkState.setImageDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.baseline_wifi_24_off))
+        }
+    }
+
+    /**
+     * フルスクリーン表示
+     */
+    private fun fullscreen(state: Boolean) {
+        if (state) {
+            requireActivity().window?.addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
+            val flags = View.SYSTEM_UI_FLAG_LOW_PROFILE or
+                    View.SYSTEM_UI_FLAG_FULLSCREEN or
+                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
+                    View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
+                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
+                    View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+            requireActivity().window?.decorView?.systemUiVisibility = flags
+            (requireActivity() as? AppCompatActivity)?.supportActionBar?.hide()
+        } else {
+            requireActivity().window?.clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
+            requireActivity().window?.decorView?.systemUiVisibility = 0
+            (requireActivity() as? AppCompatActivity)?.supportActionBar?.show()
         }
     }
 }

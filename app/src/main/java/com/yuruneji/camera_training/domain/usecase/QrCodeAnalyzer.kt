@@ -16,12 +16,8 @@ import timber.log.Timber
  * @version 1.0
  */
 class QrCodeAnalyzer(
-    private val callback: Callback
+    val onQrCodeDetect: (List<QrItemModel>) -> Unit
 ) : ImageAnalysis.Analyzer {
-
-    interface Callback {
-        fun onQrCodeDetect(list: List<QrItemModel>)
-    }
 
     private var isShutdown = false
 
@@ -52,9 +48,9 @@ class QrCodeAnalyzer(
                             }
                         }
 
-                        callback.onQrCodeDetect(qrList)
+                        onQrCodeDetect(qrList)
                     } else {
-                        callback.onQrCodeDetect(mutableListOf())
+                        onQrCodeDetect(mutableListOf())
                     }
                 }
                 .addOnFailureListener {

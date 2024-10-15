@@ -19,13 +19,8 @@ import timber.log.Timber
  * @version 1.0
  */
 class FaceAnalyzer(
-    private val callback: Callback,
-    // val onFaceDetect: ( List<FaceItemModel>) -> Unit
+    val onFaceDetect: (List<FaceItemModel>) -> Unit
 ) : ImageAnalysis.Analyzer {
-
-    interface Callback {
-        fun onFaceDetect(list: List<FaceItemModel>)
-    }
 
     private var isShutdown = false
 
@@ -65,9 +60,9 @@ class FaceAnalyzer(
                             faceList.add(FaceItemModel(faceBitmap, rect, face))
                         }
 
-                        callback.onFaceDetect(faceList)
+                        onFaceDetect(faceList)
                     } else {
-                        callback.onFaceDetect(mutableListOf())
+                        onFaceDetect(mutableListOf())
                     }
                 }.addOnFailureListener { e ->
                     Timber.e(e, e.message)

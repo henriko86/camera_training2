@@ -11,9 +11,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
-import androidx.recyclerview.widget.ItemTouchHelper
-import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.switchmaterial.SwitchMaterial
 import com.yuruneji.camera_training.R
@@ -73,20 +70,20 @@ class LogViewFragment : Fragment(), DatePickerFragment.OnSelectedDateListener, T
         binding.listview.addItemDecoration(decoration)
         binding.listview.adapter = adapter
 
-        val helper = ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(
-            ItemTouchHelper.UP or ItemTouchHelper.DOWN,
-            ItemTouchHelper.START or ItemTouchHelper.END
-        ) {
-            override fun onMove(recyclerView: RecyclerView, viewHolder: ViewHolder, target: ViewHolder): Boolean {
-                swap(viewHolder.adapterPosition, target.adapterPosition)
-                return true
-            }
-
-            override fun onSwiped(viewHolder: ViewHolder, direction: Int) {
-                remove(viewHolder.adapterPosition)
-            }
-        })
-        helper.attachToRecyclerView(binding.listview)
+        // val helper = ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(
+        //     ItemTouchHelper.UP or ItemTouchHelper.DOWN,
+        //     ItemTouchHelper.START or ItemTouchHelper.END
+        // ) {
+        //     override fun onMove(recyclerView: RecyclerView, viewHolder: ViewHolder, target: ViewHolder): Boolean {
+        //         swap(viewHolder.adapterPosition, target.adapterPosition)
+        //         return true
+        //     }
+        //
+        //     override fun onSwiped(viewHolder: ViewHolder, direction: Int) {
+        //         remove(viewHolder.adapterPosition)
+        //     }
+        // })
+        // helper.attachToRecyclerView(binding.listview)
     }
 
     private fun setupOnCheckedChangeListeners() {
@@ -208,15 +205,5 @@ class LogViewFragment : Fragment(), DatePickerFragment.OnSelectedDateListener, T
             // binding.time.text = Editable.Factory.getInstance().newEditable(time.format(DateTimeFormatter.ofPattern("HH:mm")))
             // viewModel.setTime(time)
         }
-    }
-
-    fun swap(from: Int, to: Int) {
-        list.add(to, list.removeAt(from))
-        adapter.submitList(list.toList())
-    }
-
-    fun remove(target: Int) {
-        list.removeAt(target)
-        adapter.submitList(list.toList())
     }
 }

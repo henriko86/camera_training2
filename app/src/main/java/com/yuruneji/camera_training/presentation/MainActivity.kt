@@ -8,11 +8,9 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import com.yuruneji.camera_training.R
-import com.yuruneji.camera_training.common.CipherExtractor
 import com.yuruneji.camera_training.databinding.ActivityMainBinding
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -20,8 +18,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
 
-    @Inject
-    lateinit var cipherExtractor: CipherExtractor
+    // @Inject
+    // lateinit var cipherExtractor: CipherExtractor
 
     override fun onCreate(savedInstanceState: Bundle?) {
         Timber.i(Throwable().stackTrace[0].methodName)
@@ -41,15 +39,16 @@ class MainActivity : AppCompatActivity() {
         appBarConfiguration = AppBarConfiguration(navController.graph)
         setupActionBarWithNavController(navController, appBarConfiguration)
 
-        // keyStoreUtil = CipherExtractor(this)
-        val plainText = "ここに入力された文字列を暗号化・復号します"
-        val encryptedText: String? = cipherExtractor.encrypt(plainText)
-        val decryptedText: String? = cipherExtractor.decrypt(encryptedText ?: "")
+        // val plainText = "ここに入力された文字列を暗号化・復号します"
+        // val encryptedText: String? = cipherExtractor.encrypt(plainText)
+        // val decryptedText: String? = cipherExtractor.decrypt(encryptedText ?: "")
 
-        Timber.d("plainText    =$plainText")
-        Timber.d("encryptedText=$encryptedText")
-        Timber.d("decryptedText=$decryptedText")
-        Timber.d("")
+        // Timber.d("plainText    =$plainText")
+        // Timber.d("encryptedText=$encryptedText")
+        // Timber.d("decryptedText=$decryptedText")
+        // Timber.d("")
+        //
+        // Timber.e(Exception(), "エラーメッセージ")
 
 
         // window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
