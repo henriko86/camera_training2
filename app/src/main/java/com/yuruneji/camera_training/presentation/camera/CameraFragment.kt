@@ -8,22 +8,23 @@ import android.util.Size
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.UiThread
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.navigation.fragment.findNavController
 import com.yuruneji.camera_training.R
 import com.yuruneji.camera_training.common.AuthMethod
 import com.yuruneji.camera_training.common.CommonUtils
+import com.yuruneji.camera_training.common.CommonUtils.fullscreen
+import com.yuruneji.camera_training.common.LensFacing
 import com.yuruneji.camera_training.common.MultiAuthType
+import com.yuruneji.camera_training.common.service.KtorWebServer
+import com.yuruneji.camera_training.common.service.KtorWebServerService
 import com.yuruneji.camera_training.common.service.LocationService
 import com.yuruneji.camera_training.common.service.NanoTestWebServerService
 import com.yuruneji.camera_training.common.service.SoundService
@@ -39,7 +40,7 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 
 @AndroidEntryPoint
-class CameraFragment : Fragment() {
+class CameraFragment : Fragment(), KtorWebServer.Callback {
 
     companion object {
         /** 権限 */
@@ -74,6 +75,10 @@ class CameraFragment : Fragment() {
         Timber.i(Throwable().stackTrace[0].methodName)
         super.onCreate(savedInstanceState)
 
+        // 設定
+        setting = AppPreferences(requireContext()).convert()
+        Timber.d(setting.toString())
+
         // 効果音
         val soundService = SoundService(requireContext())
         lifecycle.addObserver(soundService)
@@ -96,6 +101,10 @@ class CameraFragment : Fragment() {
         }
         lifecycle.addObserver(webServerService)
 
+        // ktor Webサーバ
+        val ktorWebServerService = KtorWebServerService(8000, this)
+        lifecycle.addObserver(ktorWebServerService)
+
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -104,17 +113,19 @@ class CameraFragment : Fragment() {
 
         val windowSize = CommonUtils.getWindowSize(requireContext())
         val cameraImageSize = if (windowSize.width > windowSize.height) {
-            Size(640, 480)
+            Size(setting.imageHeight, setting.imageWidth)
         } else {
-            Size(480, 640)
+            Size(setting.imageWidth, setting.imageHeight)
         }
+        val isFlipped = setting.lensFacing == LensFacing.FRONT.no
 
-        drawFaceView = DrawRectView(requireContext())
-        drawFaceView.setImageSize(cameraImageSize.width, cameraImageSize.height)
+
+        drawFaceView = DrawRectView(requireContext(), cameraImageSize.width, cameraImageSize.height, isFlipped)
+        // drawFaceView.setImageSize(cameraImageSize.width, cameraImageSize.height)
         binding.root.addView(drawFaceView)
 
-        drawQrView = DrawRectView(requireContext())
-        drawQrView.setImageSize(cameraImageSize.width, cameraImageSize.height)
+        drawQrView = DrawRectView(requireContext(), cameraImageSize.width, cameraImageSize.height, isFlipped)
+        // drawQrView.setImageSize(cameraImageSize.width, cameraImageSize.height)
         binding.root.addView(drawQrView)
 
         return binding.root
@@ -123,11 +134,6 @@ class CameraFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         Timber.i(Throwable().stackTrace[0].methodName)
         super.onViewCreated(view, savedInstanceState)
-        Timber.d("onViewCreated()")
-
-        // 設定
-        setting = AppPreferences(requireContext()).convert()
-        Timber.d(setting.toString())
 
         updateCameraSettingView(setting)
         setupViewEvent()
@@ -135,18 +141,12 @@ class CameraFragment : Fragment() {
         observeDeviceInfoChanges()
     }
 
-    override fun onStart() {
-        Timber.i(Throwable().stackTrace[0].methodName)
-        super.onStart()
-
-        // フルスクリーン
-        fullscreen(true)
-    }
-
     override fun onResume() {
         Timber.i(Throwable().stackTrace[0].methodName)
         super.onResume()
-        Timber.d("onResume()")
+
+        // フルスクリーン
+        fullscreen(requireActivity(), true)
 
         // リスナーをセットアップ
         setupListeners()
@@ -158,14 +158,8 @@ class CameraFragment : Fragment() {
 
         // リスナーを解除
         stopListeners()
-    }
-
-    override fun onStop() {
-        Timber.i(Throwable().stackTrace[0].methodName)
-        super.onStop()
-
         // フルスクリーン
-        fullscreen(false)
+        fullscreen(requireActivity(), false)
     }
 
     override fun onDestroyView() {
@@ -174,12 +168,24 @@ class CameraFragment : Fragment() {
         _binding = null
     }
 
+    override fun onKtorReceive(ids: List<String>) {
+        Timber.d("ktor受信:$ids")
+
+        lifecycleScope.launch {
+            Toast.makeText(requireContext(), ids.toString(), Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    override fun onKtorFailure(t: Throwable) {
+        Timber.e(t, "ktor Webサーバーエラー")
+    }
+
     private fun setupViewEvent() {
         // 設定画面表示
-        binding.root.setOnLongClickListener {
-            findNavController().navigate(R.id.action_CameraFragment_to_SettingFragment)
-            true
-        }
+        // binding.root.setOnLongClickListener {
+        //     findNavController().navigate(R.id.action_CameraFragment_to_SettingFragment)
+        //     true
+        // }
     }
 
     private fun observeAuthStateChanges() {
@@ -449,27 +455,6 @@ class CameraFragment : Fragment() {
             binding.iconNetworkState.setImageDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.baseline_wifi_24_on))
         } else {
             binding.iconNetworkState.setImageDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.baseline_wifi_24_off))
-        }
-    }
-
-    /**
-     * フルスクリーン表示
-     */
-    private fun fullscreen(state: Boolean) {
-        if (state) {
-            requireActivity().window?.addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
-            val flags = View.SYSTEM_UI_FLAG_LOW_PROFILE or
-                    View.SYSTEM_UI_FLAG_FULLSCREEN or
-                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
-                    View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
-                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
-                    View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-            requireActivity().window?.decorView?.systemUiVisibility = flags
-            (requireActivity() as? AppCompatActivity)?.supportActionBar?.hide()
-        } else {
-            requireActivity().window?.clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
-            requireActivity().window?.decorView?.systemUiVisibility = 0
-            (requireActivity() as? AppCompatActivity)?.supportActionBar?.show()
         }
     }
 }

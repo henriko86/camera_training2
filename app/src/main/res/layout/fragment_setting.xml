@@ -10,11 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingHorizontal="40dp"
-        android:paddingVertical="16dp">
-
-        <!--        <include-->
-        <!--            android:id="@+id/toolbar_parent"-->
-        <!--            layout="@layout/view_toolbar" />-->
+        android:paddingVertical="32dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -27,22 +23,13 @@
             app:layout_constraintTop_toTopOf="parent">
 
 
-            <com.google.android.material.slider.Slider
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:valueFrom="0.0"
-                android:valueTo="100.0" />
-
-
             <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/camera_type_layout"
+                android:id="@+id/lens_facing_layout"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:divider="#f00"
-                android:dividerPadding="1dp"
-                android:hint="Camera Type">
+                android:hint="Lens Facing">
 
                 <AutoCompleteTextView
                     android:id="@+id/lens_facing"
@@ -53,6 +40,38 @@
                     android:focusable="false"
                     android:inputType="none" />
             </com.google.android.material.textfield.TextInputLayout>
+
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/image_width_layout"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:hint="Image width">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/image_width"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="number" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/image_height_layout"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:hint="Image height">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/image_height"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="number" />
+            </com.google.android.material.textfield.TextInputLayout>
+
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/api_type_layout"
@@ -169,6 +188,32 @@
             <Space
                 android:layout_width="match_parent"
                 android:layout_height="80dp" />
+
+            <TextView
+                android:id="@+id/slider1_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <com.google.android.material.slider.Slider
+                android:id="@+id/slider1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:stepSize="10"
+                android:value="30"
+                android:valueFrom="0.0"
+                android:valueTo="100.0" />
+
+            <TextView
+                android:id="@+id/seekbar1_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <SeekBar
+                android:id="@+id/seekbar1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:max="100"
+                android:min="0" />
 
 
             <com.google.android.material.textfield.TextInputLayout

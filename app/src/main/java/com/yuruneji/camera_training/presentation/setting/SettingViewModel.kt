@@ -26,6 +26,32 @@ class SettingViewModel @Inject constructor(
         pref.lensFacing = value
     }
 
+    /** 画像幅 */
+    private val _imageWidth = MutableLiveData(pref.imageWidth)
+
+    /** 画像幅 */
+    val imageWidth: LiveData<Int> = _imageWidth
+
+    /**
+     * 画像幅
+     */
+    fun updateImageWidth(value: Int) {
+        pref.imageWidth = value
+    }
+
+    /** 画像高さ */
+    private val _imageHeight = MutableLiveData(pref.imageHeight)
+
+    /** 画像高さ */
+    val imageHeight: LiveData<Int> = _imageHeight
+
+    /**
+     * 画像高さ
+     */
+    fun updateImageHeight(value: Int) {
+        pref.imageHeight = value
+    }
+
     /** APIタイプ */
     private val _apiType = MutableLiveData(pref.apiType)
 

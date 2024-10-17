@@ -1,6 +1,7 @@
 package com.yuruneji.camera_training.presentation
 
 import android.os.Bundle
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
@@ -30,7 +31,7 @@ class MainActivity : AppCompatActivity() {
         Timber.i(Throwable().stackTrace[0].methodName)
         super.onCreate(savedInstanceState)
 
-        // enableEdgeToEdge()
+        enableEdgeToEdge()
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)

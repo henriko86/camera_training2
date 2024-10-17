@@ -140,7 +140,7 @@ class CameraViewModel @Inject constructor(
 
 
         // 顔認証
-        val faceAnalyzer = FaceAnalyzer(){
+        val faceAnalyzer = FaceAnalyzer {
             faceAnalyze(it)
         }
         val faceImageAnalysis = ImageAnalysis.Builder()
@@ -150,7 +150,7 @@ class CameraViewModel @Inject constructor(
         faceImageAnalysis.setAnalyzer(Executors.newSingleThreadExecutor(), faceAnalyzer)
 
         // QRコード認証
-        val barCodeScanner = QrCodeAnalyzer(){
+        val barCodeScanner = QrCodeAnalyzer {
             qrAnalyze(it)
         }
         val qrImageAnalysis = ImageAnalysis.Builder()
@@ -372,7 +372,7 @@ class CameraViewModel @Inject constructor(
     private fun cardAuth(authCode: String) {
         viewModelScope.launch(Dispatchers.IO) {
             if (authFlag.getAndSet(true)) {
-                // return@launch
+                return@launch
             }
 
             Timber.d("  カード認証 start isActive=${authJob?.isActive} isCompleted=${authJob?.isCompleted}")
