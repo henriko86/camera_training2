@@ -1,7 +1,7 @@
 package com.yuruneji.camera_training.presentation
 
 import android.os.Bundle
-import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
@@ -17,15 +17,20 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
+    private val viewModel: MainViewModel by viewModels()
 
     // @Inject
     // lateinit var cipherExtractor: CipherExtractor
+
+    // public interface HomeCallback {
+    //     fun onHomeState(str: String)
+    // }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         Timber.i(Throwable().stackTrace[0].methodName)
         super.onCreate(savedInstanceState)
 
-        enableEdgeToEdge()
+        // enableEdgeToEdge()
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -56,10 +61,32 @@ class MainActivity : AppCompatActivity() {
         // fullscreen()
     }
 
-    override fun onSupportNavigateUp(): Boolean {
+    override fun onStart() {
         Timber.i(Throwable().stackTrace[0].methodName)
-        val navController = findNavController(R.id.nav_host_fragment_content_main)
-        return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
+        super.onStart()
+    }
+
+    override fun onResume() {
+        Timber.i(Throwable().stackTrace[0].methodName)
+        super.onResume()
+
+        viewModel.startMainJob()
+
+        viewModel.mainState.observe(this) { state ->
+            Timber.v(state.toString())
+        }
+    }
+
+    override fun onPause() {
+        Timber.i(Throwable().stackTrace[0].methodName)
+        super.onPause()
+
+        viewModel.cancelMainJob()
+    }
+
+    override fun onStop() {
+        Timber.i(Throwable().stackTrace[0].methodName)
+        super.onStop()
     }
 
     override fun onDestroy() {
@@ -67,23 +94,9 @@ class MainActivity : AppCompatActivity() {
         super.onDestroy()
     }
 
-    // private fun fullscreen() {
-    //     lifecycleScope.launch {
-    //         supportActionBar?.hide()
-    //         // if (Build.VERSION.SDK_INT >= 30) {
-    //         //     binding.root.windowInsetsController?.hide(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
-    //         // } else {
-    //             // Note that some of these constants are new as of API 16 (Jelly Bean)
-    //             // and API 19 (KitKat). It is safe to use them, as they are inlined
-    //             // at compile-time and do nothing on earlier devices.
-    //             binding.root.systemUiVisibility =
-    //                 View.SYSTEM_UI_FLAG_LOW_PROFILE or
-    //                         View.SYSTEM_UI_FLAG_FULLSCREEN or
-    //                         View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
-    //                         View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
-    //                         View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
-    //                         View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-    //         // }
-    //     }
-    // }
+    override fun onSupportNavigateUp(): Boolean {
+        Timber.i(Throwable().stackTrace[0].methodName)
+        val navController = findNavController(R.id.nav_host_fragment_content_main)
+        return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
+    }
 }

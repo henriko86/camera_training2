@@ -1,9 +1,10 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    id("org.jetbrains.kotlin.plugin.serialization")
+    id("com.google.dagger.hilt.android")
     kotlin("kapt")
     // id("com.google.devtools.ksp")
-    id("com.google.dagger.hilt.android")
 }
 
 android {
@@ -42,6 +43,10 @@ android {
         buildConfig = true
         viewBinding = true
         dataBinding = true
+    }
+    packagingOptions {
+        exclude("META-INF/io.netty.versions.properties")
+        exclude("META-INF/INDEX.LIST")
     }
 }
 
@@ -129,5 +134,15 @@ dependencies {
 
     // Debug: LeakCanary
     debugImplementation("com.squareup.leakcanary:leakcanary-android:2.12")
+
+    // ktor
+    val ktor_version = "2.3.11"
+    implementation("io.ktor:ktor-server-core:$ktor_version")
+    implementation("io.ktor:ktor-server-netty:$ktor_version")
+    implementation("io.ktor:ktor-server-call-logging:$ktor_version")
+    implementation("io.ktor:ktor-server-auth:$ktor_version")
+    implementation("io.ktor:ktor-server-content-negotiation:$ktor_version")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:$ktor_version")
+    implementation("org.slf4j:slf4j-android:1.7.36")
 
 }

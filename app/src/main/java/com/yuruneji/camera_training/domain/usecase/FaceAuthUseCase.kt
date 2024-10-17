@@ -1,6 +1,6 @@
 package com.yuruneji.camera_training.domain.usecase
 
-import com.yuruneji.camera_training.common.response.AuthResponse
+import com.yuruneji.camera_training.common.response.FaceAuthResponse
 import com.yuruneji.camera_training.data.remote.toConvert
 import com.yuruneji.camera_training.domain.model.AppRequestModel
 import com.yuruneji.camera_training.domain.model.AppResponseModel
@@ -17,13 +17,13 @@ import javax.inject.Inject
 class FaceAuthUseCase @Inject constructor(
     private val repository: AppRepository
 ) {
-    operator fun invoke(request: AppRequestModel): Flow<AuthResponse<AppRequestModel, AppResponseModel>> = flow {
+    operator fun invoke(request: AppRequestModel): Flow<FaceAuthResponse<AppRequestModel, AppResponseModel>> = flow {
         try {
-            emit(AuthResponse.Loading())
+            emit(FaceAuthResponse.Loading())
             val data = repository.faceAuth(request.toConvert()).toConvert()
-            emit(AuthResponse.Success(request, data))
+            emit(FaceAuthResponse.Success(request, data))
         } catch (e: Exception) {
-            emit(AuthResponse.Failure(request, e))
+            emit(FaceAuthResponse.Failure(request, e))
         }
     }
 }

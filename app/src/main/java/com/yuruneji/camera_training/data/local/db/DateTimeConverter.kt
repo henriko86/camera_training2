@@ -11,17 +11,16 @@ import java.time.format.DateTimeFormatter
 class DateTimeConverter {
 
     companion object {
-        private const val DATE_TIME_PATTERN = "yyyy-MM-dd HH:mm:ss.SSS"
-        private val DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern(DATE_TIME_PATTERN)
+        private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")
     }
 
     @TypeConverter
     fun toDate(value: String?): LocalDateTime? {
-        return value?.let { LocalDateTime.parse(value, DATE_TIME_FORMATTER) }
+        return value?.let { LocalDateTime.parse(value, formatter) }
     }
 
     @TypeConverter
     fun toDateString(dateTime: LocalDateTime?): String? {
-        return dateTime?.format(DATE_TIME_FORMATTER)
+        return dateTime?.format(formatter)
     }
 }

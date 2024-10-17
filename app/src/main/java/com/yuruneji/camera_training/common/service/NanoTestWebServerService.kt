@@ -1,4 +1,4 @@
-package com.yuruneji.camera_training.domain.usecase
+package com.yuruneji.camera_training.common.service
 
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
@@ -7,17 +7,17 @@ import androidx.lifecycle.LifecycleOwner
  * @author toru
  * @version 1.0
  */
-class TestWebServerService(
+class NanoTestWebServerService(
     private val port: Int = 8888,
     private val callback: (keyA: String, keyB: String) -> Unit
 ) : DefaultLifecycleObserver {
 
     /** TestWebServer */
-    private var testWebServer: TestWebServer? = null
+    private var testWebServer: NanoTestWebServer? = null
 
     override fun onResume(owner: LifecycleOwner) {
         super.onResume(owner)
-        testWebServer = TestWebServer(port, callback)
+        testWebServer = NanoTestWebServer(port, callback)
         testWebServer?.start()
     }
 

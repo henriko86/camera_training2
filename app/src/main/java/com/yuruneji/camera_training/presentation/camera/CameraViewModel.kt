@@ -14,11 +14,10 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.yuruneji.camera_training.App
 import com.yuruneji.camera_training.common.AuthMethod
 import com.yuruneji.camera_training.common.MultiAuthType
-import com.yuruneji.camera_training.common.response.AuthResponse
-import com.yuruneji.camera_training.common.response.LogUploadResponse
+import com.yuruneji.camera_training.common.response.FaceAuthResponse
+import com.yuruneji.camera_training.common.response.DeviceResponse
 import com.yuruneji.camera_training.common.service.NetworkService
 import com.yuruneji.camera_training.common.service.SoundService
 import com.yuruneji.camera_training.common.service.TimeService
@@ -106,7 +105,7 @@ class CameraViewModel @Inject constructor(
         Timber.i(Throwable().stackTrace[0].methodName)
 
 
-        val setting = AppPreferences(App.applicationContext()).convert()
+        val setting = AppPreferences(context).convert()
 
         val singleAuthFlag = setting.authMethod == AuthMethod.SINGLE.no
         val isMultiCardFaceAuth = setting.multiAuthType == MultiAuthType.CARD_FACE.no
@@ -314,7 +313,7 @@ class CameraViewModel @Inject constructor(
 
             authJob = faceAuthUseCase(model).onEach { result ->
                 when (result) {
-                    is AuthResponse.Success -> {
+                    is FaceAuthResponse.Success -> {
                         Timber.d("顔認証 ${result.resp}")
 
                         soundService?.playAuthSuccess()
@@ -326,7 +325,7 @@ class CameraViewModel @Inject constructor(
                         )
                     }
 
-                    is AuthResponse.Failure -> {
+                    is FaceAuthResponse.Failure -> {
                         Timber.w("顔認証 ${result.error}")
 
                         soundService?.playAuthError()
@@ -338,7 +337,7 @@ class CameraViewModel @Inject constructor(
                         )
                     }
 
-                    is AuthResponse.Loading -> {
+                    is FaceAuthResponse.Loading -> {
                         Timber.d("顔認証 読み込み中.....")
                         _faceAuthState.postValue(
                             AuthState(
@@ -392,7 +391,7 @@ class CameraViewModel @Inject constructor(
 
             authJob = cardAuthUseCase(model).onEach { result ->
                 when (result) {
-                    is AuthResponse.Success -> {
+                    is FaceAuthResponse.Success -> {
                         Timber.d("  カード認証 ${result.resp}")
 
                         soundService?.playAuthSuccess()
@@ -404,7 +403,7 @@ class CameraViewModel @Inject constructor(
                         )
                     }
 
-                    is AuthResponse.Failure -> {
+                    is FaceAuthResponse.Failure -> {
                         Timber.w("  カード認証 ${result.error}")
 
                         soundService?.playAuthError()
@@ -416,7 +415,7 @@ class CameraViewModel @Inject constructor(
                         )
                     }
 
-                    is AuthResponse.Loading -> {
+                    is FaceAuthResponse.Loading -> {
                         Timber.d("  カード認証 読み込み中.....")
                         _cardAuthState.postValue(
                             AuthState(
@@ -498,17 +497,17 @@ class CameraViewModel @Inject constructor(
 
         logUploadUseCase(log).onEach { result ->
             when (result) {
-                is LogUploadResponse.Success -> {
+                is DeviceResponse.Success -> {
                     Timber.d("${result.data}")
                     Timber.d("ログアップロード!!!! [" + getThreadName() + "]")
                 }
 
-                is LogUploadResponse.Failure -> {
+                is DeviceResponse.Failure -> {
                     Timber.w("${result.error}")
                     Timber.d("ログアップロードエラー [" + getThreadName() + "]")
                 }
 
-                is LogUploadResponse.Loading -> {
+                is DeviceResponse.Loading -> {
                     Timber.d("ログアップロード 読み込み中..... [" + getThreadName() + "]")
                 }
             }

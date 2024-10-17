@@ -22,9 +22,10 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.yuruneji.camera_training.R
 import com.yuruneji.camera_training.common.AuthMethod
-import com.yuruneji.camera_training.common.CommonUtil
+import com.yuruneji.camera_training.common.CommonUtils
 import com.yuruneji.camera_training.common.MultiAuthType
 import com.yuruneji.camera_training.common.service.LocationService
+import com.yuruneji.camera_training.common.service.NanoTestWebServerService
 import com.yuruneji.camera_training.common.service.SoundService
 import com.yuruneji.camera_training.data.local.preference.AppPreferences
 import com.yuruneji.camera_training.data.local.preference.AppSettingModel
@@ -32,7 +33,6 @@ import com.yuruneji.camera_training.data.local.preference.convert
 import com.yuruneji.camera_training.databinding.FragmentCameraBinding
 import com.yuruneji.camera_training.domain.model.AppRequestModel
 import com.yuruneji.camera_training.domain.model.AppResponseModel
-import com.yuruneji.camera_training.domain.usecase.TestWebServerService
 import com.yuruneji.camera_training.presentation.camera.view.DrawRectView
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -91,7 +91,7 @@ class CameraFragment : Fragment() {
         lifecycle.addObserver(locationService)
 
         // Webサーバ
-        val webServerService = TestWebServerService { keyA, keyB ->
+        val webServerService = NanoTestWebServerService { keyA, keyB ->
             Timber.d("keyA: $keyA, keyB: $keyB")
         }
         lifecycle.addObserver(webServerService)
@@ -102,7 +102,7 @@ class CameraFragment : Fragment() {
         Timber.i(Throwable().stackTrace[0].methodName)
         _binding = FragmentCameraBinding.inflate(inflater, container, false)
 
-        val windowSize = CommonUtil.getWindowSize()
+        val windowSize = CommonUtils.getWindowSize(requireContext())
         val cameraImageSize = if (windowSize.width > windowSize.height) {
             Size(640, 480)
         } else {
@@ -138,6 +138,7 @@ class CameraFragment : Fragment() {
     override fun onStart() {
         Timber.i(Throwable().stackTrace[0].methodName)
         super.onStart()
+
         // フルスクリーン
         fullscreen(true)
     }
@@ -162,6 +163,7 @@ class CameraFragment : Fragment() {
     override fun onStop() {
         Timber.i(Throwable().stackTrace[0].methodName)
         super.onStop()
+
         // フルスクリーン
         fullscreen(false)
     }
@@ -318,7 +320,7 @@ class CameraFragment : Fragment() {
         Timber.i(Throwable().stackTrace[0].methodName)
 
         val cameraManager = requireContext().getSystemService(android.content.Context.CAMERA_SERVICE) as android.hardware.camera2.CameraManager
-        val cameraID = CommonUtil.getCameraID()
+        val cameraID = CommonUtils.getCameraID(requireContext())
 
         val sizeList = cameraManager.getCameraCharacteristics(cameraID.front)
             .get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
