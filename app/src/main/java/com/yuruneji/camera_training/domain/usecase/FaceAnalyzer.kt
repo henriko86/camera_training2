@@ -10,7 +10,7 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetector
 import com.google.mlkit.vision.face.FaceDetectorOptions
-import com.yuruneji.camera_training.common.CommonUtil
+import com.yuruneji.camera_training.common.BitmapUtils
 import com.yuruneji.camera_training.domain.model.FaceItemModel
 import timber.log.Timber
 
@@ -45,7 +45,7 @@ class FaceAnalyzer(
             detector.process(image)
                 .addOnSuccessListener { faces ->
                     if (faces.isNotEmpty()) {
-                        val bmp: Bitmap = CommonUtil.flipBitmap(imageProxy.toBitmap(), rotation)
+                        val bmp: Bitmap = BitmapUtils.flipBitmap(imageProxy.toBitmap(), rotation)
                         val faceList = mutableListOf<FaceItemModel>()
                         for (face in faces) {
                             val rect = face.boundingBox
@@ -55,7 +55,7 @@ class FaceAnalyzer(
                                 it.left = bmp.width - rect.right
                                 it.right = bmp.width - rect.left
                             }
-                            val faceBitmap = CommonUtil.faceClipping(bmp, rect2)
+                            val faceBitmap = BitmapUtils.faceClipping(bmp, rect2)
 
                             faceList.add(FaceItemModel(faceBitmap, rect, face))
                         }

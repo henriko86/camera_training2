@@ -10,7 +10,7 @@ import android.view.SurfaceHolder
 import android.view.SurfaceView
 import androidx.core.content.ContextCompat
 import com.yuruneji.camera_training.R
-import com.yuruneji.camera_training.common.CommonUtil.drawableToBitmap
+import com.yuruneji.camera_training.common.BitmapUtils
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -23,7 +23,7 @@ class DrawRectView(context: Context) : SurfaceView(context), SurfaceHolder.Callb
     private var executor: ExecutorService = Executors.newSingleThreadExecutor()
 
     /** 枠画像 */
-    private val rectImage: Bitmap = drawableToBitmap(ContextCompat.getDrawable(context, R.drawable.face_rect))
+    private val rectImage: Bitmap = BitmapUtils.drawableToBitmap(ContextCompat.getDrawable(context, R.drawable.face_rect))
 
     /** 枠画像サイズ */
     private val rectImageSize: Rect = Rect(0, 0, rectImage.width, rectImage.height)

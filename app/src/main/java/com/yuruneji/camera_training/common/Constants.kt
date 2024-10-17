@@ -29,6 +29,9 @@ object Constants {
 
 }
 
+/**
+ * カメラタイプ
+ */
 enum class LensFacing(val no: Int, val value: String) {
     FRONT(CameraCharacteristics.LENS_FACING_FRONT, "前カメラ"),
     BACK(CameraCharacteristics.LENS_FACING_BACK, "後カメラ");
@@ -58,6 +61,9 @@ enum class LensFacing(val no: Int, val value: String) {
     }
 }
 
+/**
+ * APIタイプ
+ */
 enum class ApiType(val no: Int, val value: String) {
     DEVELOP(0, "開発環境"),
     STAGING(1, "ステージング環境"),
@@ -224,15 +230,9 @@ enum class MinFaceSize(val no: Int, val value: String, val size: Float) {
     }
 }
 
-// /**
-//  * 認証状態
-//  */
-// enum class AuthStateEnum {
-//     LOADING,
-//     SUCCESS,
-//     FAIL
-// }
-
+/**
+ * カメラID
+ */
 data class CameraID(
     var front: String = "",
     var back: String = ""

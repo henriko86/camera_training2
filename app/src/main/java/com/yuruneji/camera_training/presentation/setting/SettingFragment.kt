@@ -70,13 +70,13 @@ class SettingFragment : Fragment(), DatePickerFragment.OnSelectedDateListener, T
 
 
         // val contextView = findViewById<View>(R.id.context_view)
-        binding.snackbarBtn.setOnClickListener {
-            Snackbar.make(binding.root, "xxxxx", Snackbar.LENGTH_LONG)
-                .setAction("Action") {
-                    Timber.d("action")
-                }
-                .show()
-        }
+        // binding.snackbarBtn.setOnClickListener {
+        //     Snackbar.make(binding.root, "xxxxx", Snackbar.LENGTH_LONG)
+        //         .setAction("Action") {
+        //             Timber.d("action")
+        //         }
+        //         .show()
+        // }
 
 
         // val decoration = DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL)

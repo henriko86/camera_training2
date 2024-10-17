@@ -1,6 +1,7 @@
 package com.yuruneji.camera_training.common
 
 import android.text.Editable
+import android.text.InputType
 import android.text.TextWatcher
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
@@ -15,22 +16,36 @@ abstract class TextValidator(
     private val editText: TextInputEditText,
     private val item: TextValidatorItem
 ) : TextWatcher {
+
+    /**
+     * バリデーション
+     * @param layout
+     * @param editText
+     * @param text
+     */
     abstract fun validate(layout: TextInputLayout, editText: TextInputEditText, text: String?)
+
+    /** 入力タイプ */
+    private var inputType: Int = InputType.TYPE_NULL
+
+    init {
+        inputType = editText.inputType
+    }
 
     override fun afterTextChanged(s: Editable) {
         val text = editText.text.toString()
 
         var error = false
         if (item.isEmpty != null) {
-            error = emptyValidate(text)
+            error = emptyValidate(text) // 未入力チェック
         }
 
         if (!error && item.minLength != null) {
-            error = minLengthValidate(text)
+            error = minLengthValidate(text) // 最小文字数チェック
         }
 
         if (!error && item.maxLength != null) {
-            error = maxLengthValidate(text)
+            error = maxLengthValidate(text) // 最大文字数チェック
         }
 
         if (!error) {
@@ -43,13 +58,17 @@ abstract class TextValidator(
     }
 
     override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {
-        /* Don't care */
+        //
     }
 
     override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-        /* Don't care */
+        //
     }
 
+    /**
+     * 入力チェック
+     * @param text 入力文字
+     */
     private fun emptyValidate(text: String): Boolean {
         item.isEmpty?.let {
             if (it) {
@@ -62,6 +81,10 @@ abstract class TextValidator(
         return false
     }
 
+    /**
+     * 最小文字数チェック
+     * @param text 入力文字
+     */
     private fun minLengthValidate(text: String): Boolean {
         item.minLength?.let {
             if (text.length < item.minLength) {
@@ -72,6 +95,10 @@ abstract class TextValidator(
         return false
     }
 
+    /**
+     * 最大文字数チェック
+     * @param text 入力文字
+     */
     private fun maxLengthValidate(text: String): Boolean {
         item.maxLength?.let {
             if (text.length > item.maxLength) {
@@ -111,8 +138,8 @@ abstract class TextValidator(
 //     }
 // }
 // }
+
 data class TextValidatorItem(
-    val type: TextValidatorType = TextValidatorType.TEXT,
     val isEmpty: Boolean? = false,
     val isEmptyMsg: String = "入力してください",
     val minLength: Int? = null,
@@ -120,10 +147,3 @@ data class TextValidatorItem(
     val maxLength: Int? = null,
     val maxLengthMsg: String? = "文字数が多すぎます",
 )
-
-enum class TextValidatorType {
-    NONE,
-    TEXT,
-    NUMBER,
-    PASSWORD
-}

@@ -17,14 +17,50 @@ class LogViewHolder(
 ) : RecyclerView.ViewHolder(binding.root) {
 
     fun bind(item: LogViewItem) {
-        setPriority(item)
+        setTextColor(item)
 
         binding.date.text = item.date
         binding.priority.text = getPriorityText(item.priority)
+        // binding.tag.text = HtmlCompat.fromHtml("<font color='#00FF00'>${item.tag}</font>", HtmlCompat.FROM_HTML_MODE_LEGACY)
         binding.tag.text = item.tag
         binding.message.text = item.message
+
+        // val sb = StringBuilder()
+        // sb.append(item.date).append(" ")
+        // sb.append(getFontTag(item.priority, getPriorityText(item.priority))).append(" ")
+        // sb.append(getFontTag(item.priority, item.tag ?: "")).append(" ")
+        // sb.append(getFontTag(item.priority, item.message))
+        // binding.message.text = HtmlCompat.fromHtml(sb.toString(), HtmlCompat.FROM_HTML_MODE_LEGACY)
     }
 
+    // private fun getLogColor(priority: Int): Int {
+    //     return when (priority) {
+    //         Log.VERBOSE -> R.color.log_color_verbose
+    //         Log.DEBUG -> R.color.log_color_debug
+    //         Log.INFO -> R.color.log_color_info
+    //         Log.WARN -> R.color.log_color_warn
+    //         Log.ERROR -> R.color.log_color_error
+    //         Log.ASSERT -> R.color.log_color_assert
+    //         else -> 0
+    //     }
+    // }
+
+    // private fun getFontTag(priority: Int, text: String): String {
+    //     val sb = StringBuilder()
+    //     sb.append("<font color='${getFontColor(getLogColor(priority))}'>").append(text).append("</font>")
+    //     return sb.toString()
+    // }
+
+    // private fun getFontColor(context:Context,colorId: Int): String {
+    //     // val str = "#" + Integer.toHexString(ContextCompat.getColor(context, colorId));
+    //     return "#" + Integer.toHexString(ContextCompat.getColor(context, colorId) and 0x00ffffff)
+    // }
+
+    /**
+     * レベルの文字列を取得する
+     * @param priority
+     * @return
+     */
     private fun getPriorityText(priority: Int): String {
         return when (priority) {
             Log.VERBOSE -> "VERBOSE"
@@ -37,7 +73,11 @@ class LogViewHolder(
         }
     }
 
-    private fun setPriority(item: LogViewItem) {
+    /**
+     * 文字列の色を設定
+     * @param item
+     */
+    private fun setTextColor(item: LogViewItem) {
         val textColor = when (item.priority) {
             Log.VERBOSE -> R.color.log_color_verbose
             Log.DEBUG -> R.color.log_color_debug
@@ -47,17 +87,12 @@ class LogViewHolder(
             Log.ASSERT -> R.color.log_color_assert
             else -> 0
         }
-        // val backgroundColor = when (item.priority) {
-        //     Log.DEBUG -> R.color.log_color_debug
-        //     Log.INFO -> R.color.log_color_info
-        //     Log.ASSERT -> R.color.log_color_assert
-        //     else -> 0
-        // }
 
         if (textColor > 0) {
             // binding.date.setTextColor(ContextCompat.getColor(itemView.context, textColor))
             binding.priority.setTextColor(ContextCompat.getColor(itemView.context, textColor))
             // binding.tag.setTextColor(ContextCompat.getColor(itemView.context, textColor))
+            // binding.message.setTextColor(ContextCompat.getColor(itemView.context, textColor))
         }
         // if (backgroundColor > 0) {
         //     binding.date.setBackgroundColor(ContextCompat.getColor(itemView.context, backgroundColor))

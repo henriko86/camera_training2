@@ -1,4 +1,4 @@
-package com.yuruneji.camera_training.domain.usecase
+package com.yuruneji.camera_training.common.service
 
 import fi.iki.elonen.NanoHTTPD
 import timber.log.Timber
@@ -7,7 +7,7 @@ import timber.log.Timber
  * @author toru
  * @version 1.0
  */
-class TestWebServer(
+class NanoTestWebServer(
     port: Int,
     // private val callback: Callback
     private val callback: (keyA: String, keyB: String) -> Unit

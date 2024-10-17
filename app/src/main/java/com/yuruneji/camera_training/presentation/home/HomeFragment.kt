@@ -6,19 +6,20 @@ import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import com.google.android.material.internal.TextWatcherAdapter
-import com.google.android.material.textfield.TextInputEditText
-import com.google.android.material.textfield.TextInputLayout
 import com.yuruneji.camera_training.BuildConfig
 import com.yuruneji.camera_training.R
-import com.yuruneji.camera_training.common.TextValidator
-import com.yuruneji.camera_training.common.TextValidatorItem
 import com.yuruneji.camera_training.databinding.FragmentHomeBinding
+import com.yuruneji.camera_training.common.service.KtorWebServer
+import com.yuruneji.camera_training.common.service.KtorWebServerService
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import timber.log.Timber
 
-class HomeFragment : Fragment() {
+class HomeFragment : Fragment(), KtorWebServer.Callback {
 
     companion object {
         private const val REQUEST_CODE = 1
@@ -27,11 +28,20 @@ class HomeFragment : Fragment() {
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
 
-
+    // private val server: KtorWebServer = KtorWebServer { ids ->
+    //     lifecycleScope.launch {
+    //         Toast.makeText(requireContext(), ids.toString(), Toast.LENGTH_SHORT).show()
+    //     }
+    // }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         Timber.i(Throwable().stackTrace[0].methodName)
         super.onCreate(savedInstanceState)
+
+
+        val ktorWebServerService = KtorWebServerService(8000, this)
+        lifecycle.addObserver(ktorWebServerService)
+
     }
 
     override fun onCreateView(
@@ -71,19 +81,19 @@ class HomeFragment : Fragment() {
         Timber.d("")
 
 
-        val nameValidatorItem = TextValidatorItem(
-            isEmpty = true,
-            isEmptyMsg = "a入力してください",
-            minLength = 3,
-            minLengthMsg = "b文字数が少ないです",
-            maxLength = 10,
-            maxLengthMsg = "c文字数が多すぎます"
-        )
-        binding.name.addTextChangedListener(object : TextValidator(binding.nameLayout, binding.name, nameValidatorItem) {
-            override fun validate(layout: TextInputLayout, editText: TextInputEditText, text: String?) {
-                //
-            }
-        })
+        // val nameValidatorItem = TextValidatorItem(
+        //     isEmpty = true,
+        //     isEmptyMsg = "a入力してください",
+        //     minLength = 3,
+        //     minLengthMsg = "b文字数が少ないです",
+        //     maxLength = 10,
+        //     maxLengthMsg = "c文字数が多すぎます"
+        // )
+        // binding.name.addTextChangedListener(object : TextValidator(binding.nameLayout, binding.name, nameValidatorItem) {
+        //     override fun validate(layout: TextInputLayout, editText: TextInputEditText, text: String?) {
+        //         //
+        //     }
+        // })
 
 
         // ACTION_INTERNET_CONNECTIVITY
@@ -107,9 +117,33 @@ class HomeFragment : Fragment() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+
+        // lifecycleScope.launch(Dispatchers.Default) {
+        //     server.start()
+        // }
+    }
+
+    override fun onPause() {
+        super.onPause()
+
+        // lifecycleScope.launch(Dispatchers.Default) {
+        //     server.stop()
+        // }
+    }
+
     override fun onDestroyView() {
         Timber.i(Throwable().stackTrace[0].methodName)
         super.onDestroyView()
         _binding = null
+    }
+
+    override fun onKtorReceive(ids: List<String>) {
+        Timber.d("ktor受信:" + ids.toString())
+    }
+
+    override fun onKtorFailure(t: Throwable) {
+        Timber.e(t, "ktor Webサーバーエラー")
     }
 }
