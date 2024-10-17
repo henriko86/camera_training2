@@ -7,6 +7,7 @@ import android.content.Context
  * @version 1.0
  */
 class AppPreferences(context: Context) : BasePreferences(context, PREF_NAME, PREF_ENCRYPT_NAME) {
+
     companion object {
         /** 設定ファイル名 */
         const val PREF_NAME = "app_preferences"
@@ -17,6 +18,12 @@ class AppPreferences(context: Context) : BasePreferences(context, PREF_NAME, PRE
 
         /** 使用カメラ */
         private const val LENS_FACING = "lens_facing"
+
+        /** 画像幅 */
+        private const val IMAGE_WIDTH = "imageWidth"
+
+        /** 画像高さ */
+        private const val IMAGE_HEIGHT = "imageHeight"
 
         /** APIタイプ*/
         private const val API_TYPE = "api_type"
@@ -46,6 +53,20 @@ class AppPreferences(context: Context) : BasePreferences(context, PREF_NAME, PRE
     var lensFacing: Int
         get() = getInt(LENS_FACING, 0)
         set(value) = setInt(LENS_FACING, value)
+
+    /**
+     * 画像幅
+     */
+    var imageWidth: Int
+        get() = getInt(IMAGE_WIDTH, 480)
+        set(value) = setInt(IMAGE_WIDTH, value)
+
+    /**
+     * 画像高さ
+     */
+    var imageHeight: Int
+        get() = getInt(IMAGE_HEIGHT, 640)
+        set(value) = setInt(IMAGE_HEIGHT, value)
 
     /**
      * APIタイプ
@@ -101,10 +122,13 @@ class AppPreferences(context: Context) : BasePreferences(context, PREF_NAME, PRE
 
 /**
  * AppPreferencesをAppSettingModelに変換
+ * @return
  */
 fun AppPreferences.convert(): AppSettingModel {
     return AppSettingModel(
         lensFacing = lensFacing,
+        imageWidth = imageWidth,
+        imageHeight = imageHeight,
         apiType = apiType,
         authMethod = authMethod,
         multiAuthType = multiAuthType,
@@ -115,8 +139,14 @@ fun AppPreferences.convert(): AppSettingModel {
     )
 }
 
+/**
+ * 設定を更新
+ * @param model
+ */
 fun AppPreferences.import(model: AppSettingModel) {
     lensFacing = model.lensFacing
+    imageWidth = model.imageWidth
+    imageHeight = model.imageHeight
     apiType = model.apiType
     authMethod = model.authMethod
     multiAuthType = model.multiAuthType

@@ -18,15 +18,26 @@ import java.util.concurrent.Executors
  * @author toru
  * @version 1.0
  */
-class DrawRectView(context: Context) : SurfaceView(context), SurfaceHolder.Callback {
+class DrawRectView(
+    /** Context */
+    context: Context,
+    /** 画像幅 */
+    private val imageWidth: Int,
+    /** 画像高さ */
+    private val imageHeight: Int,
+    /** 左右反転 */
+    private val isFlipped: Boolean
+) : SurfaceView(context), SurfaceHolder.Callback {
 
-    private var executor: ExecutorService = Executors.newSingleThreadExecutor()
+    /** ExecutorService */
+    private val executor: ExecutorService = Executors.newSingleThreadExecutor()
 
     /** 枠画像 */
     private val rectImage: Bitmap = BitmapUtils.drawableToBitmap(ContextCompat.getDrawable(context, R.drawable.face_rect))
 
     /** 枠画像サイズ */
     private val rectImageSize: Rect = Rect(0, 0, rectImage.width, rectImage.height)
+
 
     /** スケール幅オフセット */
     private var postScaleWidthOffset: Float = 0f
@@ -37,11 +48,12 @@ class DrawRectView(context: Context) : SurfaceView(context), SurfaceHolder.Callb
     /** スケール */
     private var scaleFactor: Float = 0f
 
+    /** プレビュー幅 */
     private var previewWidth: Int = 0
+
+    /** プレビュー高さ */
     private var previewHeight: Int = 0
-    private var imageWidth: Int = 0
-    private var imageHeight: Int = 0
-    private var isFlipped: Boolean = true
+
 
     init {
         holder.addCallback(this)
@@ -50,28 +62,16 @@ class DrawRectView(context: Context) : SurfaceView(context), SurfaceHolder.Callb
     override fun surfaceCreated(holder: SurfaceHolder) {
         holder.setFormat(PixelFormat.TRANSLUCENT)
         setZOrderOnTop(true)
-
-        executor = Executors.newSingleThreadExecutor()
     }
 
     override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
         this.previewWidth = width
         this.previewHeight = height
-        updateScale(imageWidth, imageHeight)
+        updateScale()
     }
 
     override fun surfaceDestroyed(holder: SurfaceHolder) {
-        executor.shutdown()
-    }
-
-    // fun setImageFlipped(isFlipped: Boolean) {
-    //     this.isFlipped = isFlipped
-    // }
-
-    fun setImageSize(width: Int, height: Int) {
-        this.imageWidth = width
-        this.imageHeight = height
-        updateScale(imageWidth, imageHeight)
+        //
     }
 
     fun draw(list: List<Rect>) {
@@ -93,19 +93,21 @@ class DrawRectView(context: Context) : SurfaceView(context), SurfaceHolder.Callb
     }
 
     private fun clearCanvas() {
-        val canvas: Canvas = holder.lockCanvas() ?: return
-        canvas.let {
-            it.drawColor(0, PorterDuff.Mode.CLEAR)
-            holder.unlockCanvasAndPost(canvas)
-        }
+        val canvas: Canvas = holder.lockCanvas()
+        canvas.drawColor(0, PorterDuff.Mode.CLEAR)
+        holder.unlockCanvasAndPost(canvas)
     }
 
-    private fun getCanvas(): Canvas? {
-        val canvas: Canvas = holder.lockCanvas() ?: return null
+    private fun getCanvas(): Canvas {
+        val canvas: Canvas = holder.lockCanvas()
         canvas.drawColor(0, PorterDuff.Mode.CLEAR)
         return canvas
     }
 
+    /**
+     * 枠の座標変換
+     * @param rect
+     */
     private fun convertRect(rect: Rect): Rect {
         val x = translateX(rect.centerX().toFloat())
         val y = translateY(rect.centerY().toFloat())
@@ -124,7 +126,10 @@ class DrawRectView(context: Context) : SurfaceView(context), SurfaceHolder.Callb
         )
     }
 
-    private fun updateScale(imageWidth: Int, imageHeight: Int) {
+    /**
+     * スケール更新
+     */
+    private fun updateScale() {
         if (previewWidth > 0 && previewHeight > 0 && imageWidth > 0 && imageHeight > 0) {
             val viewAspectRatio = previewWidth.toFloat() / previewHeight
             val imageAspectRatio: Float = imageWidth.toFloat() / imageHeight

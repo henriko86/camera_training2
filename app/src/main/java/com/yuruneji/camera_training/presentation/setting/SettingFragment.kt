@@ -7,12 +7,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
+import android.widget.SeekBar
 import androidx.annotation.UiThread
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.slider.Slider
 import com.yuruneji.camera_training.common.ApiType
 import com.yuruneji.camera_training.common.AuthMethod
 import com.yuruneji.camera_training.common.LensFacing
@@ -82,6 +83,41 @@ class SettingFragment : Fragment(), DatePickerFragment.OnSelectedDateListener, T
         // val decoration = DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL)
         // binding.listview.addItemDecoration(decoration)
 
+        binding.slider1.addOnSliderTouchListener(object : Slider.OnSliderTouchListener {
+            override fun onStartTrackingTouch(slider: Slider) {
+                // Timber.v("start:${slider.value}")
+            }
+
+            override fun onStopTrackingTouch(slider: Slider) {
+                // Timber.v("stop:${slider.value}")
+                binding.slider1Value.text = "${slider.value.toInt()}"
+            }
+        })
+        // binding.slider1.addOnSliderTouchListener(object : Slider.OnChangeListener, Slider.OnSliderTouchListener {
+        //     override fun onValueChange(slider: Slider, value: Float, fromUser: Boolean) {
+        //         binding.slider1Value.text = "${value.toInt()}"
+        //     }
+        //
+        //     override fun onStartTrackingTouch(slider: Slider) {
+        //     }
+        //
+        //     override fun onStopTrackingTouch(slider: Slider) {
+        //     }
+        // })
+
+
+        binding.seekbar1.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                binding.seekbar1Value.text = "${progress}"
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {
+            }
+
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {
+            }
+        })
+
 
         val lensFacingList = LensFacing.valueList()
         val lensFacingAdapter = ArrayAdapter(requireContext(), R.layout.simple_spinner_dropdown_item, lensFacingList)
@@ -89,6 +125,33 @@ class SettingFragment : Fragment(), DatePickerFragment.OnSelectedDateListener, T
         // binding.lensFacing.additem
         binding.lensFacing.addTextChangedListener {
             viewModel.updateLensFacing(LensFacing.toNo(it.toString()))
+        }
+
+
+        // binding.imageWidth.doOnTextChanged { text, start, before, count ->  }(viewLifecycleOwner) {
+        //     binding.imageWidth.setText(it, false)
+        // }
+        // binding.imageHeight.observe(viewLifecycleOwner) {
+        //     binding.imageHeight.setText(it, false)
+        // }
+
+        binding.imageWidth.addTextChangedListener { s ->
+            s?.let {
+                viewModel.updateImageWidth(s.toString().toInt())
+            }
+        }
+        viewModel.imageWidth.observe(viewLifecycleOwner) {
+            binding.imageWidth.text = Editable.Factory.getInstance().newEditable(it.toString())
+        }
+
+        binding.imageHeight.addTextChangedListener { s ->
+            s?.let {
+                viewModel.updateImageHeight(s.toString().toInt())
+            }
+        }
+
+        viewModel.imageHeight.observe(viewLifecycleOwner) {
+            binding.imageHeight.text = Editable.Factory.getInstance().newEditable(it.toString())
         }
 
 

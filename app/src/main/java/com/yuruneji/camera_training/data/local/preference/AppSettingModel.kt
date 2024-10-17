@@ -7,6 +7,10 @@ package com.yuruneji.camera_training.data.local.preference
 data class AppSettingModel(
     /** 使用カメラ */
     val lensFacing: Int = 0,
+    /** 画像幅 */
+    val imageWidth: Int = 0,
+    /** 画像高さ */
+    val imageHeight: Int = 0,
     /** APIタイプ*/
     val apiType: Int = 0,
     /** 認証方法 [単要素認証,多要素認証] */
