@@ -4,7 +4,7 @@ import android.content.Context
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.util.Base64
-import com.yuruneji.camera_training.data.local.preference.CipherPreferences
+import com.yuruneji.camera_training.data.local.setting.CipherPreferences
 import org.apache.commons.lang3.RandomStringUtils
 import timber.log.Timber
 import java.io.ByteArrayInputStream

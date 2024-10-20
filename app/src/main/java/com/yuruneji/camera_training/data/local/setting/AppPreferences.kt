@@ -1,6 +1,10 @@
-package com.yuruneji.camera_training.data.local.preference
+package com.yuruneji.camera_training.data.local.setting
 
 import android.content.Context
+import com.yuruneji.camera_training.common.ApiType
+import com.yuruneji.camera_training.common.AuthMethod
+import com.yuruneji.camera_training.common.LensFacing
+import com.yuruneji.camera_training.common.MultiAuthType
 
 /**
  * @author toru
@@ -51,7 +55,7 @@ class AppPreferences(context: Context) : BasePreferences(context, PREF_NAME, PRE
      * 使用カメラ
      */
     var lensFacing: Int
-        get() = getInt(LENS_FACING, 0)
+        get() = getInt(LENS_FACING, LensFacing.FRONT.no)
         set(value) = setInt(LENS_FACING, value)
 
     /**
@@ -72,14 +76,14 @@ class AppPreferences(context: Context) : BasePreferences(context, PREF_NAME, PRE
      * APIタイプ
      */
     var apiType: Int
-        get() = getInt(API_TYPE, 0)
+        get() = getInt(API_TYPE, ApiType.DEVELOP.no)
         set(value) = setInt(API_TYPE, value)
 
     /**
      * 認証方法 [単要素認証,多要素認証]
      */
     var authMethod: Int
-        get() = getInt(AUTH_METHOD, 0)
+        get() = getInt(AUTH_METHOD, AuthMethod.SINGLE.no)
         set(value) = setInt(AUTH_METHOD, value)
 
 
@@ -87,7 +91,7 @@ class AppPreferences(context: Context) : BasePreferences(context, PREF_NAME, PRE
      * 多要素認証 [カード＆顔認証,QRコード＆顔認証]
      */
     var multiAuthType: Int
-        get() = getInt(MULTI_AUTH_TYPE, 0)
+        get() = getInt(MULTI_AUTH_TYPE, MultiAuthType.QR_FACE.no)
         set(value) = setInt(MULTI_AUTH_TYPE, value)
 
     /**
@@ -125,13 +129,35 @@ class AppPreferences(context: Context) : BasePreferences(context, PREF_NAME, PRE
  * @return
  */
 fun AppPreferences.convert(): AppSettingModel {
+    val lensFacing2 = when (lensFacing) {
+        LensFacing.FRONT.no -> LensFacing.FRONT
+        LensFacing.BACK.no -> LensFacing.BACK
+        else -> LensFacing.FRONT
+    }
+    val apiType2 = when (apiType) {
+        ApiType.DEVELOP.no -> ApiType.DEVELOP
+        ApiType.STAGING.no -> ApiType.STAGING
+        ApiType.PRODUCTION.no -> ApiType.PRODUCTION
+        else -> ApiType.DEVELOP
+    }
+    val authMethod2 = when (authMethod) {
+        AuthMethod.SINGLE.no -> AuthMethod.SINGLE
+        AuthMethod.MULTI.no -> AuthMethod.MULTI
+        else -> AuthMethod.SINGLE
+    }
+    val multiAuthType2 = when (multiAuthType) {
+        MultiAuthType.CARD_FACE.no -> MultiAuthType.CARD_FACE
+        MultiAuthType.QR_FACE.no -> MultiAuthType.QR_FACE
+        else -> MultiAuthType.QR_FACE
+    }
+
     return AppSettingModel(
-        lensFacing = lensFacing,
+        lensFacing = lensFacing2,
         imageWidth = imageWidth,
         imageHeight = imageHeight,
-        apiType = apiType,
-        authMethod = authMethod,
-        multiAuthType = multiAuthType,
+        apiType = apiType2,
+        authMethod = authMethod2,
+        multiAuthType = multiAuthType2,
         faceAuth = faceAuth,
         cardAuth = cardAuth,
         qrAuth = qrAuth,
@@ -144,12 +170,25 @@ fun AppPreferences.convert(): AppSettingModel {
  * @param model
  */
 fun AppPreferences.import(model: AppSettingModel) {
-    lensFacing = model.lensFacing
+    lensFacing = when (model.lensFacing) {
+        LensFacing.FRONT -> LensFacing.FRONT.no
+        LensFacing.BACK -> LensFacing.BACK.no
+    }
     imageWidth = model.imageWidth
     imageHeight = model.imageHeight
-    apiType = model.apiType
-    authMethod = model.authMethod
-    multiAuthType = model.multiAuthType
+    apiType = when (model.apiType) {
+        ApiType.DEVELOP -> ApiType.DEVELOP.no
+        ApiType.STAGING -> ApiType.STAGING.no
+        ApiType.PRODUCTION -> ApiType.PRODUCTION.no
+    }
+    authMethod = when (model.authMethod) {
+        AuthMethod.SINGLE -> AuthMethod.SINGLE.no
+        AuthMethod.MULTI -> AuthMethod.MULTI.no
+    }
+    multiAuthType = when (model.multiAuthType) {
+        MultiAuthType.CARD_FACE -> MultiAuthType.CARD_FACE.no
+        MultiAuthType.QR_FACE -> MultiAuthType.QR_FACE.no
+    }
     faceAuth = model.faceAuth
     cardAuth = model.cardAuth
     qrAuth = model.qrAuth

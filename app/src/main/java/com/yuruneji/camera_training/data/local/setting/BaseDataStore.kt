@@ -1,4 +1,4 @@
-package com.yuruneji.camera_training.data.local.datastore
+package com.yuruneji.camera_training.data.local.setting
 
 import android.content.Context
 import javax.inject.Inject

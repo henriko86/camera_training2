@@ -21,7 +21,7 @@ import java.util.concurrent.Executors
  * @author toru
  * @version 1.0
  */
-class LocationService(
+class LocationObserver(
     private val context: Context,
     private val intervalTime: Long = 60_000L,
     private val callback: (Location) -> Unit

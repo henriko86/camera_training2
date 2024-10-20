@@ -8,7 +8,7 @@ import java.net.InetAddress
  * @author toru
  * @version 1.0
  */
-class TimeService {
+class NtpService {
 
     companion object {
         /** NTPサーバ */

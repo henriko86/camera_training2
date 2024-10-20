@@ -1,4 +1,4 @@
-package com.yuruneji.camera_training.data.local.preference
+package com.yuruneji.camera_training.data.local.setting
 
 import android.content.Context
 

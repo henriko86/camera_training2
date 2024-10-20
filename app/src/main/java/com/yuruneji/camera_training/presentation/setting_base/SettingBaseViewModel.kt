@@ -3,7 +3,7 @@ package com.yuruneji.camera_training.presentation.setting_base
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.yuruneji.camera_training.data.local.preference.AppPreferences
+import com.yuruneji.camera_training.data.local.setting.AppPreferences
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 

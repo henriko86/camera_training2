@@ -6,14 +6,14 @@ import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.yuruneji.camera_training.R
-import com.yuruneji.camera_training.databinding.LogViewListItemBinding
+import com.yuruneji.camera_training.databinding.ListLogViewItemBinding
 
 /**
  * @author toru
  * @version 1.0
  */
 class LogViewHolder(
-    private val binding: LogViewListItemBinding
+    private val binding: ListLogViewItemBinding
 ) : RecyclerView.ViewHolder(binding.root) {
 
     fun bind(item: LogViewItem) {
@@ -103,8 +103,8 @@ class LogViewHolder(
 
     companion object {
         fun create(parent: ViewGroup): LogViewHolder {
-            val view = LayoutInflater.from(parent.context).inflate(R.layout.log_view_list_item, parent, false)
-            val binding = LogViewListItemBinding.bind(view)
+            val view = LayoutInflater.from(parent.context).inflate(R.layout.list_log_view_item, parent, false)
+            val binding = ListLogViewItemBinding.bind(view)
             return LogViewHolder(binding)
         }
     }

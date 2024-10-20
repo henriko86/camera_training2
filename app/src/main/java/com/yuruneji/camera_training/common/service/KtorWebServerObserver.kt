@@ -9,7 +9,7 @@ import java.util.concurrent.Executors
  * @author toru
  * @version 1.0
  */
-class KtorWebServerService(
+class KtorWebServerObserver(
     private val port: Int,
     private val callback: KtorWebServer.Callback,
 ) : DefaultLifecycleObserver {

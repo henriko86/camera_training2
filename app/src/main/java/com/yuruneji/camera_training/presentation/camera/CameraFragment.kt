@@ -4,33 +4,36 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.hardware.camera2.CameraCharacteristics
 import android.os.Bundle
-import android.util.Size
 import android.view.LayoutInflater
+import android.view.Surface
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.UiThread
+import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.fragment.findNavController
 import com.yuruneji.camera_training.R
 import com.yuruneji.camera_training.common.AuthMethod
 import com.yuruneji.camera_training.common.CommonUtils
 import com.yuruneji.camera_training.common.CommonUtils.fullscreen
 import com.yuruneji.camera_training.common.LensFacing
+import com.yuruneji.camera_training.common.MultiAuthState
 import com.yuruneji.camera_training.common.MultiAuthType
 import com.yuruneji.camera_training.common.service.KtorWebServer
-import com.yuruneji.camera_training.common.service.KtorWebServerService
-import com.yuruneji.camera_training.common.service.LocationService
-import com.yuruneji.camera_training.common.service.NanoTestWebServerService
-import com.yuruneji.camera_training.common.service.SoundService
-import com.yuruneji.camera_training.data.local.preference.AppPreferences
-import com.yuruneji.camera_training.data.local.preference.AppSettingModel
-import com.yuruneji.camera_training.data.local.preference.convert
+import com.yuruneji.camera_training.common.service.KtorWebServerObserver
+import com.yuruneji.camera_training.common.service.LocationObserver
+import com.yuruneji.camera_training.common.service.NanoTestWebServerObserver
+import com.yuruneji.camera_training.common.service.SoundObserver
+import com.yuruneji.camera_training.data.local.setting.AppPreferences
+import com.yuruneji.camera_training.data.local.setting.AppSettingModel
+import com.yuruneji.camera_training.data.local.setting.convert
 import com.yuruneji.camera_training.databinding.FragmentCameraBinding
 import com.yuruneji.camera_training.domain.model.AppRequestModel
 import com.yuruneji.camera_training.domain.model.AppResponseModel
@@ -38,6 +41,8 @@ import com.yuruneji.camera_training.presentation.camera.view.DrawRectView
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 @AndroidEntryPoint
 class CameraFragment : Fragment(), KtorWebServer.Callback {
@@ -52,6 +57,9 @@ class CameraFragment : Fragment(), KtorWebServer.Callback {
     private var _binding: FragmentCameraBinding? = null
     private val binding get() = _binding!!
     private val viewModel: CameraViewModel by viewModels()
+
+    /** 効果音 */
+    private lateinit var soundObserver: SoundObserver
 
     /** 顔枠表示 */
     private lateinit var drawFaceView: DrawRectView
@@ -75,65 +83,58 @@ class CameraFragment : Fragment(), KtorWebServer.Callback {
         Timber.i(Throwable().stackTrace[0].methodName)
         super.onCreate(savedInstanceState)
 
-        // 設定
-        setting = AppPreferences(requireContext()).convert()
-        Timber.d(setting.toString())
-
         // 効果音
-        val soundService = SoundService(requireContext())
-        lifecycle.addObserver(soundService)
-        viewModel.setSoundService(soundService)
+        soundObserver = SoundObserver(requireContext())
+        lifecycle.addObserver(soundObserver)
 
         // 位置情報
-        val locationService = LocationService(requireActivity()) {
-            // viewModel.setLocation(it)
-            Timber.i("location: ${it.latitude}, ${it.longitude}")
+        val locationObserver = LocationObserver(requireActivity()) {
+            viewModel.setLocation(it)
+            // Timber.i("location: ${it.latitude}, ${it.longitude}")
 
-            lifecycleScope.launch {
-                binding.text2.text = getString(R.string.debug_location, it.latitude.toString(), it.longitude.toString(), "")
-            }
+            // lifecycleScope.launch {
+            //     binding.text2.text = getString(R.string.debug_location, it.latitude.toString(), it.longitude.toString(), "")
+            // }
         }
-        lifecycle.addObserver(locationService)
+        lifecycle.addObserver(locationObserver)
 
         // Webサーバ
-        val webServerService = NanoTestWebServerService { keyA, keyB ->
+        val webServerObserver = NanoTestWebServerObserver { keyA, keyB ->
             Timber.d("keyA: $keyA, keyB: $keyB")
         }
-        lifecycle.addObserver(webServerService)
+        lifecycle.addObserver(webServerObserver)
 
         // ktor Webサーバ
-        val ktorWebServerService = KtorWebServerService(8000, this)
-        lifecycle.addObserver(ktorWebServerService)
+        val ktorWebServerObserver = KtorWebServerObserver(8000, this)
+        lifecycle.addObserver(ktorWebServerObserver)
 
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         Timber.i(Throwable().stackTrace[0].methodName)
         _binding = FragmentCameraBinding.inflate(inflater, container, false)
-
-        val windowSize = CommonUtils.getWindowSize(requireContext())
-        val cameraImageSize = if (windowSize.width > windowSize.height) {
-            Size(setting.imageHeight, setting.imageWidth)
-        } else {
-            Size(setting.imageWidth, setting.imageHeight)
-        }
-        val isFlipped = setting.lensFacing == LensFacing.FRONT.no
-
-
-        drawFaceView = DrawRectView(requireContext(), cameraImageSize.width, cameraImageSize.height, isFlipped)
-        // drawFaceView.setImageSize(cameraImageSize.width, cameraImageSize.height)
-        binding.root.addView(drawFaceView)
-
-        drawQrView = DrawRectView(requireContext(), cameraImageSize.width, cameraImageSize.height, isFlipped)
-        // drawQrView.setImageSize(cameraImageSize.width, cameraImageSize.height)
-        binding.root.addView(drawQrView)
-
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         Timber.i(Throwable().stackTrace[0].methodName)
         super.onViewCreated(view, savedInstanceState)
+
+
+        // 設定
+        setting = AppPreferences(requireContext()).convert()
+        Timber.d(setting.toString())
+
+        // val windowSize = CommonUtils.getWindowSize(requireContext())
+        val cameraImageSize = CommonUtils.getCameraImageSize(requireContext())
+        val isFlipped = setting.lensFacing == LensFacing.FRONT
+
+        drawFaceView = DrawRectView(requireContext(), cameraImageSize.width, cameraImageSize.height, isFlipped)
+        binding.root.addView(drawFaceView)
+
+        drawQrView = DrawRectView(requireContext(), cameraImageSize.width, cameraImageSize.height, isFlipped)
+        binding.root.addView(drawQrView)
+
 
         updateCameraSettingView(setting)
         setupViewEvent()
@@ -181,11 +182,11 @@ class CameraFragment : Fragment(), KtorWebServer.Callback {
     }
 
     private fun setupViewEvent() {
-        // 設定画面表示
-        // binding.root.setOnLongClickListener {
-        //     findNavController().navigate(R.id.action_CameraFragment_to_SettingFragment)
-        //     true
-        // }
+        // ログイン画面表示
+        binding.root.setOnLongClickListener {
+            findNavController().navigate(R.id.action_CameraFragment_to_LoginFragment)
+            true
+        }
     }
 
     private fun observeAuthStateChanges() {
@@ -206,6 +207,9 @@ class CameraFragment : Fragment(), KtorWebServer.Callback {
             }
         }
 
+        viewModel.sound.observe(viewLifecycleOwner) {
+            soundObserver.play(it)
+        }
 
         // 認証待ちプログレスバー
         viewModel.authWaitProgressbar.observe(viewLifecycleOwner) {
@@ -222,8 +226,15 @@ class CameraFragment : Fragment(), KtorWebServer.Callback {
                 if (state.isLoading) {
                     Timber.d("顔認証 読み込み中.....")
                 } else {
-                    updateAuthResultView(state.req, state.resp, state.error)
-                    viewModel.setAuthResultView()
+                    if (setting.authMethod == AuthMethod.SINGLE) {
+                        updateAuthResultView(state.request, state.response, state.error)
+                        viewModel.setAuthResultView()
+                    } else {
+                        viewModel.updateBeforeMultiAuthState(MultiAuthState.Before)
+
+                        updateAuthResultView(state.request, state.response, state.error)
+                        viewModel.setAuthResultView()
+                    }
                 }
             }
         }
@@ -234,14 +245,15 @@ class CameraFragment : Fragment(), KtorWebServer.Callback {
                 if (state.isLoading) {
                     Timber.d("カード認証 読み込み中.....")
                 } else {
-                    updateAuthResultView(state.req, state.resp, state.error)
-                    viewModel.setAuthResultView()
+                    if (setting.authMethod == AuthMethod.SINGLE) {
+                        updateAuthResultView(state.request, state.response, state.error)
+                        viewModel.setAuthResultView()
+                    } else {
+                        viewModel.updateBeforeMultiAuthState(MultiAuthState.After)
+                    }
                 }
             }
         }
-    }
-
-    private fun observeDeviceInfoChanges() {
 
         // 認証結果表示
         viewModel.authResultView.observe(viewLifecycleOwner) {
@@ -253,14 +265,15 @@ class CameraFragment : Fragment(), KtorWebServer.Callback {
                 binding.resultMessage.visibility = View.GONE
             }
         }
+    }
 
-
+    private fun observeDeviceInfoChanges() {
         // ネットワーク状態
         viewModel.networkState.observe(viewLifecycleOwner) {
             Timber.d("networkState: $it ${Thread.currentThread().name}")
             when (it) {
                 true -> {
-                    binding.text1.text = getString(R.string.debug_network_online, "")
+                    binding.text1.text = getString(R.string.debug_network_online, getLogTime())
                     // IPアドレス
                     viewModel.getIpAddress()
 
@@ -268,7 +281,7 @@ class CameraFragment : Fragment(), KtorWebServer.Callback {
                 }
 
                 false -> {
-                    binding.text1.text = getString(R.string.debug_network_offline, "")
+                    binding.text1.text = getString(R.string.debug_network_offline, getLogTime())
                     binding.text4.text = ""
 
                     updateNetworkState(it)
@@ -277,15 +290,20 @@ class CameraFragment : Fragment(), KtorWebServer.Callback {
         }
 
         // 時間
-        viewModel.timeCheck.observe(viewLifecycleOwner) {
+        viewModel.timeOff.observe(viewLifecycleOwner) {
             Timber.i("timeCheck: $it")
-            binding.text3.text = getString(R.string.debug_time_check, it.toString(), "")
+            binding.text3.text = getString(R.string.debug_time_off, it.toString(), getLogTime())
         }
 
         // IPアドレス
         viewModel.ipAddress.observe(viewLifecycleOwner) {
             Timber.i("IP Address: $it")
-            binding.text4.text = getString(R.string.debug_ip_address, it, "")
+            binding.text4.text = getString(R.string.debug_ip_address, it, getLogTime())
+        }
+
+        // 位置情報
+        viewModel.location.observe(viewLifecycleOwner) {
+            binding.text2.text = getString(R.string.debug_location, it.latitude.toString(), it.longitude.toString(), getLogTime())
         }
     }
 
@@ -301,7 +319,7 @@ class CameraFragment : Fragment(), KtorWebServer.Callback {
         viewModel.startLogUpload(requireContext())
 
         // 時刻チェック
-        viewModel.startTimeCheck()
+        viewModel.startCheckTimeOff()
 
         // ネットワーク状態
         viewModel.startNetworkSensor()
@@ -325,6 +343,38 @@ class CameraFragment : Fragment(), KtorWebServer.Callback {
     private fun startCamera() {
         Timber.i(Throwable().stackTrace[0].methodName)
 
+        val orientation = CommonUtils.getOrientation(requireContext())
+        when (orientation) {
+            android.content.res.Configuration.ORIENTATION_PORTRAIT -> {
+                println("縦")
+            }
+
+            android.content.res.Configuration.ORIENTATION_LANDSCAPE -> {
+                println("横")
+            }
+        }
+
+        val rotation = CommonUtils.getRotation(requireContext())
+        when (rotation) {
+            Surface.ROTATION_0 -> {
+                println("0")
+            }
+
+            Surface.ROTATION_90 -> {
+                println("90")
+            }
+
+            Surface.ROTATION_180 -> {
+                println("180")
+            }
+
+            Surface.ROTATION_270 -> {
+                println("270")
+            }
+        }
+
+        // val windowManager = requireContext().getSystemService(android.content.Context.WINDOW_SERVICE) as android.view.WindowManager
+
         val cameraManager = requireContext().getSystemService(android.content.Context.CAMERA_SERVICE) as android.hardware.camera2.CameraManager
         val cameraID = CommonUtils.getCameraID(requireContext())
 
@@ -336,25 +386,19 @@ class CameraFragment : Fragment(), KtorWebServer.Callback {
         }
 
         // プレビューが開始
-        // binding.previewView.previewStreamState.observe(viewLifecycleOwner) { streamState ->
-        //     streamState?.let {
-        //         when (streamState) {
-        //             PreviewView.StreamState.STREAMING -> {
-        //                 val matrix = binding.previewView.matrix
-        //                 val width = binding.previewView.width
-        //                 val height = binding.previewView.height
-        //
-        //                 // drawFaceView.setPreviewInfo(matrix, width, height)
-        //                 // drawFaceView.setImageFlipped(true)
-        //
-        //                 // drawQrView.setPreviewInfo(matrix, width, height)
-        //                 // drawQrView.setImageFlipped(true)
-        //             }
-        //
-        //             PreviewView.StreamState.IDLE -> {}
-        //         }
-        //     }
-        // }
+        binding.previewView.previewStreamState.observe(viewLifecycleOwner) { streamState ->
+            streamState?.let {
+                when (streamState) {
+                    PreviewView.StreamState.STREAMING -> {
+                        Timber.d("PreviewView.StreamState.STREAMING")
+                    }
+
+                    PreviewView.StreamState.IDLE -> {
+                        Timber.d("PreviewView.StreamState.IDLE")
+                    }
+                }
+            }
+        }
 
 
         viewModel.startCamera(requireContext(), viewLifecycleOwner, binding.previewView)
@@ -372,17 +416,15 @@ class CameraFragment : Fragment(), KtorWebServer.Callback {
     private fun updateCameraSettingView(setting: AppSettingModel) {
         Timber.d("updateCameraSettingView() $setting")
 
-        // 状態
-        binding.statusMessage.text = ""
 
         // 認証結果
         binding.resultName.visibility = View.GONE
         binding.resultMessage.visibility = View.GONE
 
 
-        val singleAuthFlag = setting.authMethod == AuthMethod.SINGLE.no
-        val isMultiCardFaceAuth = setting.multiAuthType == MultiAuthType.CARD_FACE.no
-        val isMultiQrFaceAuth = setting.multiAuthType == MultiAuthType.QR_FACE.no
+        val singleAuthFlag = setting.authMethod == AuthMethod.SINGLE
+        val isMultiCardFaceAuth = setting.multiAuthType == MultiAuthType.CARD_FACE
+        val isMultiQrFaceAuth = setting.multiAuthType == MultiAuthType.QR_FACE
 
         if (singleAuthFlag) {
             // 顔認証
@@ -410,8 +452,6 @@ class CameraFragment : Fragment(), KtorWebServer.Callback {
             }
         } else {
             if (isMultiCardFaceAuth) {
-                binding.statusMessage.text = "①カード認証"
-
                 binding.iconFaceAuthState.setImageDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.baseline_person_24_on))
                 binding.iconFaceAuthState.visibility = View.VISIBLE
 
@@ -422,8 +462,6 @@ class CameraFragment : Fragment(), KtorWebServer.Callback {
             }
 
             if (isMultiQrFaceAuth) {
-                binding.statusMessage.text = "①QRコード認証"
-
                 binding.iconFaceAuthState.setImageDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.baseline_person_24_on))
                 binding.iconFaceAuthState.visibility = View.VISIBLE
 
@@ -456,5 +494,13 @@ class CameraFragment : Fragment(), KtorWebServer.Callback {
         } else {
             binding.iconNetworkState.setImageDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.baseline_wifi_24_off))
         }
+    }
+
+    /**
+     * ログ時間を取得
+     * @return ログ時間
+     */
+    private fun getLogTime(): String {
+        return LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss.SSS"))
     }
 }

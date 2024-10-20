@@ -10,7 +10,7 @@ import com.google.mlkit.vision.face.Face
  * @version 1.0
  */
 data class FaceItemModel(
-    val faceBitmap: Bitmap?,
+    val faceBitmap: Bitmap,
     val faceRect: Rect,
     val face: Face
 )

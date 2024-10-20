@@ -12,9 +12,15 @@ import androidx.lifecycle.LifecycleOwner
  * @author toru
  * @version 1.0
  */
-class SoundService(
+class SoundObserver(
     private val context: Context
 ) : DefaultLifecycleObserver {
+
+    // interface SoundListener {
+    //     fun onPlay(soundId: SoundId)
+    // }
+
+
     /** SoundPool */
     private var soundPool: SoundPool? = null
 
@@ -30,10 +36,10 @@ class SoundService(
     /** Handler */
     private lateinit var handler: Handler
 
-    override fun onResume(owner: LifecycleOwner) {
-        super.onResume(owner)
+    override fun onCreate(owner: LifecycleOwner) {
+        super.onCreate(owner)
 
-        val soundHandler = HandlerThread(SoundService::class.simpleName)
+        val soundHandler = HandlerThread(SoundObserver::class.simpleName)
         soundHandler.start()
         handler = Handler(soundHandler.looper)
 
@@ -53,8 +59,21 @@ class SoundService(
         }
     }
 
+    override fun onResume(owner: LifecycleOwner) {
+        super.onResume(owner)
+
+        soundPool?.autoResume()
+    }
+
     override fun onPause(owner: LifecycleOwner) {
         super.onPause(owner)
+
+        soundPool?.autoPause()
+    }
+
+    override fun onDestroy(owner: LifecycleOwner) {
+        super.onDestroy(owner)
+
         soundPool?.release()
         soundPool = null
     }
@@ -85,4 +104,21 @@ class SoundService(
             soundPool?.play(authErrorId, 1.0f, 1.0f, 0, 0, 1.0f)
         }
     }
+
+    /**
+     * 音を再生
+     */
+    fun play(soundId: SoundId) {
+        when (soundId) {
+            SoundId.AUTH_START -> playAuthStart()
+            SoundId.AUTH_SUCCESS -> playAuthSuccess()
+            SoundId.AUTH_ERROR -> playAuthError()
+        }
+    }
+}
+
+enum class SoundId(val id: Int) {
+    AUTH_START(0),
+    AUTH_SUCCESS(1),
+    AUTH_ERROR(2)
 }

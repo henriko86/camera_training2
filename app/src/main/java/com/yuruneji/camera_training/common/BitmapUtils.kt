@@ -9,8 +9,10 @@ import android.graphics.Matrix
 import android.graphics.Rect
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
+import android.util.Base64
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
+import java.io.IOException
 import java.nio.ByteBuffer
 
 /**
@@ -93,29 +95,63 @@ object BitmapUtils {
             it.inJustDecodeBounds = false
         }
 
-        Bitmap.createBitmap(bmp, 0, 0, bmp.width, bmp.height, matrix, true).also { bmp2 ->
-            ByteArrayOutputStream().use { out ->
-                bmp2.compress(Bitmap.CompressFormat.JPEG, quality, out)
+        try {
+            Bitmap.createBitmap(bmp, 0, 0, bmp.width, bmp.height, matrix, true).also { bmp2 ->
+                ByteArrayOutputStream().use { out ->
+                    bmp2.compress(Bitmap.CompressFormat.JPEG, quality, out)
 
-                ByteArrayInputStream(out.toByteArray()).use { input ->
-                    BitmapRegionDecoder.newInstance(input, true)?.let { decoder ->
-                        return decoder.decodeRegion(faceRect, options)
+                    ByteArrayInputStream(out.toByteArray()).use { input ->
+                        BitmapRegionDecoder.newInstance(input, true)?.let { decoder ->
+                            return decoder.decodeRegion(faceRect, options)
+                        }
                     }
                 }
             }
+        } catch (e: IOException) {
+            return null
         }
 
         return null
     }
 
-}
+    fun toBase64Png(bitmap: Bitmap, quality: Int = 90): String {
+        return toBase64(bitmap, Bitmap.CompressFormat.PNG, quality)
+    }
 
-/**
- * Bitmapをbyte配列に変換
- * @return byte配列
- */
-fun Bitmap.toByteArray(): ByteArray {
-    val buffer = ByteBuffer.allocate(this.byteCount)
-    this.copyPixelsToBuffer(buffer)
-    return buffer.array()
+    fun toBase64Jpeg(bitmap: Bitmap, quality: Int = 90): String {
+        return toBase64(bitmap, Bitmap.CompressFormat.JPEG, quality)
+    }
+
+    fun toBase64(bitmap: Bitmap, format: Bitmap.CompressFormat, quality: Int = 90): String {
+        val byteArrayOutputStream = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.JPEG, quality, byteArrayOutputStream)
+        val byteArray = byteArrayOutputStream.toByteArray()
+        return when (format) {
+            Bitmap.CompressFormat.JPEG -> "data:image/jpeg;base64,${Base64.encodeToString(byteArray, Base64.DEFAULT)}"
+            Bitmap.CompressFormat.PNG -> "data:image/png;base64,${Base64.encodeToString(byteArray, Base64.DEFAULT)}"
+            else -> Base64.encodeToString(byteArray, Base64.DEFAULT)
+        }
+    }
+
+    fun toBitmap(base64: String): Bitmap? {
+        try {
+            val decodedBytes: ByteArray = Base64.decode(
+                base64.substring(base64.indexOf(",") + 1),
+                Base64.DEFAULT
+            )
+            return BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
+        } catch (e: Exception) {
+            return null
+        }
+    }
+
+    /**
+     * Bitmapをbyte配列に変換
+     * @return byte配列
+     */
+    fun toByteArray(bitmap: Bitmap): ByteArray {
+        val buffer = ByteBuffer.allocate(bitmap.byteCount)
+        bitmap.copyPixelsToBuffer(buffer)
+        return buffer.array()
+    }
 }
