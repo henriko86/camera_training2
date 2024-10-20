@@ -24,8 +24,8 @@ import com.yuruneji.camera_training.common.MultiAuthType
 import com.yuruneji.camera_training.common.response.DeviceResponse
 import com.yuruneji.camera_training.common.response.FaceAuthResponse
 import com.yuruneji.camera_training.common.service.NetworkService
-import com.yuruneji.camera_training.common.service.SoundId
 import com.yuruneji.camera_training.common.service.NtpService
+import com.yuruneji.camera_training.common.service.SoundId
 import com.yuruneji.camera_training.data.local.setting.AppPreferences
 import com.yuruneji.camera_training.data.local.setting.AppSettingModel
 import com.yuruneji.camera_training.data.local.setting.convert
@@ -42,6 +42,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -400,6 +401,25 @@ class CameraViewModel @Inject constructor(
         }
     }
 
+    // suspend fun faceAuth2(): String = suspendCancellableCoroutine { continuation ->
+    //     val callback = Runnable {
+    //         // 結果を c に渡す。キャンセルされている場合は何もしない
+    //         if (continuation.isActive) {
+    //             continuation.resume("晴れ")
+    //         }
+    //     }
+    //
+    //     val handler = Handler(Looper.getMainLooper())
+    //     // coroutine のキャンセルが起きた時に Handler 側もキャンセルする
+    //     continuation.invokeOnCancellation {
+    //         handler.removeCallbacks(callback)
+    //     }
+    //
+    //     // 2秒後に処理を呼び出すようタイマーを設定する。
+    //     // callback 処理はメインスレッドで行われるが、それまでの間スレッドは解放される
+    //     handler.postDelayed(callback, 5000)
+    // }
+
     /**
      * 多要素顔認証を開始
      * @param faceItem 顔情報
@@ -740,68 +760,109 @@ class CameraViewModel @Inject constructor(
      * @param fileName ログファイル名
      * @param file     ログファイル
      */
-    suspend fun logUpload(fileName: String, file: File) {
+    private fun logUpload(fileName: String, file: File) {
         val log = MultipartBody.Part.createFormData(
             "LogFile", fileName, file.asRequestBody("text/plain".toMediaType())
         )
 
-        logUploadUseCase(log).onEach { result ->
-            when (result) {
-                is DeviceResponse.Success -> {
-                    // Timber.d("${result.res}")
-                    Timber.d("ログアップロード!!!! [" + getThreadName() + "]")
+        // runCatching {
+            logUploadUseCase(log).onEach { result ->
+                when (result) {
+                    is DeviceResponse.Success -> {
+                        // Timber.d("${result.res}")
+                        Timber.d("ログアップロード!!!! [" + getThreadName() + "]")
+                    }
+
+                    is DeviceResponse.Failure -> {
+                        Timber.w("${result.error}")
+                        Timber.d("ログアップロードエラー [" + getThreadName() + "]")
+                    }
+
+                    is DeviceResponse.Loading -> {
+                        Timber.d("ログアップロード 読み込み中..... [" + getThreadName() + "]")
+                    }
                 }
+            }.launchIn(viewModelScope)
+        // }.onSuccess {
+        //     Timber.d("onSuccess")
+        // }.onFailure {
+        //     Timber.d("onFailure")
+        // }
 
-                is DeviceResponse.Failure -> {
-                    Timber.w("${result.error}")
-                    Timber.d("ログアップロードエラー [" + getThreadName() + "]")
-                }
 
-                is DeviceResponse.Loading -> {
-                    Timber.d("ログアップロード 読み込み中..... [" + getThreadName() + "]")
-                }
-            }
-        }.launchIn(viewModelScope)
-
-        tomorrow1 { data ->
-            Timber.d("明日の天気1: ${data}")
-        }
-
-        val data = tomorrow2()
-        Timber.d("明日の天気2: ${data}")
-
-        val result = withTimeoutOrNull(1000) {
-            val data3 = tomorrow2()
-            Timber.d("明日の天気3: ${data}")
-        }
-        Timber.d("明日の天気3: ${result}")
+        // tomorrow1 { data ->
+        //     Timber.d("明日の天気1: $data")
+        // }
+        //
+        // val data = tomorrow2()
+        // Timber.d("明日の天気2: $data")
+        //
+        // val result = withTimeoutOrNull(1000) {
+        //     val data3 = tomorrow2()
+        //     Timber.d("明日の天気3: $data")
+        // }
+        // Timber.d("明日の天気3: $result")
 
 
     }
 
 
-    val parentScope = CoroutineScope(Job() + Dispatchers.Default)
+    // val dispatcher1 = Executors.newFixedThreadPool(3).asCoroutineDispatcher()
+    // val scope1 = CoroutineScope(dispatcher1)
+    // val dispatcher2 = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
+    // val dispatcher3 = Executors.newCachedThreadPool().asCoroutineDispatcher()
 
-    fun tomorrow1(callback: (String) -> Unit): Unit {
-        // 2秒後に処理を呼び出すようタイマーを設定する。
-        // callback 処理はメインスレッドで行われるが、それまでの間スレッドは解放される
-        val handler = Handler(Looper.getMainLooper())
-        handler.postDelayed({ callback("晴れ") }, 5000)
-    }
 
-    suspend fun tomorrow2(): String = suspendCancellableCoroutine { c ->
-        val callback = Runnable {
-            // 結果を c に渡す。キャンセルされている場合は何もしない
-            if (c.isActive) c.resume("晴れ")
-        }
-        val handler = Handler(Looper.getMainLooper())
-        // coroutine のキャンセルが起きた時に Handler 側もキャンセルする
-        c.invokeOnCancellation { handler.removeCallbacks(callback) }
+    // val xxxJob = Job()
+    // val xxxScope = CoroutineScope(xxxJob + Dispatchers.Main)
+    // fun xxx() {
+    //     xxxScope.launch {
+    //         //
+    //     }
+    // }
 
-        // 2秒後に処理を呼び出すようタイマーを設定する。
-        // callback 処理はメインスレッドで行われるが、それまでの間スレッドは解放される
-        handler.postDelayed(callback, 5000)
-    }
+    // fun xxxStop() {
+    //     xxxJob.cancel()
+    // }
+
+    // fun tomorrow1(callback: (String) -> Unit): Unit {
+    //     // 2秒後に処理を呼び出すようタイマーを設定する。
+    //     // callback 処理はメインスレッドで行われるが、それまでの間スレッドは解放される
+    //     val handler = Handler(Looper.getMainLooper())
+    //     handler.postDelayed({ callback("晴れ") }, 5000)
+    // }
+
+    // suspend fun tomorrow2(): String = suspendCancellableCoroutine { c ->
+    //     val callback = Runnable {
+    //         // 結果を c に渡す。キャンセルされている場合は何もしない
+    //         if (c.isActive) {
+    //             c.resume("晴れ")
+    //         }
+    //     }
+    //     val handler = Handler(Looper.getMainLooper())
+    //     // coroutine のキャンセルが起きた時に Handler 側もキャンセルする
+    //     c.invokeOnCancellation { handler.removeCallbacks(callback) }
+    //
+    //     // 2秒後に処理を呼び出すようタイマーを設定する。
+    //     // callback 処理はメインスレッドで行われるが、それまでの間スレッドは解放される
+    //     handler.postDelayed(callback, 5000)
+    // }
+
+    // suspend fun syncConnect() : Boolean {
+    //     return suspendCoroutine { continuation ->
+    //         val callback = object: MyConnectionCallback {
+    //             override fun onConnected() {
+    //                 continuation.resume(true) // ここでsyncConnect()をreturnする
+    //             }
+    //             override fun onError(error: Error) {
+    //                 Log.e(LOG_TAG, this.javaClass.simpleName + ":onError:" + error.message);
+    //                 continuation.resume(false) // ここでsyncConnect()をreturnする
+    //             }
+    //         }
+    //         MyConnectionService.connect(callback)
+    //         return@suspendCoroutine // resumeが呼ばれるまで待つ
+    //     }
+    // }
 
 
     /** ネットワーク状態 */

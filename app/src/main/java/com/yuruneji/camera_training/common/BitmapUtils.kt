@@ -21,12 +21,15 @@ import java.nio.ByteBuffer
  */
 object BitmapUtils {
 
+    /** 画像クォリティ */
+    private const val IMAGE_QUALITY = 90
+
     /**
      * Drawableを画像に変換
      * @param drawable Drawable
      * @return
      */
-    fun drawableToBitmap(drawable: Drawable?): Bitmap {
+    fun toBitmap(drawable: Drawable?): Bitmap {
         if (drawable == null) return Bitmap.createBitmap(1, 1, Config.ARGB_8888)
 
         if (drawable is BitmapDrawable) {
@@ -47,15 +50,15 @@ object BitmapUtils {
      * @param rotation
      * @return
      */
-    fun flipBitmap(source: Bitmap, rotation: Int): Bitmap {
-        val imageWidth: Int = source.width
-        val imageHeight: Int = source.height
+    fun flip(image: Bitmap, rotation: Int): Bitmap {
+        val imageWidth: Int = image.width
+        val imageHeight: Int = image.height
 
         val matrix = Matrix()
         matrix.setRotate(rotation.toFloat())
 
         return Bitmap.createBitmap(
-            source, 0, 0, imageWidth, imageHeight, matrix, true
+            image, 0, 0, imageWidth, imageHeight, matrix, true
         )
     }
 
@@ -66,7 +69,7 @@ object BitmapUtils {
      * @param height
      * @return
      */
-    fun bitmapTrim(image: Bitmap, width: Int, height: Int): Bitmap {
+    fun trim(image: Bitmap, width: Int, height: Int): Bitmap {
         val scale = if (image.width >= image.height) { // 横長
             width / image.width.toDouble()
         } else { // 縦長
@@ -82,11 +85,11 @@ object BitmapUtils {
     /**
      * 画像を範囲で切り抜き
      * @param bmp
-     * @param faceRect
+     * @param rect
      * @param quality
      * @return
      */
-    fun faceClipping(bmp: Bitmap, faceRect: Rect, quality: Int = 90): Bitmap? {
+    fun crop(image: Bitmap, rect: Rect, quality: Int = IMAGE_QUALITY): Bitmap? {
         val matrix = Matrix().also {
             it.preScale(-1f, 1f)
         }
@@ -96,13 +99,13 @@ object BitmapUtils {
         }
 
         try {
-            Bitmap.createBitmap(bmp, 0, 0, bmp.width, bmp.height, matrix, true).also { bmp2 ->
+            Bitmap.createBitmap(image, 0, 0, image.width, image.height, matrix, true).also { bmp2 ->
                 ByteArrayOutputStream().use { out ->
                     bmp2.compress(Bitmap.CompressFormat.JPEG, quality, out)
 
                     ByteArrayInputStream(out.toByteArray()).use { input ->
                         BitmapRegionDecoder.newInstance(input, true)?.let { decoder ->
-                            return decoder.decodeRegion(faceRect, options)
+                            return decoder.decodeRegion(rect, options)
                         }
                     }
                 }
@@ -114,15 +117,15 @@ object BitmapUtils {
         return null
     }
 
-    fun toBase64Png(bitmap: Bitmap, quality: Int = 90): String {
+    fun toBase64Png(bitmap: Bitmap, quality: Int = IMAGE_QUALITY): String {
         return toBase64(bitmap, Bitmap.CompressFormat.PNG, quality)
     }
 
-    fun toBase64Jpeg(bitmap: Bitmap, quality: Int = 90): String {
+    fun toBase64Jpeg(bitmap: Bitmap, quality: Int = IMAGE_QUALITY): String {
         return toBase64(bitmap, Bitmap.CompressFormat.JPEG, quality)
     }
 
-    fun toBase64(bitmap: Bitmap, format: Bitmap.CompressFormat, quality: Int = 90): String {
+    fun toBase64(bitmap: Bitmap, format: Bitmap.CompressFormat, quality: Int = IMAGE_QUALITY): String {
         val byteArrayOutputStream = ByteArrayOutputStream()
         bitmap.compress(Bitmap.CompressFormat.JPEG, quality, byteArrayOutputStream)
         val byteArray = byteArrayOutputStream.toByteArray()
