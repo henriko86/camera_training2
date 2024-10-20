@@ -7,8 +7,8 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.yuruneji.camera_training.BuildConfig
 import com.yuruneji.camera_training.common.ApiType
 import com.yuruneji.camera_training.common.CipherExtractor
-import com.yuruneji.camera_training.data.local.datastore.BaseDataStore
-import com.yuruneji.camera_training.data.local.datastore.LogViewDataStore
+import com.yuruneji.camera_training.data.local.setting.BaseDataStore
+import com.yuruneji.camera_training.data.local.setting.LogViewDataStore
 import com.yuruneji.camera_training.data.local.db.AppDatabase
 import com.yuruneji.camera_training.data.local.db.LogDao
 import com.yuruneji.camera_training.data.remote.AppService
@@ -18,8 +18,7 @@ import com.yuruneji.camera_training.domain.repository.AppRepository
 import com.yuruneji.camera_training.domain.repository.LogRepository
 import com.yuruneji.camera_training.domain.usecase.LogFile
 import com.yuruneji.camera_training.common.service.NetworkService
-import com.yuruneji.camera_training.data.local.preference.AppPreferences
-import com.yuruneji.camera_training.data.local.preference.BasePreferences
+import com.yuruneji.camera_training.data.local.setting.AppPreferences
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -44,7 +43,7 @@ object Module {
     /** ネットワーク状態 */
     @Provides
     @Singleton
-    fun provideNetworkSensor(@ApplicationContext context: Context): NetworkService {
+    fun provideNetworkService(@ApplicationContext context: Context): NetworkService {
         return NetworkService(context)
     }
 
@@ -78,8 +77,6 @@ object Module {
     fun provideLogViewDataStore(@ApplicationContext context: Context): LogViewDataStore {
         return LogViewDataStore(context)
     }
-
-
 
 
     /** DB */

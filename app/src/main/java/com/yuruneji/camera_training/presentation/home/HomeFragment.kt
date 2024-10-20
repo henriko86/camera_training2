@@ -35,19 +35,19 @@ class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         // カメラ
-        binding.cameraBtn.setOnClickListener {
-            findNavController().navigate(R.id.action_HomeFragment_to_CameraFragment)
-        }
-
-        // 設定
-        binding.settingBtn.setOnClickListener {
-            findNavController().navigate(R.id.action_HomeFragment_to_SettingFragment)
-        }
-
-        // ログ表示
-        binding.blogViewBtn.setOnClickListener {
-            findNavController().navigate(R.id.action_HomeFragment_to_LogViewFragment)
-        }
+        // binding.cameraBtn.setOnClickListener {
+        //     findNavController().navigate(R.id.action_HomeFragment_to_CameraFragment)
+        // }
+        //
+        // // 設定
+        // binding.settingBtn.setOnClickListener {
+        //     findNavController().navigate(R.id.action_HomeFragment_to_SettingFragment)
+        // }
+        //
+        // // ログ表示
+        // binding.blogViewBtn.setOnClickListener {
+        //     findNavController().navigate(R.id.action_HomeFragment_to_LogViewFragment)
+        // }
 
         // ACTION_INTERNET_CONNECTIVITY
         binding.settingsInternetConnectivity.setOnClickListener {

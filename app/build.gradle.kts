@@ -1,3 +1,5 @@
+import org.gradle.internal.impldep.org.junit.experimental.categories.Categories.CategoryFilter.exclude
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -20,10 +22,10 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        buildConfigField("String", "API_URL_BASE", "\"${project.properties["API_URL_BASE"]}\"")
-        buildConfigField("String", "API_URL_DEVELOP", "\"${project.properties["API_URL_DEVELOP"]}\"")
-        buildConfigField("String", "API_URL_STAGING", "\"${project.properties["API_URL_STAGING"]}\"")
-        buildConfigField("String", "API_URL_PRODUCTION", "\"${project.properties["API_URL_PRODUCTION"]}\"")
+        buildConfigField("String", "API_URL_BASE", "\"${project.properties["api.url.base"]}\"")
+        buildConfigField("String", "API_URL_DEVELOP", "\"${project.properties["api.url.develop"]}\"")
+        buildConfigField("String", "API_URL_STAGING", "\"${project.properties["api.url.staging"]}\"")
+        buildConfigField("String", "API_URL_PRODUCTION", "\"${project.properties["api.url.production"]}\"")
     }
 
     buildTypes {
@@ -45,8 +47,7 @@ android {
         dataBinding = true
     }
     packagingOptions {
-        exclude("META-INF/io.netty.versions.properties")
-        exclude("META-INF/INDEX.LIST")
+        resources.excludes.add("META-INF/*")
     }
 }
 
@@ -68,6 +69,7 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(libs.junit.jupiter)
 
     // DI: Hilt
     val hilt_version = "2.49"

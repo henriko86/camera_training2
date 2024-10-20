@@ -6,11 +6,11 @@ package com.yuruneji.camera_training.common.response
  * @version 1.0
  */
 sealed class FaceAuthResponse<T1, T2>(
-    val req: T1? = null,
-    val resp: T2? = null,
+    val request: T1? = null,
+    val response: T2? = null,
     val error: Throwable? = null
 ) {
-    class Success<T1, T2>(req: T1, resp: T2) : FaceAuthResponse<T1, T2>(req = req, resp = resp)
-    class Failure<T1, T2>(req: T1, error: Throwable) : FaceAuthResponse<T1, T2>(req = req, error = error)
+    class Success<T1, T2>(request: T1, response: T2) : FaceAuthResponse<T1, T2>(request = request, response = response)
+    class Failure<T1, T2>(request: T1, error: Throwable) : FaceAuthResponse<T1, T2>(request = request, error = error)
     class Loading<T1, T2> : FaceAuthResponse<T1, T2>()
 }

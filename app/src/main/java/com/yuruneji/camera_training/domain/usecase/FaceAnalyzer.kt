@@ -49,15 +49,27 @@ class FaceAnalyzer(
                         val faceList = mutableListOf<FaceItemModel>()
                         for (face in faces) {
                             val rect = face.boundingBox
+
+                            val widthPadding = (rect.width() * 1.2) - rect.width().toDouble()
+                            val heightPadding = (rect.height() * 1.2) - rect.height().toDouble()
+
                             val rect2 = Rect().also { // 左右反転（フロントカメラ対応）
-                                it.top = rect.top
-                                it.bottom = rect.bottom
-                                it.left = bmp.width - rect.right
-                                it.right = bmp.width - rect.left
+                                it.top = rect.top - heightPadding.toInt()
+                                it.bottom = rect.bottom + heightPadding.toInt()
+                                it.left = (bmp.width - rect.right) - widthPadding.toInt()
+                                it.right = (bmp.width - rect.left) + widthPadding.toInt()
                             }
                             val faceBitmap = BitmapUtils.faceClipping(bmp, rect2)
+                            faceBitmap?.let {
+                                val faceBitmap2 = BitmapUtils.bitmapTrim(faceBitmap, 100, 100)
 
-                            faceList.add(FaceItemModel(faceBitmap, rect, face))
+                                val base64 = BitmapUtils.toBase64(faceBitmap2, Bitmap.CompressFormat.JPEG)
+                                val bitmap3 = base64?.let { BitmapUtils.toBitmap(base64)}
+
+                                bitmap3?.let {
+                                    faceList.add(FaceItemModel(bitmap3, rect, face))
+                                }
+                            }
                         }
 
                         onFaceDetect(faceList)

@@ -49,51 +49,6 @@ class CommonUtilsTest {
     //     assertEquals(Size(1080, 2400), size)
     // }
 
-    private val startDateTime = LocalTime.of(8, 30, 0).atDate(LocalDate.now())
-    private val endDateTime = LocalTime.of(17, 30, 0).atDate(LocalDate.now())
-
-    @Test
-    fun betweenDateTest1() {
-        val now = LocalTime.of(8, 29, 0).atDate(LocalDate.now())
-        val result = CommonUtils.betweenDate(now, startDateTime, endDateTime)
-        assertEquals(false, result)
-    }
-
-    @Test
-    fun betweenDateTest2() {
-        val now = LocalTime.of(8, 30, 0).atDate(LocalDate.now())
-        val result = CommonUtils.betweenDate(now, startDateTime, endDateTime)
-        assertEquals(true, result)
-    }
-
-    @Test
-    fun betweenDateTest3() {
-        val now = LocalTime.of(8, 31, 0).atDate(LocalDate.now())
-        val result = CommonUtils.betweenDate(now, startDateTime, endDateTime)
-        assertEquals(true, result)
-    }
-
-    @Test
-    fun betweenDateTest4() {
-        val now = LocalTime.of(17, 29, 0).atDate(LocalDate.now())
-        val result = CommonUtils.betweenDate(now, startDateTime, endDateTime)
-        assertEquals(true, result)
-    }
-
-    @Test
-    fun betweenDateTest5() {
-        val now = LocalTime.of(17, 30, 0).atDate(LocalDate.now())
-        val result = CommonUtils.betweenDate(now, startDateTime, endDateTime)
-        assertEquals(true, result)
-    }
-
-    @Test
-    fun betweenDateTest6() {
-        val now = LocalTime.of(17, 31, 0).atDate(LocalDate.now())
-        val result = CommonUtils.betweenDate(now, startDateTime, endDateTime)
-        assertEquals(false, result)
-    }
-
     // @Test
     // fun hoge2() {
     //     assertEquals(4, 2 + 2)

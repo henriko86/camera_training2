@@ -65,9 +65,9 @@ enum class LensFacing(val no: Int, val value: String) {
  * APIタイプ
  */
 enum class ApiType(val no: Int, val value: String) {
-    DEVELOP(0, "開発環境"),
-    STAGING(1, "ステージング環境"),
-    PRODUCTION(2, "本番環境");
+    DEVELOP(1, "開発環境"),
+    STAGING(2, "ステージング環境"),
+    PRODUCTION(3, "本番環境");
 
     companion object {
         private val defItem = DEVELOP
@@ -98,8 +98,8 @@ enum class ApiType(val no: Int, val value: String) {
  * 認証方法
  */
 enum class AuthMethod(val no: Int, val value: String) {
-    SINGLE(0, "単要素認証"),
-    MULTI(1, "多要素認証");
+    SINGLE(1, "単要素認証"),
+    MULTI(2, "多要素認証");
 
     companion object {
         private val defItem = SINGLE
@@ -130,9 +130,9 @@ enum class AuthMethod(val no: Int, val value: String) {
  * 認証タイプ
  */
 enum class AuthType(val no: Int, val value: String) {
-    FACE(0, "顔認証"),
-    CARD(1, "カード認証"),
-    QR(2, "QRコード認証");
+    FACE(1, "顔認証"),
+    CARD(2, "カード認証"),
+    QR(3, "QRコード認証");
 
     companion object {
         private val defItem = FACE
@@ -163,8 +163,8 @@ enum class AuthType(val no: Int, val value: String) {
  * 多要素認証タイプ
  */
 enum class MultiAuthType(val no: Int, val value: String) {
-    CARD_FACE(0, "カード＆顔認証"),
-    QR_FACE(1, "QRコード＆顔認証");
+    CARD_FACE(1, "カード＆顔認証"),
+    QR_FACE(2, "QRコード＆顔認証");
 
     companion object {
         private val defItem = CARD_FACE
@@ -189,6 +189,16 @@ enum class MultiAuthType(val no: Int, val value: String) {
             return defValue
         }
     }
+}
+
+/**
+ * 多要素認証状態
+ */
+enum class MultiAuthState(val no: Int, val value: String) {
+    // Wait(1, "待機"),
+    Before(2, "前認証"),
+    After(3, "後認証"),
+    // Done(4, "完了")
 }
 
 /**
@@ -229,6 +239,7 @@ enum class MinFaceSize(val no: Int, val value: String, val size: Float) {
         }
     }
 }
+
 
 /**
  * カメラID

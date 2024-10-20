@@ -15,7 +15,7 @@
 
     <string name="xxx">xxx</string>
     <string name="debug_ip_address">IP Address %1$s (%2$s)</string>
-    <string name="debug_time_check">時刻チェック %1$s (%2$s)</string>
+    <string name="debug_time_off">時刻ズレチェック %1$s (%2$s)</string>
     <string name="debug_location">緯度:%1$s,経度:%2$s (%3$s)</string>
     <string name="debug_network_offline">ネットワーク状態: オフライン (%1$s)</string>
     <string name="debug_network_online">ネットワーク状態: オンライン (%1$s)</string>
@@ -45,5 +45,14 @@
         sed efficitur ullamcorper, libero justo consectetur ipsum, in mollis nisl ex sed nisl. Donec maximus ullamcorper sodales. Praesent bibendum rhoncus tellus nec feugiat. In a ornare nulla. Donec rhoncus libero vel nunc consequat, quis
         tincidunt nisl eleifend. Cras bibendum enim a justo luctus vestibulum. Fusce dictum libero quis erat maximus, vitae volutpat diam dignissim.
     </string>
+    <!-- Strings related to login -->
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Password</string>
+    <string name="action_sign_in">Sign in or register</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="welcome">"Welcome!"</string>
+    <string name="invalid_username">Not a valid username</string>
+    <string name="invalid_password">Password must be >5 characters</string>
+    <string name="login_failed">"Login failed"</string>
 
 </resources>

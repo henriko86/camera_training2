@@ -7,13 +7,13 @@ import com.yuruneji.camera_training.domain.model.AppResponseModel
  * @author toru
  * @version 1.0
  */
-data class AuthState(
+data class CameraScreenState(
     /**  */
     val isLoading: Boolean = false,
     /**  */
-    val req: AppRequestModel? = null,
+    val request: AppRequestModel? = null,
     /**  */
-    val resp: AppResponseModel? = null,
+    val response: AppResponseModel? = null,
     /**  */
     val error: Throwable? = null,
 )

@@ -7,7 +7,7 @@ import androidx.lifecycle.LifecycleOwner
  * @author toru
  * @version 1.0
  */
-class NanoTestWebServerService(
+class NanoTestWebServerObserver(
     private val port: Int = 8888,
     private val callback: (keyA: String, keyB: String) -> Unit
 ) : DefaultLifecycleObserver {

@@ -7,10 +7,15 @@ import android.hardware.camera2.CameraCharacteristics
 import android.os.Build
 import android.os.Build.VERSION_CODES
 import android.util.Size
+import android.view.Display
+import android.view.Surface
 import android.view.View
 import android.view.WindowManager
 import android.view.WindowMetrics
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContentProviderCompat.requireContext
+import com.yuruneji.camera_training.data.local.setting.AppPreferences
+import com.yuruneji.camera_training.data.local.setting.convert
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -42,6 +47,46 @@ object CommonUtils {
     }
 
     /**
+     * 画面の向きを取得
+     * @param context Context
+     * @return 画面の向き
+     */
+    fun getOrientation(context: Context): Int {
+        val orientation = context.resources.configuration.orientation
+        // when (orientation) {
+        //     android.content.res.Configuration.ORIENTATION_PORTRAIT -> {
+        //         println("縦")
+        //     }
+        //
+        //     android.content.res.Configuration.ORIENTATION_LANDSCAPE -> {
+        //         println("横")
+        //     }
+        // }
+        return orientation
+    }
+
+    /**
+     * 画面の回転を取得
+     * @param context Context
+     * @return 画面の回転
+     */
+    fun getRotation(context: Context): Int {
+        val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        val rotation = windowManager.defaultDisplay.rotation
+        // when (rotation) {
+        //     //== 0度 ==//
+        //     Surface.ROTATION_0 -> {}
+        //     //== 90度 ==//
+        //     Surface.ROTATION_90 -> {}
+        //     //== 180度 ==//
+        //     Surface.ROTATION_180 -> {}
+        //     //== 270 ==//
+        //     Surface.ROTATION_270 -> {}
+        // }
+        return rotation
+    }
+
+    /**
      * 画面サイズを取得
      * @param context
      * @return 画面サイズ
@@ -64,30 +109,23 @@ object CommonUtils {
         return size
     }
 
+    fun getCameraImageSize(context: Context): Size {
+        val setting = AppPreferences(context).convert()
+        val orientation = getOrientation(context)
+        val size = when (orientation) {
+            android.content.res.Configuration.ORIENTATION_PORTRAIT -> {
+                Size(setting.imageWidth, setting.imageHeight)
+            }
 
-    /**
-     * 時間がの範囲内か判定
-     * @param now
-     * @param start
-     * @param end
-     * @return
-     */
-    fun betweenDate(now: LocalDateTime, start: LocalDateTime, end: LocalDateTime, isEqual: Boolean = true): Boolean {
-        if (isEqual && (start.isEqual(now) || end.isEqual(now))) {
-            return true
+            android.content.res.Configuration.ORIENTATION_LANDSCAPE -> {
+                Size(setting.imageHeight, setting.imageWidth)
+            }
+
+            else -> {
+                Size(setting.imageWidth, setting.imageHeight)
+            }
         }
-        return start.isBefore(now) && end.isAfter(now)
-    }
-
-    fun toDate(dateTime: LocalDateTime): Date {
-        val zonedDateTime = ZonedDateTime.of(dateTime, ZoneId.systemDefault())
-        val instant = zonedDateTime.toInstant()
-        return Date.from(instant)
-    }
-
-    fun toLocalDateTime(date: Date): LocalDateTime {
-        val instant = date.toInstant()
-        return LocalDateTime.ofInstant(instant, ZoneId.systemDefault())
+        return size
     }
 
     // fun byteHexIntSum(list: List<Byte>): Int {
