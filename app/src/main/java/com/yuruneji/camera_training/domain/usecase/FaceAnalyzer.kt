@@ -45,7 +45,7 @@ class FaceAnalyzer(
             detector.process(image)
                 .addOnSuccessListener { faces ->
                     if (faces.isNotEmpty()) {
-                        val bmp: Bitmap = BitmapUtils.flipBitmap(imageProxy.toBitmap(), rotation)
+                        val bmp: Bitmap = BitmapUtils.flip(imageProxy.toBitmap(), rotation)
                         val faceList = mutableListOf<FaceItemModel>()
                         for (face in faces) {
                             val rect = face.boundingBox
@@ -59,12 +59,12 @@ class FaceAnalyzer(
                                 it.left = (bmp.width - rect.right) - widthPadding.toInt()
                                 it.right = (bmp.width - rect.left) + widthPadding.toInt()
                             }
-                            val faceBitmap = BitmapUtils.faceClipping(bmp, rect2)
+                            val faceBitmap = BitmapUtils.crop(bmp, rect2)
                             faceBitmap?.let {
-                                val faceBitmap2 = BitmapUtils.bitmapTrim(faceBitmap, 100, 100)
+                                val faceBitmap2 = BitmapUtils.trim(faceBitmap, 100, 100)
 
                                 val base64 = BitmapUtils.toBase64(faceBitmap2, Bitmap.CompressFormat.JPEG)
-                                val bitmap3 = base64?.let { BitmapUtils.toBitmap(base64)}
+                                val bitmap3 = base64?.let { BitmapUtils.toBitmap(base64) }
 
                                 bitmap3?.let {
                                     faceList.add(FaceItemModel(bitmap3, rect, face))

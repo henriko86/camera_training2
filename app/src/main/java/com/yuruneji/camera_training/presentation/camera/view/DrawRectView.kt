@@ -33,7 +33,7 @@ class DrawRectView(
     private val executor: ExecutorService = Executors.newSingleThreadExecutor()
 
     /** 枠画像 */
-    private val rectImage: Bitmap = BitmapUtils.drawableToBitmap(ContextCompat.getDrawable(context, R.drawable.face_rect))
+    private val rectImage: Bitmap = BitmapUtils.toBitmap(ContextCompat.getDrawable(context, R.drawable.face_rect))
 
     /** 枠画像サイズ */
     private val rectImageSize: Rect = Rect(0, 0, rectImage.width, rectImage.height)
@@ -79,7 +79,7 @@ class DrawRectView(
             if (list.isEmpty()) {
                 clearCanvas()
             } else {
-                val canvas: Canvas = getCanvas() ?: return@submit
+                val canvas: Canvas = getCanvas()
                 canvas.save()
 
                 list.forEach { rect ->
