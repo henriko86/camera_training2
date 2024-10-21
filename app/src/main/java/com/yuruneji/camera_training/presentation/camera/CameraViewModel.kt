@@ -3,8 +3,6 @@ package com.yuruneji.camera_training.presentation.camera
 import android.content.Context
 import android.graphics.Rect
 import android.location.Location
-import android.os.Handler
-import android.os.Looper
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
@@ -39,10 +37,8 @@ import com.yuruneji.camera_training.domain.usecase.LogUploadUseCase
 import com.yuruneji.camera_training.domain.usecase.QrCodeAnalyzer
 import com.yuruneji.camera_training.presentation.camera.state.CameraScreenState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -52,8 +48,6 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlinx.coroutines.withTimeoutOrNull
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
@@ -64,7 +58,6 @@ import java.time.format.DateTimeFormatter
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
-import kotlin.coroutines.resume
 
 @HiltViewModel
 class CameraViewModel @Inject constructor(
@@ -766,23 +759,23 @@ class CameraViewModel @Inject constructor(
         )
 
         // runCatching {
-            logUploadUseCase(log).onEach { result ->
-                when (result) {
-                    is DeviceResponse.Success -> {
-                        // Timber.d("${result.res}")
-                        Timber.d("ログアップロード!!!! [" + getThreadName() + "]")
-                    }
-
-                    is DeviceResponse.Failure -> {
-                        Timber.w("${result.error}")
-                        Timber.d("ログアップロードエラー [" + getThreadName() + "]")
-                    }
-
-                    is DeviceResponse.Loading -> {
-                        Timber.d("ログアップロード 読み込み中..... [" + getThreadName() + "]")
-                    }
+        logUploadUseCase(log).onEach { result ->
+            when (result) {
+                is DeviceResponse.Success -> {
+                    // Timber.d("${result.res}")
+                    Timber.d("ログアップロード!!!! [" + getThreadName() + "]")
                 }
-            }.launchIn(viewModelScope)
+
+                is DeviceResponse.Failure -> {
+                    Timber.w("${result.error}")
+                    Timber.d("ログアップロードエラー [" + getThreadName() + "]")
+                }
+
+                is DeviceResponse.Loading -> {
+                    Timber.d("ログアップロード 読み込み中..... [" + getThreadName() + "]")
+                }
+            }
+        }.launchIn(viewModelScope)
         // }.onSuccess {
         //     Timber.d("onSuccess")
         // }.onFailure {

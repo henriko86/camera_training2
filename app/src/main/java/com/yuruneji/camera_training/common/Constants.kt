@@ -241,10 +241,10 @@ enum class MinFaceSize(val no: Int, val value: String, val size: Float) {
 }
 
 
-/**
- * カメラID
- */
-data class CameraID(
-    var front: String = "",
-    var back: String = ""
-)
+// /**
+//  * カメラID
+//  */
+// data class CameraID(
+//     var front: String = "",
+//     var back: String = ""
+// )
