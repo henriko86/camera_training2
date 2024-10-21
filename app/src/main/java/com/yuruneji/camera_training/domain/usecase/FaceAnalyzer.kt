@@ -64,7 +64,7 @@ class FaceAnalyzer(
                                 val faceBitmap2 = BitmapUtils.trim(faceBitmap, 100, 100)
 
                                 val base64 = BitmapUtils.toBase64(faceBitmap2, Bitmap.CompressFormat.JPEG)
-                                val bitmap3 = base64?.let { BitmapUtils.toBitmap(base64) }
+                                val bitmap3 = base64.let { BitmapUtils.toBitmap(base64) }
 
                                 bitmap3?.let {
                                     faceList.add(FaceItemModel(bitmap3, rect, face))

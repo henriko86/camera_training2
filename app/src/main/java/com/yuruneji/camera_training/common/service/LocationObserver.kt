@@ -61,10 +61,8 @@ class LocationObserver(
     }
 
     private fun requestLocationPermission() {
-
         // 位置情報の権限があるか確認する
         val isAccept = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-
         if (!isAccept) {
             // 権限が許可されていない場合はリクエストする
             ActivityCompat.requestPermissions(context as Activity, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_PERMISSION_REQUEST_CODE)

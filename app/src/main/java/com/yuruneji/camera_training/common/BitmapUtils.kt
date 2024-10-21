@@ -21,16 +21,19 @@ import java.nio.ByteBuffer
  */
 object BitmapUtils {
 
-    /** 画像クォリティ */
+    /**
+     * 画像クォリティ
+     */
     private const val IMAGE_QUALITY = 90
 
     /**
      * Drawableを画像に変換
+     *
      * @param drawable Drawable
-     * @return
+     * @return 画像
      */
     fun toBitmap(drawable: Drawable?): Bitmap {
-        if (drawable == null) return Bitmap.createBitmap(1, 1, Config.ARGB_8888)
+        if (drawable == null) return Bitmap.createBitmap(0, 0, Config.ARGB_8888)
 
         if (drawable is BitmapDrawable) {
             return drawable.bitmap
@@ -46,9 +49,10 @@ object BitmapUtils {
 
     /**
      * 画像を回転
-     * @param source
-     * @param rotation
-     * @return
+     *
+     * @param image    画像
+     * @param rotation 回転
+     * @return 回転画像
      */
     fun flip(image: Bitmap, rotation: Int): Bitmap {
         val imageWidth: Int = image.width
@@ -57,17 +61,16 @@ object BitmapUtils {
         val matrix = Matrix()
         matrix.setRotate(rotation.toFloat())
 
-        return Bitmap.createBitmap(
-            image, 0, 0, imageWidth, imageHeight, matrix, true
-        )
+        return Bitmap.createBitmap(image, 0, 0, imageWidth, imageHeight, matrix, true)
     }
 
     /**
      * 画像をトリミング
-     * @param image
-     * @param width
-     * @param height
-     * @return
+     *
+     * @param image  画像
+     * @param width  トリミング幅
+     * @param height トリミング高さ
+     * @return トリミング画像
      */
     fun trim(image: Bitmap, width: Int, height: Int): Bitmap {
         val scale = if (image.width >= image.height) { // 横長
@@ -84,10 +87,11 @@ object BitmapUtils {
 
     /**
      * 画像を範囲で切り抜き
-     * @param bmp
-     * @param rect
-     * @param quality
-     * @return
+     *
+     * @param image   画像
+     * @param rect    範囲
+     * @param quality クオリティ
+     * @return 切り抜き画像
      */
     fun crop(image: Bitmap, rect: Rect, quality: Int = IMAGE_QUALITY): Bitmap? {
         val matrix = Matrix().also {
@@ -117,17 +121,39 @@ object BitmapUtils {
         return null
     }
 
-    fun toBase64Png(bitmap: Bitmap, quality: Int = IMAGE_QUALITY): String {
-        return toBase64(bitmap, Bitmap.CompressFormat.PNG, quality)
+    /**
+     * 画像をBase64PNG文字列に変換
+     *
+     * @param image   画像
+     * @param quality クオリティ
+     * @return Base64PNG文字列
+     */
+    fun toBase64Png(image: Bitmap, quality: Int = IMAGE_QUALITY): String {
+        return toBase64(image, Bitmap.CompressFormat.PNG, quality)
     }
 
-    fun toBase64Jpeg(bitmap: Bitmap, quality: Int = IMAGE_QUALITY): String {
-        return toBase64(bitmap, Bitmap.CompressFormat.JPEG, quality)
+    /**
+     * 画像をBase64JPEG文字列に変換
+     *
+     * @param image   画像
+     * @param quality クオリティ
+     * @return Base64JPEG文字列
+     */
+    fun toBase64Jpeg(image: Bitmap, quality: Int = IMAGE_QUALITY): String {
+        return toBase64(image, Bitmap.CompressFormat.JPEG, quality)
     }
 
-    fun toBase64(bitmap: Bitmap, format: Bitmap.CompressFormat, quality: Int = IMAGE_QUALITY): String {
+    /**
+     * 画像をBase64文字列に変換
+     *
+     * @param image   画像
+     * @param format  フォーマット
+     * @param quality クオリティ
+     * @return Base64文字列
+     */
+    fun toBase64(image: Bitmap, format: Bitmap.CompressFormat, quality: Int = IMAGE_QUALITY): String {
         val byteArrayOutputStream = ByteArrayOutputStream()
-        bitmap.compress(Bitmap.CompressFormat.JPEG, quality, byteArrayOutputStream)
+        image.compress(Bitmap.CompressFormat.JPEG, quality, byteArrayOutputStream)
         val byteArray = byteArrayOutputStream.toByteArray()
         return when (format) {
             Bitmap.CompressFormat.JPEG -> "data:image/jpeg;base64,${Base64.encodeToString(byteArray, Base64.DEFAULT)}"
@@ -136,6 +162,12 @@ object BitmapUtils {
         }
     }
 
+    /**
+     * Base64文字列を画像に変換
+     *
+     * @param base64 Base64文字列
+     * @return 画像
+     */
     fun toBitmap(base64: String): Bitmap? {
         try {
             val decodedBytes: ByteArray = Base64.decode(
@@ -150,11 +182,12 @@ object BitmapUtils {
 
     /**
      * Bitmapをbyte配列に変換
+     *
      * @return byte配列
      */
-    fun toByteArray(bitmap: Bitmap): ByteArray {
-        val buffer = ByteBuffer.allocate(bitmap.byteCount)
-        bitmap.copyPixelsToBuffer(buffer)
+    fun toByteArray(image: Bitmap): ByteArray {
+        val buffer = ByteBuffer.allocate(image.byteCount)
+        image.copyPixelsToBuffer(buffer)
         return buffer.array()
     }
 }

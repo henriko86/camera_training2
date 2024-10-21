@@ -2,25 +2,19 @@ package com.yuruneji.camera_training.common
 
 import android.app.Activity
 import android.content.Context
+import android.graphics.ImageFormat
 import android.graphics.Point
 import android.hardware.camera2.CameraCharacteristics
+import android.hardware.camera2.CameraManager
 import android.os.Build
 import android.os.Build.VERSION_CODES
 import android.util.Size
-import android.view.Display
-import android.view.Surface
 import android.view.View
 import android.view.WindowManager
 import android.view.WindowMetrics
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContentProviderCompat.requireContext
 import com.yuruneji.camera_training.data.local.setting.AppPreferences
 import com.yuruneji.camera_training.data.local.setting.convert
-import java.time.LocalDateTime
-import java.time.ZoneId
-import java.time.ZonedDateTime
-import java.util.Date
-
 
 /**
  * @author toru
@@ -30,21 +24,66 @@ object CommonUtils {
 
 
     /**
-     * カメラIDを取得
-     * @param context
-     * @return カメラID
+     * カメラの解像度を取得
+     * @param context Context
+     * @param cameraID カメラID
+     * @return カメラの解像度
      */
-    fun getCameraID(context: Context): CameraID {
-        val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as android.hardware.camera2.CameraManager
-        val cameraID = CameraID()
-        cameraManager.cameraIdList.forEach { _ ->
-            val backCameraId = cameraManager.cameraIdList.first { cameraManager.getCameraCharacteristics(it).get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_BACK }
-            val frontCameraId = cameraManager.cameraIdList.first { cameraManager.getCameraCharacteristics(it).get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_FRONT }
-            cameraID.back = backCameraId
-            cameraID.front = frontCameraId
-        }
-        return cameraID
+    fun getCameraOutputSizes(context: Context, cameraID: String): Array<Size>? {
+        val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+        val sizeList = cameraManager.getCameraCharacteristics(cameraID)
+            .get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
+            ?.getOutputSizes(ImageFormat.JPEG)
+        return sizeList
     }
+
+
+    /**
+     * 後ろカメラIDを取得
+     * @param context Context
+     * @return 後ろカメラID
+     */
+    fun getBackCameraID(context: Context): String? {
+        val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+        cameraManager.cameraIdList.forEach {
+            if (cameraManager.getCameraCharacteristics(it).get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_BACK) {
+                return it
+            }
+        }
+        return null
+    }
+
+    /**
+     * 前カメラIDを取得
+     * @param context Context
+     * @return 前カメラID
+     */
+    fun getFrontCameraID(context: Context): String? {
+        val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+        cameraManager.cameraIdList.forEach {
+            if (cameraManager.getCameraCharacteristics(it).get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_FRONT) {
+                return it
+            }
+        }
+        return null
+    }
+
+    // /**
+    //  * カメラIDを取得
+    //  * @param context
+    //  * @return カメラID
+    //  */
+    // fun getCameraID(context: Context): CameraID {
+    //     val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+    //     val cameraID = CameraID()
+    //     cameraManager.cameraIdList.forEach { _ ->
+    //         val backCameraId = cameraManager.cameraIdList.first { cameraManager.getCameraCharacteristics(it).get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_BACK }
+    //         val frontCameraId = cameraManager.cameraIdList.first { cameraManager.getCameraCharacteristics(it).get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_FRONT }
+    //         cameraID.back = backCameraId
+    //         cameraID.front = frontCameraId
+    //     }
+    //     return cameraID
+    // }
 
     /**
      * 画面の向きを取得

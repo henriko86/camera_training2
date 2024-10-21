@@ -2,7 +2,6 @@ package com.yuruneji.camera_training.presentation.camera
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.hardware.camera2.CameraCharacteristics
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Surface
@@ -90,11 +89,6 @@ class CameraFragment : Fragment(), KtorWebServer.Callback {
         // 位置情報
         val locationObserver = LocationObserver(requireActivity()) {
             viewModel.setLocation(it)
-            // Timber.i("location: ${it.latitude}, ${it.longitude}")
-
-            // lifecycleScope.launch {
-            //     binding.text2.text = getString(R.string.debug_location, it.latitude.toString(), it.longitude.toString(), "")
-            // }
         }
         lifecycle.addObserver(locationObserver)
 
@@ -125,7 +119,6 @@ class CameraFragment : Fragment(), KtorWebServer.Callback {
         setting = AppPreferences(requireContext()).convert()
         Timber.d(setting.toString())
 
-        // val windowSize = CommonUtils.getWindowSize(requireContext())
         val cameraImageSize = CommonUtils.getCameraImageSize(requireContext())
         val isFlipped = setting.lensFacing == LensFacing.FRONT
 
@@ -213,11 +206,7 @@ class CameraFragment : Fragment(), KtorWebServer.Callback {
 
         // 認証待ちプログレスバー
         viewModel.authWaitProgressbar.observe(viewLifecycleOwner) {
-            if (it) {
-                binding.authWaitProgressbar.visibility = View.VISIBLE
-            } else {
-                binding.authWaitProgressbar.visibility = View.INVISIBLE
-            }
+            binding.authWaitProgressbar.visibility = if (it) View.VISIBLE else View.INVISIBLE
         }
 
         // 顔認証
@@ -371,18 +360,6 @@ class CameraFragment : Fragment(), KtorWebServer.Callback {
             Surface.ROTATION_270 -> {
                 println("270")
             }
-        }
-
-        // val windowManager = requireContext().getSystemService(android.content.Context.WINDOW_SERVICE) as android.view.WindowManager
-
-        val cameraManager = requireContext().getSystemService(android.content.Context.CAMERA_SERVICE) as android.hardware.camera2.CameraManager
-        val cameraID = CommonUtils.getCameraID(requireContext())
-
-        val sizeList = cameraManager.getCameraCharacteristics(cameraID.front)
-            .get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
-            ?.getOutputSizes(android.graphics.ImageFormat.JPEG)
-        sizeList?.forEach {
-            Timber.i("size: ${it.width}x${it.height}")
         }
 
         // プレビューが開始
